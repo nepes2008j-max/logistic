@@ -1,15 +1,21 @@
-Hero aircraft — aircraft-1800.webp / aircraft-1000.webp (and .png fallbacks)
+Hero aircraft — inlined in templates/dashboard.html (.flight-plane)
 
-Source photograph: "Volkswagen Air Service, Dassault Falcon 7X, VP-CSW"
-  https://commons.wikimedia.org/wiki/File:Volkswagen_Air_Service,_Dassault_Falcon_7X,_VP-CSW_(14524011202).jpg
-  Wikimedia Commons. Reused under its Creative Commons licence; see the file
-  page above for the photographer and the exact terms before shipping to
-  production.
+Source: "Air Travel" (NIH BioArt 783 - 793068)
+  https://commons.wikimedia.org/wiki/File:Air_Travel_(NIH_BioArt_783_-_793068).svg
+  National Institutes of Health BioArt Source, via Wikimedia Commons.
+  Licence: PUBLIC DOMAIN. No attribution is legally required; the provenance
+  is recorded here so the next person does not have to re-derive it.
 
-Processing: the sky was keyed out to alpha locally (per-row sky reference
-from the frame margins, blue-minus-red separation, edge-connected flood fill)
-so the aircraft could be composited over the hero's own gradient. No part of
-the aircraft itself was redrawn or generated.
+A single vector path, inlined into the template rather than linked, so it
+inherits the theme's ink through `currentColor` in both light and dark and
+costs no extra request. The silhouette is unmodified.
 
-The aircraft is a visual metaphor for goods crossing distance. HandShake is a
-logistics marketplace for ordinary goods; it is not an aviation product.
+Why this and not the previous asset: the hero used to carry a photograph of a
+Dassault Falcon 7X (registration VP-CSW) whose licence this file could not
+confirm, and which claimed a class of service HandShake does not run. It was
+withdrawn. The files aircraft-1000.* and aircraft-1800.* are what is left of
+it — they are referenced by nothing and excluded from the repository.
+
+HandShake is a logistics marketplace for ordinary goods. The aircraft is a
+figure for distance covered, not a description of the fleet; the goods move
+by road.

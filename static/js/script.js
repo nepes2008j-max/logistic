@@ -187,14 +187,25 @@ function initExpertChat() {
    One handler, at the bottom. */
 
 document.addEventListener('DOMContentLoaded', () => {
+    /* The splash used to hold for 3.5s and fade for another 0.8s — over four
+       seconds of a covered screen on every single navigation, which is a long
+       time to be shown a logo you have already seen. It holds for 1.2s now.
+
+       Clearing it also flips a flag on <html>. The hero's flight is paused
+       until that flag appears, because the whole animation used to run and
+       finish underneath the splash: it played to an audience of nobody. */
     const splash = document.getElementById('splash-screen');
+    const revealPage = () => document.documentElement.classList.add('splash-done');
     if (splash) {
         setTimeout(() => {
             splash.classList.add('fade-out');
+            revealPage();
             setTimeout(() => {
                 splash.style.display = 'none';
             }, 800);
-        }, 3500);
+        }, 1200);
+    } else {
+        revealPage();
     }
 
     const themeBtn = document.getElementById('theme-toggle');

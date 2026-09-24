@@ -520,7 +520,7 @@
    Transform and opacity only — nothing here triggers layout. */
 .flight {
     position: relative;
-    height: clamp(40px, 6vw, 64px);
+    height: clamp(60px, 11vw, 130px);
     margin-bottom: clamp(-4px, 0.5vw, 8px);
 }
 
@@ -554,6 +554,15 @@
     animation: flight-fade 400ms 1650ms ease-out forwards;
 }
 
+/* Paused until the splash clears — see the splash handler in script.js.
+   Without this the aircraft crossed the screen behind an opaque overlay. */
+.flight-craft,
+.flight::before,
+.flight::after { animation-play-state: paused; }
+.splash-done .flight-craft,
+.splash-done .flight::before,
+.splash-done .flight::after { animation-play-state: running; }
+
 .flight-craft {
     position: absolute;
     /* Parks with its nose short of the destination ring rather than on top
@@ -569,15 +578,16 @@
     gap: clamp(8px, 1.4vw, 16px);
 }
 
+/* A real airliner rather than a drawn dart: public-domain NIH BioArt, one
+   path, inlined so `currentColor` picks up the theme's ink in both themes.
+   Square viewBox, so the box is sized on height and the silhouette sits in
+   the middle of it. */
 .flight-plane {
-    width: clamp(34px, 5vw, 56px);
+    width: clamp(68px, 11vw, 132px);
     height: auto;
-    fill: var(--ink);
+    color: var(--ink);
     flex: none;
 }
-/* The under-fold, a shade back, so the dart reads as folded paper and not as
-   a flat arrow. */
-.flight-fold { fill: var(--ink); opacity: 0.32; }
 
 /* The name it carries. Label type, wide tracking — a trailing banner, at the
    opposite end of the scale from the wordmark it announces. */
