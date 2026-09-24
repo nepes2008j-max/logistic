@@ -29,6 +29,10 @@
          the same neo-grotesque skeleton, and it holds its shape at weight 700
          with the tracking pulled hard negative. -->
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&display=swap" rel="stylesheet">
+    {# variables.css first: it declares the raw palette and the type scale that
+       base.css builds the semantic tokens from. It went years unloaded — the
+       docs named it as the source of truth while nothing ever fetched it. #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" type="image/png" href="/static/favicon_c.png">
     {#

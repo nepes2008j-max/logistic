@@ -552,7 +552,13 @@ function handleBrokenImage(img) {
         return;
     }
 
-    img.classList.add('img-failed');
+    /* .img-missing, not .img-failed: base.css defines the first and nothing
+       defined the second, so this branch — the one that catches every image
+       outside a card wrapper or an avatar, including the item hero and the
+       passport thumbnail on the admin queue — silently did nothing and left
+       the browser's broken-image glyph on the page. */
+    img.classList.add('img-missing');
+    img.removeAttribute('src');
 }
 
 function initBrokenImages() {

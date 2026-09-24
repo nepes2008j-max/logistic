@@ -17,35 +17,6 @@
     background: var(--paper-tint);
 }
 
-.ledger-bar-inner {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: var(--s2) var(--s6);
-    min-height: 46px;
-    padding-block: var(--s2);
-}
-
-.ledger-cell {
-    display: inline-flex;
-    align-items: baseline;
-    gap: var(--s2);
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    font-size: var(--t-micro);
-    letter-spacing: var(--track-label);
-    text-transform: none;
-    color: var(--ink-3);
-    white-space: nowrap;
-}
-.ledger-cell b {
-    font-weight: 600;
-    color: var(--ink);
-    font-variant-numeric: tabular-nums;
-}
-.ledger-cell--accent b { color: var(--accent-text); }
-.ledger-spacer { flex: 1 1 auto; }
-
 /* ==========================================================================
    B. MARKETPLACE  (index.html)
    ========================================================================== */
@@ -380,18 +351,6 @@
     background: var(--paper);
     color: var(--ink-2);
     border-color: var(--ink-2);
-}
-
-.card-ref {
-    position: absolute;
-    bottom: var(--s2);
-    right: var(--s3);
-    z-index: 2;
-    font-size: var(--t-micro);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 0.06em;
-    color: var(--color-pure-white);
-    opacity: 0.88;
 }
 
 .card-content {
@@ -1037,8 +996,6 @@
 .band-dark p { color: var(--color-cool-ash); }
 .band-dark .rail-head-note { color: var(--color-cool-ash); }
 
-.band-deck { background: var(--color-charcoal-deck); }
-
 /* The dark band's content sits right of centre, as the system does. */
 .band-copy {
     display: grid;
@@ -1046,9 +1003,6 @@
     max-width: 52ch;
     margin-left: auto;
 }
-.band-copy h2 { font-size: clamp(1.875rem, 4.4vw, 3.25rem); letter-spacing: -0.022em; }
-.band-copy p { font-size: var(--t-body); line-height: var(--lh-body); }
-.band-actions { display: flex; flex-wrap: wrap; gap: var(--s3); margin-top: var(--s2); }
 
 @media (max-width: 820px) {
     .band-copy { margin-left: 0; }
@@ -1666,15 +1620,6 @@
     cursor: pointer;
 }
 
-/* -- Register stepper ------------------------------------------------------ */
-
-.step-indicator {
-    display: flex;
-    align-items: center;
-    gap: var(--s1);
-    margin-bottom: var(--s6);
-}
-
 .step {
     flex: none;
     width: 28px;
@@ -1705,30 +1650,10 @@
     border-color: var(--ink);
     color: var(--ink-invert);
 }
-
-.step-line {
-    flex: 1;
-    height: var(--bw2);
-    background: var(--rule-2);
-    margin-inline: 2px;
-}
 .step-line.active { background: var(--ink); }
-
-.form-step { animation: step-in var(--d3) var(--ease-out) both; }
 @keyframes step-in {
     from { opacity: 0; transform: translateX(10px); }
     to   { opacity: 1; transform: translateX(0); }
-}
-
-/* Camera capture frame */
-.camera-container {
-    position: relative;
-    aspect-ratio: 4 / 3;
-    overflow: hidden;
-    background: var(--color-midnight-hull);
-    border: var(--bw2) solid var(--ink);
-    border-radius: var(--r-sm);
-    margin-bottom: var(--s4);
 }
 .passport-guide {
     position: absolute;
@@ -1773,34 +1698,7 @@
     color: var(--accent-text);
     padding-top: 2px;
 }
-.notice--verified {
-    background: var(--verified-soft);
-    border-color: color-mix(in srgb, var(--verified) 34%, transparent);
-}
 .notice--verified .notice-mark { color: var(--verified); }
-
-/* Contract scroll */
-.contract {
-    height: 220px;
-    overflow-y: auto;
-    padding: var(--s5);
-    margin-bottom: var(--s5);
-    background: var(--surface);
-    border: var(--bw) solid var(--rule-2);
-    border-radius: var(--r-sm);
-    font-size: var(--t-sm);
-    line-height: 1.65;
-    color: var(--ink-2);
-}
-.contract h4 {
-    font-family: var(--font-display);
-    font-size: var(--t-body-lg);
-    margin-bottom: var(--s3);
-    color: var(--ink);
-}
-.contract ol { margin: var(--s3) 0 var(--s3) var(--s5); }
-.contract li { margin-bottom: var(--s2); }
-.contract strong { color: var(--ink); }
 
 /* -- Image capture / preview (upload + edit profile) ----------------------- */
 
@@ -1897,86 +1795,13 @@
 }
 .pfp-wrapper img { border-radius: 50%; }
 .pfp-wrapper #camera-area { border-radius: 50%; overflow: hidden; }
-
-/* ==========================================================================
-   F. CHECKOUT  (payment.html)
-   ========================================================================== */
-
-.checkout-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
-    gap: var(--s7);
-    align-items: start;
-    padding-block: var(--s8) var(--s10);
-}
-
-.checkout-panel {
-    padding: var(--s7);
-    background: var(--surface);
-    border: var(--bw) solid var(--rule-2);
-    border-radius: var(--r-md);
-    box-shadow: var(--press);
-}
-
-.checkout-panel > h2 {
-    display: flex;
-    align-items: center;
-    gap: var(--s3);
-    font-size: var(--t-h2);
-    padding-bottom: var(--s4);
-    margin-bottom: var(--s6);
-    border-bottom: var(--bw) solid var(--rule);
-}
-
-.card-options {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--s3);
-}
-
-.card-option { position: relative; cursor: pointer; display: block; }
-.card-option input {
-    position: absolute;
-    opacity: 0;
-    width: 1px; height: 1px;
-}
-
-.card-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--s2);
-    min-height: 82px;
-    padding: var(--s4) var(--s2);
-    background: var(--surface);
-    border: var(--bw2) solid var(--rule-2);
-    border-radius: var(--r-sm);
-    transition: border-color var(--d1) var(--ease),
-                background var(--d1) var(--ease),
-                transform var(--d1) var(--ease);
-}
 .card-box i, .card-box .ico { font-size: 1.7rem; }
-.card-box span {
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    font-size: var(--t-micro);
-    letter-spacing: 0.005em;
-    text-transform: none;
-    color: var(--ink-3);
-}
-.card-option:hover .card-box { border-color: var(--rule-ink); transform: translateY(-2px); }
 /* Selection is shown by the surface and the border weight, not by a ring of
    coloured glow — the system has no elevation to spend. */
 .card-option input:checked + .card-box {
     border-color: var(--ink);
     border-width: var(--bw2);
     background: var(--paper-tint);
-}
-.card-option input:checked + .card-box span { color: var(--ink); }
-.card-option input:focus-visible + .card-box {
-    outline: var(--bw2) solid var(--focus);
-    outline-offset: 2px;
 }
 
 /* The receipt */
@@ -2056,20 +1881,6 @@
     color: var(--ink);
 }
 
-.receipt-line--boxed {
-    padding: var(--s3);
-    background: var(--surface);
-    border: var(--bw) dashed var(--rule-2);
-    border-radius: var(--r-sm);
-}
-.receipt-line--boxed small {
-    display: block;
-    font-variant-numeric: tabular-nums;
-    font-size: var(--t-micro);
-    letter-spacing: 0.005em;
-    color: var(--ink-3);
-}
-
 .receipt-total {
     display: flex;
     align-items: baseline;
@@ -2143,13 +1954,25 @@
     opacity: 0;
     transform: translateY(16px) scale(0.98);
     pointer-events: none;
+    /* visibility, not just opacity. Without it this panel stayed in the tab
+       order while invisible: you could tab off the masthead into a dialog you
+       could not see, type in its text field, and fire a request whose answer
+       never appeared. Screen readers announced it ahead of the page's own h1.
+       .user-dropdown in base.css already did this correctly. Delayed so the
+       fade still plays on the way out. */
+    visibility: hidden;
     transition: opacity var(--d3) var(--ease-out),
-                transform var(--d3) var(--ease-out);
+                transform var(--d3) var(--ease-out),
+                visibility 0s linear var(--d3);
 }
 .ai-expert-sidebar.visible {
     opacity: 1;
     transform: translateY(0) scale(1);
     pointer-events: auto;
+    visibility: visible;
+    transition: opacity var(--d3) var(--ease-out),
+                transform var(--d3) var(--ease-out),
+                visibility 0s;
 }
 
 .ai-expert-header {
@@ -2342,6 +2165,9 @@
     pointer-events: none;
     transform: translateY(12px);
     display: inline-flex !important;
+    /* Same reason as the panel: a hidden button that is still tabbable is a
+       trap for anyone not using a mouse. */
+    visibility: hidden;
 }
 
 /* ==========================================================================
@@ -2523,14 +2349,6 @@
 }
 @media (max-width: 640px) {
     .error-actions .auth-btn { flex: 1 1 100%; }
-}
-
-.record-lede {
-    max-width: 58ch;
-    margin-top: var(--s4);
-    font-size: var(--t-body);
-    line-height: var(--lh-body);
-    color: var(--ink-3);
 }
 
 /* -- Sections within a record --------------------------------------------

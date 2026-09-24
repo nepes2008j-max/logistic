@@ -22,14 +22,11 @@
    -------------------------------------------------------------------------- */
 
 :root {
-    /* -- Raw palette, verbatim from variables.css ------------------------- */
-    --color-deep-ink:      #000d10;
-    --color-pure-white:    #ffffff;
-    --color-cool-ash:      #8e8e95;
-    --color-pebble:        #d5d3d4;
-    --color-midnight-hull: #0f0f1c;
-    --color-charcoal-deck: #151623;
-    --color-clay-ember:    #bc7155;
+    /* The raw palette used to be re-declared here, verbatim, because
+       variables.css was never actually loaded by anything — CLAUDE.md and
+       DESIGN.md both named it as the token source while the browser never saw
+       it, so editing it to change the brand changed nothing at all. It is
+       loaded ahead of this file now and these seven names come from it. */
 
     /* -- Surfaces (light) -------------------------------------------------
        Elevation is expressed by moving along this ramp. There is no shadow
@@ -96,9 +93,6 @@
     --sky-low:      #f6efe4;
 
     /* -- Legacy aliases (kept so any stray inline style still resolves) ---- */
-    --bg:           var(--paper);
-    --card-bg:      var(--surface);
-    --border:       var(--rule);
     --text-primary: var(--ink);
     --text-main:    var(--ink);
     --text-secondary: var(--ink-3);
@@ -388,13 +382,6 @@ p { line-height: var(--lh-body); }
     color: var(--ink-3);
 }
 
-.eyebrow--accent { color: var(--accent-text); }
-
-.mono { font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums; font-variant-numeric: tabular-nums; }
-
-.serif { font-family: var(--font-display); font-weight: 700; }
-
 /* A ruled section heading: label on the left, hairline filling the row. */
 .rule-head {
     display: flex;
@@ -402,14 +389,6 @@ p { line-height: var(--lh-body); }
     gap: var(--s4);
     margin-bottom: var(--s5);
 }
-.rule-head::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: var(--rule);
-}
-.rule-head > h2,
-.rule-head > h3 { flex: none; }
 
 /* --------------------------------------------------------------------------
    4. FOCUS & ACCESSIBILITY
@@ -479,8 +458,6 @@ textarea:focus-visible,
     min-height: 60vh;
     padding-bottom: var(--s11);
 }
-
-.stack { display: flex; flex-direction: column; }
 
 /* --------------------------------------------------------------------------
    6. MASTHEAD / NAV
@@ -803,9 +780,15 @@ textarea:focus-visible,
     gap: 3px;
     min-height: 44px;
     padding-top: 3px;
-    color: var(--ash);
-    font-size: 0.6875rem;
-    font-weight: 500;
+    /* --ash is #8e8e95: 3.25:1 on white, below the 4.5:1 AA needs at this
+       size, and this was the one place in the stylesheet using it as text —
+       its own comment two hundred lines up says it is for large text only.
+       --ink-3 is 6.04:1. The size goes up with it: four of the five tabs are
+       always in the inactive state, so this is the app's most-read small
+       text, not decoration. */
+    color: var(--ink-3);
+    font-size: 0.75rem;
+    font-weight: 600;
     letter-spacing: 0.005em;
     line-height: 1;
     -webkit-tap-highlight-color: transparent;
@@ -999,11 +982,6 @@ textarea:focus-visible,
     background: var(--accent);
     border-color: var(--accent-text);
     color: var(--color-pure-white);
-}
-.auth-btn-accent:hover:not(:disabled),
-.btn-accent:hover:not(:disabled) {
-    background: var(--accent-deep);
-    border-color: var(--accent-deep);
 }
 
 /* Destructive */
@@ -1243,18 +1221,6 @@ input[type="radio"]:checked::before { transform: scale(1); }
     border: var(--bw) solid var(--rule);
     border-radius: 0;
 }
-.panel--tint { background: var(--paper-tint); border-color: transparent; }
-
-/* The one clay block. A page gets one of these or none — never two. */
-.panel--clay {
-    background: var(--accent);
-    border-color: var(--accent-text);
-    color: var(--accent-ink);
-    border-radius: 0;
-}
-.panel--clay h2,
-.panel--clay h3 { color: var(--color-pure-white); }
-.panel--clay p { color: var(--accent-ink); }
 
 .panel-pad { padding: var(--s6); }
 
@@ -1276,12 +1242,8 @@ input[type="radio"]:checked::before { transform: scale(1); }
     color: var(--ink-2);
     white-space: nowrap;
 }
-
-.tag--accent   { color: var(--accent-text);   background: var(--accent-soft); }
 .tag--verified { color: var(--verified); background: var(--verified-soft); }
 .tag--warn     { color: var(--warn);     background: var(--warn-soft); }
-.tag--danger   { color: var(--danger);   background: var(--danger-soft); }
-.tag--solid    { color: var(--ink-invert); background: var(--ink); border-color: var(--ink); }
 
 /* Verified seal — a rotated stamp outline, the identity motif of the app */
 .seal {
@@ -1416,17 +1378,6 @@ input[type="radio"]:checked::before { transform: scale(1); }
     animation: skeleton-sweep 1.4s infinite;
 }
 @keyframes skeleton-sweep { to { transform: translateX(100%); } }
-
-/* Inline spinner — a rotating ledger tick */
-.spinner {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: var(--bw2) solid var(--rule-2);
-    border-top-color: var(--accent-text);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-}
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* --------------------------------------------------------------------------
@@ -1581,15 +1532,6 @@ input[type="radio"]:checked::before { transform: scale(1); }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s4); }
 
 .hairline { height: 1px; background: var(--rule); border: 0; }
-
-.scroll-shadow { scrollbar-width: thin; scrollbar-color: var(--rule-2) transparent; }
-.scroll-shadow::-webkit-scrollbar { width: 8px; height: 8px; }
-.scroll-shadow::-webkit-scrollbar-track { background: transparent; }
-.scroll-shadow::-webkit-scrollbar-thumb {
-    background: var(--rule-2);
-    border-radius: var(--r-pill);
-}
-.scroll-shadow::-webkit-scrollbar-thumb:hover { background: var(--ink-3); }
 
 /* --------------------------------------------------------------------------
    15. RESPONSIVE SHELL

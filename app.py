@@ -16,10 +16,59 @@ from sqlalchemy import inspect, or_, text
 from ai_logic import HandshakeLiveEngine
 
 app = Flask(__name__)
-# The default is the old hardcoded value so existing local sessions keep
-# working. Set HANDSHAKE_SECRET_KEY before this is served to anyone real: a
-# known secret key means anyone can forge a session cookie.
-app.secret_key = os.environ.get('HANDSHAKE_SECRET_KEY', 'handshake_secret_key')
+
+
+def resolve_secret_key():
+    """The key that signs session cookies.
+
+    This used to fall back to a literal in this file. Flask-Login keeps the
+    signed-in user's id inside the session cookie, so a key anyone can read in
+    the source is not a weak secret, it is no authentication at all: you forge
+    a cookie for any user id you like, including an administrator's, and every
+    @login_required and @admin_required in the file waves you through.
+
+    HANDSHAKE_SECRET_KEY still wins when it is set. Otherwise a random key is
+    generated once and kept in instance/secret_key, which means the app still
+    starts with no configuration — the thing the old default was protecting —
+    while the key is unguessable and sessions survive a restart.
+    """
+    from_env = os.environ.get('HANDSHAKE_SECRET_KEY')
+    if from_env:
+        return from_env
+
+    key_path = os.path.join(app.instance_path, 'secret_key')
+    try:
+        with open(key_path, 'r', encoding='utf-8') as fh:
+            stored = fh.read().strip()
+        if stored:
+            return stored
+    except OSError:
+        pass
+
+    generated = secrets.token_hex(32)
+    try:
+        os.makedirs(app.instance_path, exist_ok=True)
+        with open(key_path, 'w', encoding='utf-8') as fh:
+            fh.write(generated)
+        os.chmod(key_path, 0o600)
+    except OSError:
+        # Read-only deployment. A per-process key is still far better than a
+        # published one; it only costs everyone their session on restart.
+        pass
+    return generated
+
+
+app.secret_key = resolve_secret_key()
+
+# Session cookie hardening. HTTPONLY keeps the cookie away from any script that
+# manages to run on the page; SAMESITE='Lax' stops another site's form post
+# from arriving authenticated, which is the cheapest CSRF mitigation available
+# until real tokens land. SECURE is opt-in through HANDSHAKE_HTTPS because the
+# app is normally served over plain http on a LAN, and setting it there would
+# silently stop sessions working at all.
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('HANDSHAKE_HTTPS') == '1'
 # HANDSHAKE_DATABASE_URI lets a test run against a scratch database instead of
 # the real one. Unset, it is exactly the path it always was.
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
@@ -2729,11 +2778,56 @@ def item_detail(item_id):
         chat_state, chat_request = get_chat_connection_state(current_user.id, item.owner.id)
     return render_template('item_detail.html', item=item, reviews=reviews, chat_request=chat_request, chat_state=chat_state)
 
+def recompute_ratings(item):
+    """Re-derive a listing's score, and its seller's, from the review rows.
+
+    Both columns default to 5.0 with num_ratings=1, and the demo seeder fills
+    listings with plausible random scores so the board does not look dead. Real
+    reviews take over from that: once a listing has any, its score is the mean
+    of them rather than a number nobody earned. A listing with no real reviews
+    keeps whatever it was given, which for seeded demo data is the point.
+
+    The seller's own rating had no writer at all before this — every profile in
+    the app was showing the 5.0 default no matter what anyone thought.
+    """
+    item_scores = [r.rating for r in Review.query.filter_by(item_id=item.id).all()]
+    if item_scores:
+        item.rating = round(sum(item_scores) / len(item_scores), 2)
+        item.num_ratings = len(item_scores)
+
+    seller = User.query.get(item.user_id) if item.user_id else None
+    if seller:
+        seller_scores = [
+            r.rating for r in Review.query.filter_by(target_user_id=seller.id).all()
+        ]
+        if seller_scores:
+            seller.rating = round(sum(seller_scores) / len(seller_scores), 2)
+            seller.num_ratings = len(seller_scores)
+
+
 @app.route('/rate_item/<int:item_id>', methods=['POST'])
 @login_required
 def rate_item(item_id):
+    """Review a listing you actually received.
+
+    This used to accept a review from any signed-in account, for any listing,
+    including your own, any number of times — and it recomputed the listing's
+    score on every one. A seller could put their whole board at 5.0 in a loop.
+    Three things gate it now: the reviewer must have taken delivery of the item,
+    they cannot be the seller, and they get one review per listing.
+
+    It also recomputes the seller's own rating, which no code path had ever
+    written: every profile in the app was displaying the 5.0 default.
+    """
     item = Item.query.get_or_404(item_id)
-    rating = int(request.form.get('rating') or 0)
+
+    try:
+        rating = int(request.form.get('rating') or 0)
+    except (TypeError, ValueError):
+        # Was uncaught, so a non-numeric rating was a 500.
+        flash('Rating must be a whole number between 1 and 5.')
+        return redirect(url_for('item_detail', item_id=item_id))
+
     content = (request.form.get('content') or '').strip()
     if rating < 1 or rating > 5:
         flash('Rating must be between 1 and 5.')
@@ -2741,17 +2835,40 @@ def rate_item(item_id):
     if not content:
         flash('Review cannot be empty.')
         return redirect(url_for('item_detail', item_id=item_id))
-    # target_user_id was never written, which is why /profile's review list was
-    # permanently empty. A review of a listing is a review of whoever posted it.
+
+    if item.user_id == current_user.id:
+        flash('You cannot review your own listing.')
+        return redirect(url_for('item_detail', item_id=item_id))
+
+    # Earned by taking delivery, not by holding an account.
+    received = Order.query.filter(
+        Order.item_id == item_id,
+        Order.buyer_id == current_user.id,
+        Order.status == 'completed',
+    ).first()
+    if not received:
+        flash('Only someone who has received this item can review it.')
+        return redirect(url_for('item_detail', item_id=item_id))
+
+    already = Review.query.filter_by(
+        reviewer_id=current_user.id, item_id=item_id
+    ).first()
+    if already:
+        flash('You have already reviewed this listing.')
+        return redirect(url_for('item_detail', item_id=item_id))
+
     review = Review(
         content=content, rating=rating, reviewer_id=current_user.id,
         item_id=item_id, target_user_id=item.user_id
     )
-    item.rating = (item.rating * item.num_ratings + rating) / (item.num_ratings + 1)
-    item.num_ratings += 1
     db.session.add(review)
+    db.session.flush()
+
+    recompute_ratings(item)
     db.session.commit()
+    flash('Thank you for the review.')
     return redirect(url_for('item_detail', item_id=item_id))
+
 
 @app.route('/logout')
 @login_required
@@ -2811,4 +2928,16 @@ def money_check_command():
     click.echo("TOTAL            %.2f" % (wallets + held))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Deliberately not debug=True. The Werkzeug debugger hands anyone who can
+    # reach a traceback an interactive Python console on this machine, and this
+    # is the entrypoint people actually type. It used to start that console.
+    #
+    # `python run_lan.py` is still the way to serve the app on the network; this
+    # binds to localhost only, so a mistake here cannot reach the LAN.
+    #
+    # If you want the debugger while working on a route, ask for it explicitly:
+    #     HANDSHAKE_DEBUG=1 python app.py
+    debug = os.environ.get('HANDSHAKE_DEBUG') == '1'
+    if debug:
+        print('  WARNING: debugger on. Never do this on a reachable interface.')
+    app.run(host='127.0.0.1', port=5000, debug=debug)

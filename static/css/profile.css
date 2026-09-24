@@ -422,27 +422,6 @@
     color: var(--ink-3);
 }
 
-.rental-timer {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 6px;
-    padding: 3px 9px;
-    border: var(--bw) solid var(--warn);
-    border-radius: var(--r-xs);
-    background: var(--warn-soft);
-    font-variant-numeric: tabular-nums;
-    font-size: var(--t-micro);
-    font-weight: 700;
-    letter-spacing: 0.005em;
-    color: var(--warn);
-}
-.rental-timer.is-overdue {
-    border-color: var(--danger);
-    background: var(--danger-soft);
-    color: var(--danger);
-}
-
 .status-chip {
     display: inline-flex;
     align-items: center;
@@ -610,18 +589,6 @@
     bottom: 0;
     width: var(--bw2);
     background: var(--rule-2);
-}
-
-.profile-empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--s2);
-    padding: var(--s7) var(--s5);
-    text-align: center;
-    font-size: var(--t-sm);
-    line-height: 1.55;
-    color: var(--ink-3);
 }
 
 /* --------------------------------------------------------------------------

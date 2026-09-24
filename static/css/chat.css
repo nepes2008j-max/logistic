@@ -394,20 +394,6 @@
     opacity: 0.66;
 }
 
-/* Day divider (available for future grouping) */
-.chat-day {
-    align-self: center;
-    padding: 4px 12px;
-    background: var(--surface-2);
-    border-radius: var(--r-pill);
-    font-variant-numeric: tabular-nums;
-    font-size: var(--t-micro);
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-}
-
 /* -- Composer ---------------------------------------------------------------- */
 
 .chat-input-form {
