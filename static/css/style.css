@@ -495,6 +495,9 @@
     border-radius: 0;
     padding-top: clamp(28px, 6vw, 64px);
     padding-bottom: clamp(20px, 4vw, 48px);
+    /* The aircraft needs somewhere to fly. Without a floor the hero collapses
+       to the height of its text and the jet is cropped to a sliver. */
+    min-height: clamp(560px, 76vh, 820px);
 }
 
 /* A hairline horizon so the sky ends on a drawn edge, not a blur. */
@@ -513,146 +516,57 @@
     gap: clamp(20px, 3vw, 32px);
 }
 
-/* -- The opening flight --------------------------------------------------
-   A paper plane crosses the band once on load, drawing the route hairline
-   behind it, and parks at the right trailing the name. Drawn in CSS with no
-   image, so it costs one request less than a logo and carries no licence.
-   Transform and opacity only — nothing here triggers layout. */
+/* -- The aircraft ---------------------------------------------------------
+   DESIGN.md puts one large jet in a three-quarter banking pose at the centre
+   of the hero and says the aircraft IS the hero. So it is not a glyph in a
+   band any more: it is a layer the size of the whole hero, and the jet climbs
+   across it from below the bottom-left corner to beyond the top-right one.
+
+   It sits behind the type rather than over it, at low opacity, so the
+   headline stays the most legible thing on the screen and the jet reads as
+   something seen through haze at altitude. Transform and opacity only, on one
+   composited element. */
 .flight {
-    position: relative;
-    height: clamp(74px, 13vw, 168px);
-    margin-bottom: clamp(-4px, 0.5vw, 8px);
-}
-
-/* The route. It is revealed left-to-right on exactly the plane's timing, so
-   the line reads as something the plane drew rather than a rule that was
-   already there. */
-.flight::before {
-    content: "";
     position: absolute;
-    inset-inline: 0;
-    top: 50%;
-    height: 1px;
-    background: var(--rule);
-    transform: scaleX(0);
-    transform-origin: left center;
-    animation: flight-route 1750ms cubic-bezier(0.25, 0.7, 0.3, 1) forwards;
+    inset: 0;
+    z-index: 1;                 /* .hero-inner is 2 */
+    overflow: hidden;
+    pointer-events: none;
 }
-
-/* The far marker: where the route ends and the goods arrive. */
-.flight::after {
-    content: "";
-    position: absolute;
-    right: 0;
-    top: 50%;
-    width: 7px;
-    height: 7px;
-    margin-top: -3px;
-    border: 1px solid var(--ink);
-    border-radius: 50%;
-    opacity: 0;
-    animation: flight-fade 400ms 1650ms ease-out forwards;
-}
-
-/* Paused until the splash clears — see the splash handler in script.js.
-   Without this the aircraft crossed the screen behind an opaque overlay. */
-.flight-craft,
-.flight::before,
-.flight::after { animation-play-state: paused; }
-.splash-done .flight-craft,
-.splash-done .flight::before,
-.splash-done .flight::after { animation-play-state: running; }
 
 .flight-craft {
     position: absolute;
-    /* Parks with its nose short of the destination ring rather than on top
-       of it — the plane arrives at the marker, it does not eat it. */
-    right: 22px;
+    left: 50%;
     top: 50%;
-    animation: flight-cross 13s linear infinite;
+    animation: flight-cross 15s linear infinite;
+    animation-play-state: paused;
 }
+.splash-done .flight-craft { animation-play-state: running; }
 
-.flight-lift {
-    display: flex;
-    align-items: center;
-    gap: clamp(8px, 1.4vw, 16px);
-}
-
-/* A real airliner rather than a drawn dart: public-domain NIH BioArt, one
-   path, inlined so `currentColor` picks up the theme's ink in both themes.
-   Square viewBox, so the box is sized on height and the silhouette sits in
-   the middle of it. */
 .flight-plane {
-    width: clamp(86px, 15vw, 200px);
+    display: block;
+    /* Wider than the phone it is shown on: the jet is meant to overrun the
+       frame, not sit politely inside it. */
+    width: clamp(460px, 132vw, 1500px);
     height: auto;
     color: var(--ink);
-    flex: none;
+    opacity: 0.3;
 }
 
-/* The name it carries. Label type, wide tracking — a trailing banner, at the
-   opposite end of the scale from the wordmark it announces. */
-.flight-banner {
-    font-family: var(--font-display);
-    font-size: clamp(11px, 1.15vw, 13px);
-    font-weight: 700;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var(--ink-2);
-    white-space: nowrap;
-}
+/* Bottom-left to top-right, which is the direction the silhouette is already
+   banking, so the attitude and the path agree.
 
-@keyframes flight-route { to { transform: scaleX(1); } }
-@keyframes flight-fade  { to { opacity: 1; } }
-/* Enters off the left edge, crosses the whole screen, leaves off the right.
-   It does not park: the route line and the destination ring are what stay
-   behind, which is the point — the goods moved, the record of it remains.
-
-   It repeats. A single pass lasting two seconds was missable — arrive a
-   moment late, or glance away, and the hero simply had no aircraft in it and
-   no way to find out that it ever did. The crossing occupies the first four
-   seconds of the cycle and the remaining nine are empty sky, so the page is
-   quiet most of the time and still shows you what it does if you wait. */
+   The offsets are percentages of the aircraft's own size rather than viewport
+   units. Measured in vh the path was as tall as the window while the hero is
+   shorter than that, so the jet spent most of the crossing outside the
+   clipped box and only flicked through the frame. In its own units the travel
+   scales with the aircraft and stays inside the composition. */
 @keyframes flight-cross {
-    0%   { transform: translate(-105vw, -50%); opacity: 0; }
-    2%   { opacity: 1; }
-    26%  { transform: translate(0, -50%); opacity: 1; }
-    33%  { transform: translate(70vw, -50%); opacity: 0; }
-    100% { transform: translate(70vw, -50%); opacity: 0; }
-}
-
-/* The hero content follows the plane in, one beat behind it, so the page
-   assembles in the order the story is told. */
-.hero-word,
-.hero-copy,
-.handoff,
-.hero-facts {
-    animation: flight-rise 620ms cubic-bezier(0.22, 0.8, 0.3, 1) backwards;
-}
-.hero-word   { animation-delay: 420ms; }
-.hero-copy   { animation-delay: 560ms; }
-.handoff     { animation-delay: 700ms; }
-.hero-facts  { animation-delay: 840ms; }
-
-@keyframes flight-rise {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: none; }
-}
-
-/* Nothing above is information, so under reduced motion it all simply is. */
-@media (prefers-reduced-motion: reduce) {
-    .flight::before,
-    .flight::after,
-    .flight-craft,
-    .hero-word,
-    .hero-copy,
-    .handoff,
-    .hero-facts { animation: none; }
-    .flight::before { transform: scaleX(1); }
-    .flight::after  { opacity: 1; }
-    /* No crossing — but the aircraft stays. Reduced motion asks for less
-       movement, not less of the page, and hiding it outright meant anyone
-       with the setting on saw a hero that looked simply unfinished. */
-    .flight-craft   { transform: translate(0, -50%); opacity: 1; }
+    0%   { transform: translate(-160%, 150%); opacity: 0; }
+    10%  { opacity: 1; }
+    45%  { transform: translate(-50%, -50%); opacity: 1; }
+    78%  { transform: translate(60%, -250%); opacity: 0; }
+    100% { transform: translate(60%, -250%); opacity: 0; }
 }
 
 /* -- The wordmark, at the scale the whole page is measured against -------- */
@@ -904,7 +818,6 @@
     .hero-inner {
         grid-template-columns: max-content minmax(420px, 1fr);
         grid-template-areas:
-            "flight  flight"
             "word    line"
             "handoff handoff"
             "facts   facts";
@@ -914,7 +827,6 @@
     /* The wordmark reaches DESIGN.md's 131px only once the page is wide
        enough to still seat the statement beside it. Below that it is sized
        off the viewport so the two never meet. */
-    .flight       { grid-area: flight; }
     .hero-word    { grid-area: word; font-size: min(var(--t-display), 8.1vw); align-self: end; }
     .hero-copy    { grid-area: line; align-self: end; max-width: 34rem; }
     .handoff      { grid-area: handoff; }
