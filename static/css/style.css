@@ -520,7 +520,7 @@
    Transform and opacity only — nothing here triggers layout. */
 .flight {
     position: relative;
-    height: clamp(60px, 11vw, 130px);
+    height: clamp(74px, 13vw, 168px);
     margin-bottom: clamp(-4px, 0.5vw, 8px);
 }
 
@@ -569,7 +569,7 @@
        of it — the plane arrives at the marker, it does not eat it. */
     right: 22px;
     top: 50%;
-    animation: flight-cross 2400ms cubic-bezier(0.3, 0.1, 0.35, 1) forwards;
+    animation: flight-cross 13s linear infinite;
 }
 
 .flight-lift {
@@ -583,7 +583,7 @@
    Square viewBox, so the box is sized on height and the silhouette sits in
    the middle of it. */
 .flight-plane {
-    width: clamp(68px, 11vw, 132px);
+    width: clamp(86px, 15vw, 200px);
     height: auto;
     color: var(--ink);
     flex: none;
@@ -605,12 +605,19 @@
 @keyframes flight-fade  { to { opacity: 1; } }
 /* Enters off the left edge, crosses the whole screen, leaves off the right.
    It does not park: the route line and the destination ring are what stay
-   behind, which is the point — the goods moved, the record of it remains. */
+   behind, which is the point — the goods moved, the record of it remains.
+
+   It repeats. A single pass lasting two seconds was missable — arrive a
+   moment late, or glance away, and the hero simply had no aircraft in it and
+   no way to find out that it ever did. The crossing occupies the first four
+   seconds of the cycle and the remaining nine are empty sky, so the page is
+   quiet most of the time and still shows you what it does if you wait. */
 @keyframes flight-cross {
-    0%   { transform: translate(-100vw, -50%); opacity: 0; }
-    8%   { opacity: 1; }
-    72%  { transform: translate(0, -50%); opacity: 1; }
-    100% { transform: translate(60vw, -50%); opacity: 0; }
+    0%   { transform: translate(-105vw, -50%); opacity: 0; }
+    2%   { opacity: 1; }
+    26%  { transform: translate(0, -50%); opacity: 1; }
+    33%  { transform: translate(70vw, -50%); opacity: 0; }
+    100% { transform: translate(70vw, -50%); opacity: 0; }
 }
 
 /* The hero content follows the plane in, one beat behind it, so the page
@@ -642,8 +649,10 @@
     .hero-facts { animation: none; }
     .flight::before { transform: scaleX(1); }
     .flight::after  { opacity: 1; }
-    /* No crossing, so no aircraft — the drawn route is the whole message. */
-    .flight-craft   { display: none; }
+    /* No crossing — but the aircraft stays. Reduced motion asks for less
+       movement, not less of the page, and hiding it outright meant anyone
+       with the setting on saw a hero that looked simply unfinished. */
+    .flight-craft   { transform: translate(0, -50%); opacity: 1; }
 }
 
 /* -- The wordmark, at the scale the whole page is measured against -------- */
