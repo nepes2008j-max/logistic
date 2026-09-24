@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Access requests{% endblock %}
+
+{% block content %}
+<div class="nav-container record-page">
+    <header class="record-masthead">
+        <span class="eyebrow">Administration</span>
+        <h1>Access requests</h1>
+        <p class="record-masthead-state">
+            Approving issues a one-time invitation valid for {{ invite_ttl_days }} days and marks the
+            person's passport as verified. Nothing becomes an account until they use it.
+        </p>
+    </header>
+
+    {#
+      A review queue, not a list. The passport is the thing being judged, so it
+      is shown rather than linked, and the two decisions sit together at the
+      foot of each dossier with their note fields attached.
+    #}
+    <nav class="queue-filters" aria-label="Filter by status">
+        {% for option in ['pending', 'approved', 'rejected', 'all'] %}
+        <a href="{{ url_for('admin_access_requests', status=option) }}"
+           class="queue-filter"{% if status == option %} aria-current="page"{% endif %}>{{ option|capitalize }}</a>
+        {% endfor %}
+    </nav>
+
+    {% if not access_requests %}
+    <div class="state state--compact">
+        <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-inbox"></use></svg></div>
+        <h3>The {{ status }} queue is empty</h3>
+        <p>Nothing is waiting on you here. New requests land in <a href="{{ url_for('admin_access_requests', status='pending') }}">pending</a> the moment somebody sends one.</p>
+    </div>
+    {% endif %}
+
+    <div class="queue">
+        {% for req in access_requests %}
+        <article class="dossier">
+            <div class="dossier-passport">
+                {% if req.passport_img %}
+                <a href="{{ url_for('static', filename='uploads/passports/' ~ req.passport_img) }}" target="_blank" rel="noopener">
+                    <img src="{{ url_for('static', filename='uploads/passports/' ~ req.passport_img) }}"
+                         alt="Passport submitted by {{ req.full_name }}" loading="lazy">
+                    <span class="dossier-passport-hint">Open full size</span>
+                </a>
+                {% else %}
+                <div class="dossier-passport-missing">No passport attached</div>
+                {% endif %}
+            </div>
+
+            <div class="dossier-body">
+                <div class="dossier-head">
+                    <h2>{{ req.full_name }}</h2>
+                    <span class="status-chip {% if req.invite_state in ('rejected', 'expired') %}status-chip--closed{% elif req.invite_state == 'pending' %}status-chip--pending{% else %}status-chip--active{% endif %}">{{ req.invite_state }}</span>
+                </div>
+
+                <dl class="dossier-facts">
+                    <div><dt>Email</dt><dd>{{ req.email }}</dd></div>
+                    <div><dt>Phone</dt><dd>{{ req.phone or 'not given' }}</dd></div>
+                    <div><dt>Age</dt><dd>{{ req.age or 'not given' }}</dd></div>
+                    <div><dt>Where</dt><dd>{{ req.neighborhood.full_path if req.neighborhood else (req.region or 'not given') }}</dd></div>
+                    <div><dt>Sent</dt><dd>{{ req.created_at.strftime('%d %b %Y, %H:%M') if req.created_at else 'unknown' }}</dd></div>
+                </dl>
+
+                {% if req.reason %}
+                <blockquote class="dossier-reason">{{ req.reason }}</blockquote>
+                {% endif %}
+
+                {% if req.reviewed_by %}
+                <p class="dossier-review">
+                    Reviewed by {{ req.reviewed_by.full_name or req.reviewed_by.email }}
+                    {%- if req.reviewed_at %} on {{ req.reviewed_at.strftime('%d %b %Y') }}{% endif -%}
+                    {%- if req.review_note %} &mdash; &ldquo;{{ req.review_note }}&rdquo;{% endif %}
+                </p>
+                {% endif %}
+
+                {% if req.invite_is_live %}
+                <div class="code-plate code-plate--link">
+                    <span class="field-label">Invitation link, live</span>
+                    <span class="code-plate-link">{{ url_for('activate', token=req.invite_token, _external=True) }}</span>
+                    <p>Send this to {{ req.email }}. It works once, and expires on {{ req.invite_expires_at.strftime('%d %b %Y') if req.invite_expires_at else 'use' }}.</p>
+                </div>
+                {% endif %}
+
+                {% if req.status == 'pending' %}
+                <div class="dossier-decide">
+                    <form action="{{ url_for('approve_access_request', request_id=req.id) }}" method="POST">
+                        <label for="approve-note-{{ req.id }}">Let {{ req.full_name.split()[0] }} in</label>
+                        <div class="dossier-decide-row">
+                            <input type="text" name="review_note" id="approve-note-{{ req.id }}" placeholder="Note, optional">
+                            <button type="submit" class="auth-btn">Approve</button>
+                        </div>
+                    </form>
+                    <form action="{{ url_for('reject_access_request', request_id=req.id) }}" method="POST">
+                        <label for="reject-note-{{ req.id }}">Turn this request down</label>
+                        <div class="dossier-decide-row">
+                            <input type="text" name="review_note" id="reject-note-{{ req.id }}" placeholder="Reason, optional">
+                            <button type="submit" class="auth-btn auth-btn-outline-danger">Reject</button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

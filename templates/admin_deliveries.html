@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Dispatch{% endblock %}
+
+{% block content %}
+<div class="nav-container record-page">
+    <header class="record-masthead">
+        <span class="eyebrow">Administration</span>
+        <h1>Dispatch</h1>
+        <p class="record-masthead-state">Every journey that has not finished, and who is carrying it.</p>
+    </header>
+
+    <h2 class="visually-hidden">In motion</h2>
+    {% if not open_deliveries %}
+    <div class="state state--compact">
+        <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-box-open"></use></svg></div>
+        <h3>Nothing is in motion</h3>
+        <p>A delivery appears here the moment a buyer pays for an accepted order.</p>
+    </div>
+    {% else %}
+    <table class="record-table">
+        <thead>
+            <tr>
+                <th scope="col">Delivery</th>
+                <th scope="col">Route</th>
+                <th scope="col">State</th>
+                <th scope="col">Fee</th>
+                <th scope="col">Courier</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for delivery in open_deliveries %}
+            <tr>
+                <td data-col="Delivery">
+                    <b><a href="{{ url_for('delivery_detail', delivery_id=delivery.id) }}">#{{ '%04d'|format(delivery.id) }}</a></b>
+                    <div class="cell-sub">{{ delivery.order.item.title if delivery.order.item else 'Removed listing' }}</div>
+                </td>
+                <td data-col="Route">
+                    {{ delivery.origin_neighborhood.full_path if delivery.origin_neighborhood else 'unknown' }}
+                    <div class="cell-sub">to {{ delivery.dest_neighborhood.full_path if delivery.dest_neighborhood else 'unknown' }}</div>
+                </td>
+                <td data-col="State">
+                    <span class="status-chip status-chip--active">{{ delivery.status.replace('_', ' ')|capitalize }}</span>
+                    {% if delivery.eta_date %}<div class="cell-sub">due {{ delivery.eta_date.strftime('%d %b') }}</div>{% endif %}
+                </td>
+                <td data-col="Fee" class="num">{{ "%.2f"|format(delivery.fee) }} TMT</td>
+                <td data-col="Courier">
+                    <form action="{{ url_for('admin_assign_courier', delivery_id=delivery.id) }}" method="POST" class="cell-form">
+                        <label class="visually-hidden" for="courier-{{ delivery.id }}">Courier for delivery {{ delivery.id }}</label>
+                        <select name="courier_id" id="courier-{{ delivery.id }}">
+                            <option value="">Unassigned</option>
+                            {% for courier in couriers %}
+                            <option value="{{ courier.id }}" {% if delivery.courier_id == courier.id %}selected{% endif %}>{{ courier.full_name or courier.email }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="auth-btn auth-btn-muted">Assign</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if closed %}
+    <h2>Finished</h2>
+    <table class="record-table">
+        <thead>
+            <tr>
+                <th scope="col">Delivery</th>
+                <th scope="col">Outcome</th>
+                <th scope="col">Closed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for delivery in closed %}
+            <tr>
+                <td data-col="Delivery">
+                    <b><a href="{{ url_for('delivery_detail', delivery_id=delivery.id) }}">#{{ '%04d'|format(delivery.id) }}</a></b>
+                    <div class="cell-sub">{{ delivery.order.item.title if delivery.order.item else 'Removed listing' }}</div>
+                </td>
+                <td data-col="Outcome">
+                    <span class="status-chip status-chip--closed">{{ delivery.status|capitalize }}</span>
+                </td>
+                <td data-col="Closed">{{ delivery.delivered_at.strftime('%d %b %Y') if delivery.delivered_at else '—' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+{% endblock %}

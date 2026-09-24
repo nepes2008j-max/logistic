@@ -1,0 +1,21 @@
+{#
+  One member avatar, drawn the same way everywhere.
+
+  When the member has a photograph it is shown. When they do not, the initials
+  are drawn locally instead of requesting a picture from an avatar service —
+  the old `ui-avatars.com` fallback was a third-party request on every
+  conversation row, it leaked each member's name into someone else's logs, and
+  it rendered as a broken-image glyph the moment the network did not answer.
+
+  `cls` is the size class the surrounding stylesheet expects
+  (chat-avatar-lg / -md / -sm, profile-request-avatar, profile-review-avatar).
+#}
+{% macro avatar(user, cls) -%}
+    {%- set label = (user.full_name or user.username or '?')|trim -%}
+    {%- set parts = label.split() -%}
+    {%- if user.profile_pic -%}
+        <img src="{{ user.profile_pic }}" class="{{ cls }}" alt="" loading="lazy" decoding="async">
+    {%- else -%}
+        <span class="{{ cls }} avatar-initials" aria-hidden="true">{{ (parts[0][:1] ~ (parts[-1][:1] if parts|length > 1 else ''))|upper }}</span>
+    {%- endif -%}
+{%- endmacro %}

@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Post an item{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="max-width: 660px;">
+    <div class="auth-header">
+        <h1>Post an item</h1>
+        <p>Say what it is, where a courier can collect it, and what you want for it. Nothing can be edited after posting, so check the price.</p>
+    </div>
+
+    <form class="auth-form" action="/upload" method="POST" enctype="multipart/form-data" id="upload-form">
+        <div class="form-group">
+            <label for="item-title">What are you listing?</label>
+            <input type="text" name="title" id="item-title" placeholder="e.g. Bosch drill set, Canon EOS R5" required>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="item-category">Category</label>
+                {# Same list app.py gives the marketplace filters, so a
+                   category can never exist in one place and not the other. #}
+                <select name="category" id="item-category" required>
+                    {% for category in categories %}
+                    <option value="{{ category.slug }}">{{ category.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="item-size">Parcel size</label>
+                <select name="size_class" id="item-size" required>
+                    {% for value in (size_classes or ['small', 'medium', 'large']) %}
+                    <option value="{{ value }}">{{ value|capitalize }}</option>
+                    {% endfor %}
+                </select>
+                <p class="field-help">Size sets the delivery fee: medium costs 1.6&times; a small parcel, large 2.5&times;.</p>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="item-price">Price in TMT</label>
+                <input type="number" name="price" id="item-price" min="0.01" step="0.01" placeholder="0" required>
+                <p class="field-help">What you want for the goods. Delivery and the 5% service fee are added on top, and the buyer pays them.</p>
+            </div>
+            <div class="form-group">
+                <label for="item-weight">Weight in kg <span class="field-optional">optional</span></label>
+                <input type="number" name="weight_kg" id="item-weight" min="0" step="0.1" placeholder="e.g. 2.5">
+                <p class="field-help">Helps the courier bring the right vehicle.</p>
+            </div>
+            <div class="form-group">
+                <label for="upload-velayat">Region</label>
+                <select id="upload-velayat" required>
+                    <option value="">Choose a region</option>
+                    {% for velayat in location_tree %}
+                    <option value="{{ velayat.id }}">{{ velayat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="upload-district">District</label>
+                <select id="upload-district" required>
+                    <option value="">Choose a district</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="upload-neighborhood">Street or neighbourhood</label>
+                <select name="neighborhood_id" id="upload-neighborhood" required>
+                    <option value="">Choose the pickup point</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="item-description">Description</label>
+            <textarea name="description" id="item-description" placeholder="Condition, what is included, anything the buyer should know before it is on its way."></textarea>
+        </div>
+
+        <div class="form-group">
+            <span class="field-label" id="photo-label">Photo</span>
+
+            <div id="preview-container" class="image-preview-wrapper" role="group" aria-labelledby="photo-label">
+                <svg id="pfp-placeholder" class="ico" style="width: 2.4rem; height: 2.4rem; color: var(--ink-3); opacity: 0.45;" aria-hidden="true"><use href="#i-camera"></use></svg>
+                <img id="item-preview" alt="Preview of your photo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="display: none;">
+                <span class="preview-hint">One clear photo sells it</span>
+
+                <div id="camera-area" style="display: none; position: absolute; inset: 0; z-index: 10;">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <button type="button" id="capture-btn" class="auth-btn btn-sm" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);">
+                        Capture
+                    </button>
+                </div>
+            </div>
+
+            <div id="upload-controls" class="upload-controls">
+                <button type="button" id="start-camera" class="auth-btn auth-btn-muted">Use the camera</button>
+                <div class="file-drop">
+                    <button type="button" class="auth-btn auth-btn-muted" tabindex="-1">Choose a file</button>
+                    <input type="file" name="item_image" id="item_image" accept="image/*" aria-label="Choose a photo of your item">
+                </div>
+            </div>
+
+            <button type="button" id="reset-photo" class="reset-photo">Use a different photo</button>
+
+            <input type="hidden" name="camera_image" id="camera_image">
+        </div>
+
+        <button type="submit" class="auth-btn btn-block btn-lg" style="margin-top: var(--s6);">Post to the marketplace</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const locationTree = {{ location_tree|tojson }};
+    const velayatSelect = document.getElementById('upload-velayat');
+    const districtSelect = document.getElementById('upload-district');
+    const neighborhoodSelect = document.getElementById('upload-neighborhood');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('capture-btn');
+    const startCameraBtn = document.getElementById('start-camera');
+    const cameraArea = document.getElementById('camera-area');
+    const cameraImageInput = document.getElementById('camera_image');
+    const fileInput = document.getElementById('item_image');
+    const previewContainer = document.getElementById('preview-container');
+    const itemPreview = document.getElementById('item-preview');
+    const placeholder = document.getElementById('pfp-placeholder');
+    const resetBtn = document.getElementById('reset-photo');
+    const uploadControls = document.getElementById('upload-controls');
+
+    function populateSelect(select, options, placeholderText) {
+        select.innerHTML = '';
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = placeholderText;
+        select.appendChild(placeholderOption);
+
+        options.forEach((option) => {
+            const element = document.createElement('option');
+            element.value = option.id;
+            element.textContent = option.name;
+            select.appendChild(element);
+        });
+    }
+
+    function syncDistricts() {
+        const velayat = locationTree.find((entry) => String(entry.id) === velayatSelect.value);
+        const districts = velayat ? velayat.districts : [];
+        populateSelect(districtSelect, districts, 'Choose a district');
+        syncNeighborhoods();
+    }
+
+    function syncNeighborhoods() {
+        const velayat = locationTree.find((entry) => String(entry.id) === velayatSelect.value);
+        const district = velayat && districtSelect.value
+            ? velayat.districts.find((entry) => String(entry.id) === districtSelect.value)
+            : null;
+        const neighborhoods = district ? district.neighborhoods : [];
+        const placeholderText = velayat && velayat.name === 'Ashgabat'
+            ? 'Choose a street or avenue'
+            : 'Choose the pickup point';
+        populateSelect(neighborhoodSelect, neighborhoods, placeholderText);
+    }
+
+    // The rent/sell select and its price-period companion are gone; every
+    // listing is a good for sale with one price.
+
+    velayatSelect.addEventListener('change', syncDistricts);
+    districtSelect.addEventListener('change', syncNeighborhoods);
+    syncDistricts();
+
+    function showPreview(src) {
+        itemPreview.src = src;
+        itemPreview.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
+        previewContainer.classList.add('active');
+        uploadControls.style.display = 'none';
+        resetBtn.style.display = 'block';
+    }
+
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            video.srcObject = stream;
+            cameraArea.style.display = 'block';
+            if (placeholder) placeholder.style.display = 'none';
+        } catch (err) {
+            alert("We could not open the camera. Choose a file instead.");
+        }
+    }
+
+    startCameraBtn.addEventListener('click', startCamera);
+
+    captureBtn.addEventListener('click', () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        const imageData = canvas.toDataURL('image/png');
+        cameraImageInput.value = imageData;
+        showPreview(imageData);
+        cameraArea.style.display = 'none';
+
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => showPreview(event.target.result);
+            reader.readAsDataURL(file);
+        }
+    });
+
+    resetBtn.addEventListener('click', () => {
+        itemPreview.style.display = 'none';
+        if (placeholder) placeholder.style.display = 'block';
+        previewContainer.classList.remove('active');
+        uploadControls.style.display = 'flex';
+        resetBtn.style.display = 'none';
+        cameraImageInput.value = '';
+        fileInput.value = '';
+        cameraArea.style.display = 'none';
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+        }
+    });
+});
+</script>
+{% endblock %}

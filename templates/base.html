@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f0f1c" media="(prefers-color-scheme: dark)">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="color-scheme" content="light dark">
+    <title>{% block title %}HandShake | Goods carried between people{% endblock %}</title>
+
+    <script>
+        /* Resolve the theme before first paint so the page never flashes
+           the wrong ground. script.js reads the same key afterwards. */
+        (function () {
+            try {
+                var t = localStorage.getItem('theme');
+                if (t === 'dark' || t === 'light') {
+                    document.documentElement.setAttribute('data-theme', t);
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- One face across the system. Geist stands in for HelveticaNowDisplay:
+         the same neo-grotesque skeleton, and it holds its shape at weight 700
+         with the tracking pulled hard negative. -->
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/png" href="/static/favicon_c.png">
+    {#
+      The QR library used to be loaded here on every page in the application.
+      Nothing generates a QR any more — the hand-off is closed with a short
+      single-use code the courier types in — so this was a blocking script
+      from a third-party CDN that bought the product nothing.
+    #}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% include "_icons.html" %}
+
+    {% if request.path == "/" %}
+    <div id="splash-screen">
+        <div class="hands-wrapper">
+            <svg class="ico hand-icon" aria-hidden="true"><use href="#i-handshake"></use></svg>
+        </div>
+        <div class="splash-text">Hand<span>Shake</span></div>
+    </div>
+    {% endif %}
+
+    <a href="#main-content" class="skip-link">Skip to content</a>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <a href="/" aria-label="HandShake home">
+                    <span class="logo-mark" aria-hidden="true">
+                        <svg viewBox="0 0 28 20" fill="none" stroke="currentColor" stroke-width="2.1">
+                            <circle cx="10" cy="10" r="6.6"></circle>
+                            <circle cx="18" cy="10" r="6.6"></circle>
+                        </svg>
+                    </span>
+                    <span class="logo-text">Hand<span>Shake</span></span>
+                </a>
+            </div>
+
+            <div class="search-bar-container">
+                <form action="/search" method="GET" class="search-bar" role="search">
+                    <label for="nav-search" class="visually-hidden">Search listings</label>
+                    <input type="text" id="nav-search" name="q" class="search-input-minimal" placeholder="Search listings, tools, cameras, cars…" value="{{ request.args.get('q', '') }}">
+                    <button type="submit" class="search-icon-btn" aria-label="Search"><svg class="ico"><use href="#i-search"></use></svg></button>
+                </form>
+            </div>
+
+            <div class="nav-actions">
+                <a href="/market" class="post-link" data-nav="market"{% if request.path in ['/market', '/search'] %} aria-current="page"{% endif %}>Marketplace</a>
+                <a href="{% if pending_chat_request_count %}{{ url_for('chat', tab='requests') }}{% else %}/chat{% endif %}" class="icon-btn nav-chat-link" title="Messages" aria-label="Messages{% if pending_chat_request_count %} — {{ pending_chat_request_count }} pending request{{ 's' if pending_chat_request_count > 1 else '' }}{% endif %}">
+                    <svg class="ico"><use href="#i-comments"></use></svg>
+                    {% if pending_chat_request_count %}
+                    <span class="nav-request-badge">{{ pending_chat_request_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="/upload" class="post-link"{% if request.path == '/upload' %} aria-current="page"{% endif %}>Post an item</a>
+                <button id="theme-toggle" class="icon-btn" aria-label="Switch between light and dark theme" title="Switch theme"><svg class="ico"><use href="#i-moon"></use></svg></button>
+                <div class="user-menu">
+                    <button class="user-menu-btn" aria-label="Account menu" aria-haspopup="true" aria-expanded="false">
+                        <svg class="ico"><use href="#i-bars"></use></svg>
+                        {% if current_user.is_authenticated and current_user.profile_pic %}
+                            <img src="{{ current_user.profile_pic }}" class="user-pic-small" alt="" width="24" height="24">
+                        {% else %}
+                            <div class="user-icon-placeholder"><svg class="ico"><use href="#i-user"></use></svg></div>
+                        {% endif %}
+                    </button>
+                    <div class="user-dropdown">
+                        {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('profile', user_id=current_user.id) }}" class="dropdown-item"><b>{{ current_user.full_name or current_user.username }}</b></a>
+                            <a href="{{ url_for('profile', user_id=current_user.id) }}" class="dropdown-item">My listings</a>
+                            <a href="{{ url_for('orders') }}" class="dropdown-item">Orders and deliveries</a>
+                            <a href="{% if pending_chat_request_count %}{{ url_for('chat', tab='requests') }}{% else %}{{ url_for('chat') }}{% endif %}" class="dropdown-item">Messages{% if pending_chat_request_count %} ({{ pending_chat_request_count }}){% endif %}</a>
+                            <a href="{{ url_for('edit_profile') }}" class="dropdown-item">Edit profile</a>
+
+                            {#
+                              The two consoles. They only exist for the people who
+                              hold the role, so they are not in the tab bar — this
+                              is where a courier or an administrator goes to work.
+                            #}
+                            {% if current_user.is_courier or current_user.is_admin %}
+                            <div class="dropdown-divider"></div>
+                            {% endif %}
+                            {% if current_user.is_courier %}
+                            <a href="{{ url_for('courier_console') }}" class="dropdown-item">Courier console</a>
+                            {% endif %}
+                            {% if current_user.is_admin %}
+                            <a href="{{ url_for('admin_dashboard') }}" class="dropdown-item dropdown-item--count">
+                                <span>Administration</span>
+                                {% if pending_access_request_count %}<span class="dropdown-count">{{ pending_access_request_count }}</span>{% endif %}
+                            </a>
+                            {% endif %}
+
+                            <div class="dropdown-divider"></div>
+                            <a href="/logout" class="dropdown-item">Log out</a>
+                        {% else %}
+                            <a href="/login" class="dropdown-item">Log in</a>
+                            <a href="{{ url_for('request_access') }}" class="dropdown-item">Request access</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash-messages" role="status" aria-live="polite">
+          {% for message in messages %}
+            <div class="flash">
+              <span class="flash-mark">Note</span>
+              <span>{{ message }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <main class="page-main" id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="nav-container site-footer-inner">
+            <p class="footer-word">Hand<span>Shake</span></p>
+            <p class="footer-note">Every member has had their passport checked by a person. HandShake holds the price of the goods until a courier records the handover, and the handover is closed with a code read out at the door.</p>
+            <nav class="footer-links" aria-label="Footer">
+                <a href="/market">Marketplace</a>
+                <a href="/upload">Post an item</a>
+                <a href="/chat">Messages</a>
+                {% if current_user.is_authenticated %}<a href="{{ url_for('orders') }}">Orders</a>{% else %}<a href="{{ url_for('request_access') }}">Request access</a>{% endif %}
+            </nav>
+        </div>
+    </footer>
+
+
+    {#
+      The bottom tab bar — phone only, hidden above 820px by CSS.
+
+      Five real destinations. The current one is marked with aria-current on
+      the server, so the selected state survives a page load with no
+      JavaScript involved. Post an item is the filled affordance in the
+      middle; Messages carries the same pending-request count the masthead
+      shows.
+    #}
+    <nav class="tabbar" aria-label="Primary">
+        <div class="tabbar-inner">
+            <a href="{{ url_for('dashboard') }}" class="tab"
+               {% if request.path == '/' %}aria-current="page"{% endif %}>
+                <svg class="ico" aria-hidden="true"><use href="#i-home"></use></svg>
+                <span>Home</span>
+            </a>
+
+            <a href="{{ url_for('index') }}" class="tab"
+               {% if request.path in ['/market', '/search'] %}aria-current="page"{% endif %}>
+                <svg class="ico" aria-hidden="true"><use href="#i-search"></use></svg>
+                <span>Browse</span>
+            </a>
+
+            <a href="/upload" class="tab tab--post"
+               {% if request.path == '/upload' %}aria-current="page"{% endif %}>
+                <span class="tab-plus" aria-hidden="true">
+                    <svg class="ico"><use href="#i-plus"></use></svg>
+                </span>
+                <span>Post</span>
+            </a>
+
+            <a href="{% if pending_chat_request_count %}{{ url_for('chat', tab='requests') }}{% else %}{{ url_for('chat') }}{% endif %}"
+               class="tab"
+               {% if request.path.startswith('/chat') %}aria-current="page"{% endif %}>
+                <svg class="ico" aria-hidden="true"><use href="#i-comments"></use></svg>
+                <span>Messages</span>
+                {% if pending_chat_request_count %}
+                <span class="tab-badge" aria-hidden="true">{{ pending_chat_request_count }}</span>
+                <span class="visually-hidden">{{ pending_chat_request_count }} pending chat request{{ 's' if pending_chat_request_count > 1 else '' }}</span>
+                {% endif %}
+            </a>
+
+            {% if current_user.is_authenticated %}
+            {#
+              The account tab also owns everything reached from the account
+              menu — orders, deliveries, the courier console, administration —
+              so the bar always says where you are instead of going blank the
+              moment you leave the five top-level screens.
+            #}
+            <a href="{{ url_for('profile', user_id=current_user.id) }}" class="tab"
+               {% if request.path.startswith(('/profile', '/order', '/delivery', '/courier', '/admin')) or request.path == '/edit-profile' %}aria-current="page"{% endif %}>
+                <svg class="ico" aria-hidden="true"><use href="#i-user"></use></svg>
+                <span>Profile</span>
+            </a>
+            {% else %}
+            <a href="/login" class="tab"
+               {% if request.path in ['/login', '/request-access'] or request.path.startswith('/activate') %}aria-current="page"{% endif %}>
+                <svg class="ico" aria-hidden="true"><use href="#i-user"></use></svg>
+                <span>Account</span>
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

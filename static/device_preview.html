@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HandShake — Device Preview</title>
+<style>
+  :root {
+    --ink: #000d10;
+    --white: #ffffff;
+    --ash: #8e8e95;
+    --muted: #a8a8b0;
+    --pebble: #d5d3d4;
+    --hull: #0f0f1c;
+    --deck: #151623;
+    --clay: #bc7155;
+    --bar-h: 116px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background: var(--hull);
+    color: var(--white);
+    font: 400 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ---------- top control bar ---------- */
+
+  header {
+    flex: none;
+    background: var(--deck);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: 14px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 22px;
+    align-items: center;
+  }
+
+  .brand {
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -.3px;
+    margin-right: 4px;
+    white-space: nowrap;
+  }
+  .brand span { color: var(--clay); }
+
+  .group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .group > label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  button, select, input {
+    font: inherit;
+    color: inherit;
+  }
+
+  .btn {
+    background: transparent;
+    color: var(--white);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 1000px;
+    padding: 7px 15px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .15s, border-color .15s;
+  }
+  .btn:hover { background: rgba(255,255,255,.08); }
+  .btn:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
+  .btn[aria-pressed="true"] {
+    background: var(--white);
+    color: var(--ink);
+    border-color: var(--white);
+  }
+
+  .seg {
+    display: inline-flex;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 1000px;
+    overflow: hidden;
+  }
+  .seg button {
+    background: transparent;
+    border: 0;
+    padding: 7px 15px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .seg button[aria-pressed="true"] { background: var(--clay); color: var(--white); }
+  .seg button:focus-visible { outline: 2px solid var(--clay); outline-offset: -2px; }
+
+  #route {
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 1000px;
+    padding: 7px 15px;
+    min-width: 230px;
+  }
+  #route:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
+
+  select {
+    background: rgba(0,0,0,.35);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 1000px;
+    padding: 7px 12px;
+    cursor: pointer;
+  }
+
+  .links { display: flex; gap: 6px; flex-wrap: wrap; }
+  .links button {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--muted);
+    border-radius: 1000px;
+    padding: 5px 11px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .links button:hover { color: var(--white); border-color: rgba(255,255,255,.22); }
+
+  .spacer { flex: 1 1 auto; }
+
+  /* ---------- device picker ---------- */
+
+  #picker {
+    flex: none;
+    background: var(--hull);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    padding: 10px 20px;
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .chip {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.18);
+    color: var(--muted);
+    border-radius: 1000px;
+    padding: 6px 13px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+  .chip:hover { color: var(--white); border-color: rgba(255,255,255,.4); }
+  .chip[aria-pressed="true"] {
+    background: var(--white);
+    border-color: var(--white);
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .chip:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px; }
+
+  /* ---------- stage ---------- */
+
+  #stage {
+    flex: 1 1 auto;
+    overflow: auto;
+    padding: 36px 28px 56px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 44px;
+    align-items: flex-start;
+    justify-content: center;
+    align-content: flex-start;
+  }
+
+  .device { flex: none; }
+
+  .device figcaption {
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .device figcaption b {
+    display: block;
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* phone shell */
+  .shell {
+    position: relative;
+    background: #05070a;
+    border: 2px solid #23262c;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.06) inset;
+    overflow: hidden;
+    transform-origin: top center;
+  }
+
+  .shell iframe {
+    display: block;
+    border: 0;
+    background: #fff;
+  }
+
+  /* notch / island / punch-hole */
+  .cutout {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #05070a;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .cutout.notch  { top: 0;    width: 158px; height: 30px; border-radius: 0 0 18px 18px; }
+  .cutout.island { top: 11px; width: 124px; height: 35px; border-radius: 1000px; }
+  .cutout.hole   { top: 12px; width: 12px;  height: 12px; border-radius: 50%; left: 50%; }
+  .cutout.holeL  { top: 12px; width: 12px;  height: 12px; border-radius: 50%; left: 22px; transform: none; }
+
+  .homebar {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36%;
+    height: 5px;
+    border-radius: 1000px;
+    background: rgba(255,255,255,.55);
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  /* safe-area overlay */
+  .safe {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(188,113,85,.32) 0 7px,
+      rgba(188,113,85,.12) 7px 14px
+    );
+    display: none;
+  }
+  .safe.top    { top: 0; }
+  .safe.bottom { bottom: 0; }
+  body[data-safe="on"] .safe { display: block; }
+
+  .hint {
+    padding: 0 20px 22px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    flex: none;
+  }
+  .hint code {
+    background: rgba(255,255,255,.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .offline {
+    margin: 60px auto;
+    max-width: 520px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .offline b { color: var(--white); display: block; font-size: 19px; margin-bottom: 8px; }
+</style>
+</head>
+<body data-safe="off">
+
+<header>
+  <div class="brand">Hand<span>Shake</span> · Device Preview</div>
+
+  <div class="group">
+    <label for="route">Route</label>
+    <input id="route" value="/" spellcheck="false" aria-label="Route to preview">
+    <button class="btn" id="go">Go</button>
+  </div>
+
+  <div class="links" id="quick">
+    <button data-r="/">Home</button>
+    <button data-r="/market">Market</button>
+    <button data-r="/upload">Post</button>
+    <button data-r="/chat">Chat</button>
+    <button data-r="/login">Login</button>
+    <button data-r="/register">Register</button>
+  </div>
+
+  <div class="spacer"></div>
+
+  <div class="group">
+    <label>Theme</label>
+    <div class="seg" id="theme">
+      <button data-t="light" aria-pressed="true">Light</button>
+      <button data-t="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <label>View</label>
+    <div class="seg" id="orient">
+      <button data-o="portrait" aria-pressed="true">Portrait</button>
+      <button data-o="landscape" aria-pressed="false">Landscape</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <label for="zoom">Zoom</label>
+    <select id="zoom">
+      <option value="fit">Fit</option>
+      <option value="1">100%</option>
+      <option value="0.9">90%</option>
+      <option value="0.75">75%</option>
+      <option value="0.6">60%</option>
+      <option value="0.5">50%</option>
+    </select>
+  </div>
+
+  <button class="btn" id="safe" aria-pressed="false">Safe areas</button>
+  <button class="btn" id="reload">Reload all</button>
+</header>
+
+<nav id="picker" aria-label="Device models"></nav>
+
+<main id="stage"></main>
+
+<p class="hint">
+  Click a model to show or hide it — pick several to compare side by side.
+  Frames are real CSS viewport sizes. <code>env(safe-area-inset-*)</code> always resolves to
+  <code>0</code> in a desktop browser, so the striped bands only show where a notch or home
+  indicator <em>would</em> sit — they are a collision check, not a live safe-area test.
+</p>
+
+<script>
+(function () {
+  "use strict";
+
+  // Real CSS viewport sizes (not hardware pixels).
+  var DEVICES = [
+    { id: "se",      name: "iPhone SE",          w: 375,  h: 667,  r: 18, cut: null,     safeT: 20, safeB: 0,  home: false },
+    { id: "mini",    name: "iPhone 13 mini",     w: 375,  h: 812,  r: 42, cut: "notch",  safeT: 50, safeB: 34, home: true  },
+    { id: "i14",     name: "iPhone 14",          w: 390,  h: 844,  r: 44, cut: "notch",  safeT: 47, safeB: 34, home: true  },
+    { id: "i15p",    name: "iPhone 15 Pro",      w: 393,  h: 852,  r: 48, cut: "island", safeT: 59, safeB: 34, home: true  },
+    { id: "i15pm",   name: "iPhone 15 Pro Max",  w: 430,  h: 932,  r: 52, cut: "island", safeT: 59, safeB: 34, home: true  },
+    { id: "s24",     name: "Galaxy S24",         w: 360,  h: 780,  r: 36, cut: "hole",   safeT: 32, safeB: 24, home: true  },
+    { id: "s24u",    name: "Galaxy S24 Ultra",   w: 384,  h: 824,  r: 26, cut: "hole",   safeT: 32, safeB: 24, home: true  },
+    { id: "px7a",    name: "Pixel 7a",           w: 412,  h: 892,  r: 34, cut: "holeL",  safeT: 32, safeB: 24, home: true  },
+    { id: "px8p",    name: "Pixel 8 Pro",        w: 448,  h: 998,  r: 38, cut: "holeL",  safeT: 36, safeB: 24, home: true  },
+    { id: "flip",    name: "Galaxy Z Flip",      w: 360,  h: 880,  r: 30, cut: "hole",   safeT: 32, safeB: 24, home: true  },
+    { id: "ipadm",   name: "iPad mini",          w: 744,  h: 1133, r: 34, cut: null,     safeT: 24, safeB: 20, home: true  },
+    { id: "ipadp",   name: 'iPad Pro 11"',       w: 834,  h: 1194, r: 34, cut: null,     safeT: 24, safeB: 20, home: true  }
+  ];
+
+  var DEFAULT_ON = ["i15p", "s24", "se"];
+
+  var picker  = document.getElementById("picker");
+  var stage   = document.getElementById("stage");
+  var routeIn = document.getElementById("route");
+
+  var state = {
+    selected: DEFAULT_ON.slice(),
+    route: "/",
+    theme: localStorage.getItem("theme") || "light",
+    orient: "portrait",
+    zoom: "fit"
+  };
+
+  /* ---------- device chips ---------- */
+
+  DEVICES.forEach(function (d) {
+    var b = document.createElement("button");
+    b.className = "chip";
+    b.type = "button";
+    b.textContent = d.name;
+    b.dataset.id = d.id;
+    b.setAttribute("aria-pressed", state.selected.indexOf(d.id) > -1 ? "true" : "false");
+    b.addEventListener("click", function () {
+      var i = state.selected.indexOf(d.id);
+      if (i > -1) state.selected.splice(i, 1);
+      else state.selected.push(d.id);
+      b.setAttribute("aria-pressed", i > -1 ? "false" : "true");
+      render();
+    });
+    picker.appendChild(b);
+  });
+
+  /* ---------- build the stage ---------- */
+
+  function scaleFor(w, h) {
+    if (state.zoom !== "fit") return parseFloat(state.zoom);
+    var n = Math.max(state.selected.length, 1);
+    var perRow = Math.min(n, 3);
+    var availW = (stage.clientWidth - 56 - (perRow - 1) * 44) / perRow;
+    var availH = stage.clientHeight - 110;
+    return Math.min(1, availW / w, availH / h);
+  }
+
+  function render() {
+    stage.innerHTML = "";
+
+    if (!state.selected.length) {
+      stage.innerHTML = '<div class="offline"><b>No models selected</b>' +
+        "Pick one or more phones above to start previewing.</div>";
+      return;
+    }
+
+    DEVICES.filter(function (d) {
+      return state.selected.indexOf(d.id) > -1;
+    }).forEach(function (d) {
+      var land = state.orient === "landscape";
+      var w = land ? d.h : d.w;
+      var h = land ? d.w : d.h;
+      var scale = scaleFor(w, h);
+
+      var fig = document.createElement("figure");
+      fig.className = "device";
+      fig.style.margin = "0";
+      fig.style.width = (w * scale) + "px";
+
+      var cap = document.createElement("figcaption");
+      cap.innerHTML = "<b>" + d.name + "</b>" + w + " × " + h +
+        " css px · " + Math.round(scale * 100) + "%";
+      fig.appendChild(cap);
+
+      var holder = document.createElement("div");
+      holder.style.height = (h * scale) + "px";
+
+      var shell = document.createElement("div");
+      shell.className = "shell";
+      shell.style.width = w + "px";
+      shell.style.height = h + "px";
+      shell.style.borderRadius = (land ? d.r : d.r) + "px";
+      shell.style.transform = "scale(" + scale + ")";
+
+      var frame = document.createElement("iframe");
+      frame.src = state.route;
+      frame.width = w;
+      frame.height = h;
+      frame.title = d.name + " preview";
+      frame.addEventListener("load", function () { applyTheme(frame); });
+      shell.appendChild(frame);
+
+      if (d.cut && !land) {
+        var cut = document.createElement("div");
+        cut.className = "cutout " + d.cut;
+        shell.appendChild(cut);
+      }
+
+      if (d.home && !land) {
+        var bar = document.createElement("div");
+        bar.className = "homebar";
+        shell.appendChild(bar);
+      }
+
+      var st = document.createElement("div");
+      st.className = "safe top";
+      st.style.height = (land ? 0 : d.safeT) + "px";
+      shell.appendChild(st);
+
+      var sb = document.createElement("div");
+      sb.className = "safe bottom";
+      sb.style.height = (land ? 0 : d.safeB) + "px";
+      shell.appendChild(sb);
+
+      holder.appendChild(shell);
+      fig.appendChild(holder);
+      stage.appendChild(fig);
+    });
+  }
+
+  /* ---------- theme injection (same origin, so this is allowed) ---------- */
+
+  function applyTheme(frame) {
+    try {
+      var doc = frame.contentDocument;
+      if (doc && doc.documentElement) {
+        doc.documentElement.setAttribute("data-theme", state.theme);
+      }
+    } catch (e) {
+      /* cross-origin — only possible if the route redirects off-site */
+    }
+  }
+
+  function applyThemeAll() {
+    try { localStorage.setItem("theme", state.theme); } catch (e) {}
+    Array.prototype.forEach.call(stage.querySelectorAll("iframe"), applyTheme);
+  }
+
+  /* ---------- controls ---------- */
+
+  function navigate(r) {
+    state.route = r || "/";
+    routeIn.value = state.route;
+    render();
+  }
+
+  document.getElementById("go").addEventListener("click", function () {
+    navigate(routeIn.value.trim());
+  });
+
+  routeIn.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") navigate(routeIn.value.trim());
+  });
+
+  document.getElementById("quick").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-r]");
+    if (b) navigate(b.dataset.r);
+  });
+
+  document.getElementById("theme").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-t]");
+    if (!b) return;
+    state.theme = b.dataset.t;
+    Array.prototype.forEach.call(this.children, function (c) {
+      c.setAttribute("aria-pressed", c === b ? "true" : "false");
+    });
+    applyThemeAll();
+  });
+
+  document.getElementById("orient").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-o]");
+    if (!b) return;
+    state.orient = b.dataset.o;
+    Array.prototype.forEach.call(this.children, function (c) {
+      c.setAttribute("aria-pressed", c === b ? "true" : "false");
+    });
+    render();
+  });
+
+  document.getElementById("zoom").addEventListener("change", function () {
+    state.zoom = this.value;
+    render();
+  });
+
+  document.getElementById("safe").addEventListener("click", function () {
+    var on = document.body.dataset.safe === "on";
+    document.body.dataset.safe = on ? "off" : "on";
+    this.setAttribute("aria-pressed", on ? "false" : "true");
+  });
+
+  document.getElementById("reload").addEventListener("click", function () {
+    render();
+  });
+
+  var rt;
+  window.addEventListener("resize", function () {
+    if (state.zoom !== "fit") return;
+    clearTimeout(rt);
+    rt = setTimeout(render, 120);
+  });
+
+  /* sync the initial theme button with what the app already has stored */
+  Array.prototype.forEach.call(
+    document.getElementById("theme").children,
+    function (c) {
+      c.setAttribute("aria-pressed", c.dataset.t === state.theme ? "true" : "false");
+    }
+  );
+
+  render();
+})();
+</script>
+</body>
+</html>

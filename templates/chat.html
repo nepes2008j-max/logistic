@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% import "_avatar.html" as av %}
+
+{% block title %}HandShake | Messages{% endblock %}
+{# On a phone the conversation is a fixed shell, so the document behind
+   it must not scroll. chat.css keys off this class. #}
+{% block body_class %}body--chat{% endblock %}
+
+{% block content %}
+<h1 class="visually-hidden">Messages</h1>
+<div class="nav-container chat-page{% if active_recipient %} has-active{% endif %}{% if not active_chat_users and not pending_requests and not active_recipient %} is-blank{% endif %}">
+    <aside class="chat-sidebar" aria-label="Conversations">
+        <div class="chat-tabs" role="tablist">
+            <button onclick="switchTab('chats')" id="chats-tab-btn" class="chat-tab-btn {% if initial_tab != 'requests' %}active{% endif %}" role="tab" aria-controls="chats-list" aria-selected="{{ 'false' if initial_tab == 'requests' else 'true' }}">
+                Chats
+            </button>
+            <button onclick="switchTab('requests')" id="requests-tab-btn" class="chat-tab-btn {% if initial_tab == 'requests' %}active{% endif %}" role="tab" aria-controls="requests-list" aria-selected="{{ 'true' if initial_tab == 'requests' else 'false' }}">
+                Requests
+                {% if pending_requests %}
+                <span class="chat-request-count">{{ pending_requests|length }}</span>
+                {% endif %}
+            </button>
+        </div>
+
+        <div id="chats-list" class="chat-list {% if initial_tab == 'requests' %}hidden{% endif %}" role="tabpanel" aria-labelledby="chats-tab-btn">
+            {% for user in active_chat_users %}
+            <a href="{{ url_for('chat', recipient_id=user.id) }}" class="chat-list-item {% if active_recipient and active_recipient.id == user.id %}active{% endif %}">
+                {{ av.avatar(user, 'chat-avatar-lg') }}
+                <div class="chat-list-text">
+                    <div class="chat-user-name">{{ user.full_name or user.username }}</div>
+                    <div class="chat-user-meta">{{ user.region or 'HandShake member' }}</div>
+                </div>
+            </a>
+            {% else %}
+            <div class="chat-empty">
+                <svg class="ico"><use href="#i-comment-slash"></use></svg>
+                <p>No open chats. Ask a seller a question from their listing to start one.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="requests-list" class="chat-list {% if initial_tab != 'requests' %}hidden{% endif %}" role="tabpanel" aria-labelledby="requests-tab-btn">
+            {% for req in pending_requests %}
+            <div class="chat-request-card">
+                <div class="chat-request-user">
+                    {{ av.avatar(req.sender, 'chat-avatar-sm') }}
+                    <div class="chat-request-name">{{ req.sender.full_name or req.sender.username }}</div>
+                </div>
+                <div class="chat-request-actions">
+                    <a href="{{ url_for('accept_chat_request', request_id=req.id) }}" class="auth-btn chat-action-btn">Accept</a>
+                    <a href="{{ url_for('reject_chat_request', request_id=req.id) }}" class="auth-btn chat-action-btn chat-action-btn-muted">Decline</a>
+                </div>
+            </div>
+            {% else %}
+            <div class="chat-empty">
+                <svg class="ico"><use href="#i-inbox"></use></svg>
+                <p>No one is waiting on you. New chat requests land here.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <section class="chat-window" aria-label="Conversation">
+        {% if active_recipient %}
+        <div class="chat-header">
+            <div class="chat-header-user">
+                <a href="{{ url_for('chat') }}" class="chat-back" aria-label="Back to conversations"><svg class="ico"><use href="#i-arrow-left"></use></svg></a>
+                {{ av.avatar(active_recipient, 'chat-avatar-md') }}
+                <div>
+                    <h2 class="chat-header-name">{{ active_recipient.full_name or active_recipient.username }}</h2>
+                    <span class="chat-header-status"><svg class="ico ico--fill"><use href="#i-circle"></use></svg> Passport checked</span>
+                </div>
+            </div>
+            <div class="chat-header-actions">
+                <a href="{{ url_for('profile', user_id=active_recipient.id) }}" class="icon-btn" title="View profile" aria-label="View profile"><svg class="ico"><use href="#i-user"></use></svg></a>
+                <a href="{{ url_for('block_user', user_id=active_recipient.id) }}" class="icon-btn danger" title="Block this person" aria-label="Block this person" onclick="return confirm('Block {{ active_recipient.full_name or active_recipient.username }}? They will not be able to message you.')"><svg class="ico"><use href="#i-ban"></use></svg></a>
+            </div>
+        </div>
+
+        <div id="message-container" class="message-container">
+            {% for msg in messages %}
+            <div class="chat-bubble {% if msg.sender_id == current_user.id %}sent{% else %}received{% endif %}">
+                <div>{{ msg.body }}</div>
+                <div class="chat-time">{{ msg.timestamp.strftime('%H:%M') }}</div>
+            </div>
+            {% else %}
+            <div class="chat-empty">
+                <svg class="ico"><use href="#i-handshake"></use></svg>
+                <p>You are connected. Agree the price and where to meet, then close the deal in person.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <form action="/send_message" method="POST" class="chat-input-form">
+            <input type="hidden" name="recipient_id" value="{{ active_recipient.id }}">
+            <label for="chat-body" class="visually-hidden">Message</label>
+            <input type="text" name="body" id="chat-body" class="chat-input" placeholder="Write a message…" autocomplete="off" required>
+            <button type="submit" class="auth-btn chat-send-btn" aria-label="Send message">
+                <svg class="ico"><use href="#i-paper-plane"></use></svg>
+            </button>
+        </form>
+        {% else %}
+        <div class="chat-placeholder">
+            <div class="chat-placeholder-icon" aria-hidden="true">
+                <svg class="ico" aria-hidden="true"><use href="#i-comments"></use></svg>
+            </div>
+            <h2>Your messages</h2>
+            <p>Pick a conversation on the left. Chats only open once both people agree, so no one can message you out of the blue.</p>
+            <ol class="chat-placeholder-steps">
+                <li><b>1</b><span>Ask a question from any listing</span></li>
+                <li><b>2</b><span>They accept, and the chat opens</span></li>
+                <li><b>3</b><span>Meet up and scan to close the deal</span></li>
+            </ol>
+            {% if not active_chat_users and not pending_requests %}
+            <a href="/market" class="auth-btn" style="margin-top: var(--s6);">Find something to ask about</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<script>
+function switchTab(tab) {
+    const chatsList = document.getElementById('chats-list');
+    const requestsList = document.getElementById('requests-list');
+    const chatsBtn = document.getElementById('chats-tab-btn');
+    const requestsBtn = document.getElementById('requests-tab-btn');
+
+    const showChats = tab === 'chats';
+    chatsList.classList.toggle('hidden', !showChats);
+    requestsList.classList.toggle('hidden', showChats);
+    chatsBtn.classList.toggle('active', showChats);
+    requestsBtn.classList.toggle('active', !showChats);
+    chatsBtn.setAttribute('aria-selected', showChats ? 'true' : 'false');
+    requestsBtn.setAttribute('aria-selected', showChats ? 'false' : 'true');
+}
+
+window.addEventListener('load', () => {
+    const container = document.getElementById('message-container');
+    if (container) {
+        container.scrollTop = container.scrollHeight;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | {{ code }}{% endblock %}
+
+{% block content %}
+<div class="nav-container record-page">
+    <header class="record-masthead">
+        <span class="eyebrow">{{ code }}</span>
+        <h1>{{ heading }}</h1>
+        <p class="record-masthead-state">{{ message }}</p>
+    </header>
+
+    <div class="error-actions">
+        <a href="{{ url_for('dashboard') }}" class="auth-btn">Back to the marketplace</a>
+        {% if show_orders %}
+        <a href="{{ url_for('orders') }}" class="auth-btn auth-btn-muted">Your orders</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

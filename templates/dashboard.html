@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Goods delivered between people{% endblock %}
+
+{#
+  One listing card, used by every rail on this page and by the marketplace
+  grid. Defined once so the rails and the grid cannot drift apart.
+#}
+{% macro listing_card(item) -%}
+<a href="{{ url_for('item_detail', item_id=item.id) }}" class="hs-card" data-category="{{ item.category }}">
+    <div class="card-img-wrapper{% if not item.image_url %} is-missing{% endif %}" data-fallback="{{ item.category|replace('_', ' ') }}">
+        {#
+          The badge used to read "Sell" on every card, because item.type was a
+          shim that always returned 'sell'. It now carries something a buyer
+          can act on: the delivery size class, which is what the delivery fee
+          is calculated from — or the listing's state when it is not orderable.
+        #}
+        {% if item.status != 'listed' %}
+        <span class="badge badge--state">{{ item.status|capitalize }}</span>
+        {% else %}
+        <span class="badge">{{ item.size_class|capitalize }}</span>
+        {% endif %}
+        {% if item.image_url %}<img src="{{ item.image_url }}" alt="{{ item.title }}" loading="lazy" decoding="async">{% endif %}
+    </div>
+    <div class="card-content">
+        <h3>{{ item.title }}</h3>
+        <p class="location">{{ item.location_label }}</p>
+        <div class="card-foot">
+            <p class="price">{{ '{:,g}'.format(item.price or 0) }} TMT</p>
+            <span class="card-rating"><svg class="ico ico--fill"><use href="#i-star"></use></svg> {{ "%.1f"|format(item.rating) }}</span>
+        </div>
+    </div>
+</a>
+{%- endmacro %}
+
+{#
+  A self-advancing row. The markup carries one copy of the listings; the
+  engine in script.js clones the track to make the loop seamless and drives
+  the scroll position itself. Without JavaScript this degrades to an ordinary
+  swipeable row, which is why the cards are laid out in real flow rather than
+  positioned.
+#}
+{% macro rail(rail_items, speed) -%}
+<div class="rail-frame">
+    <div class="rail" data-rail data-rail-speed="{{ speed }}" tabindex="0" role="group" aria-label="Scrollable listings — drag or use the arrow keys">
+        <div class="rail-track" data-rail-track>
+            {% for item in rail_items %}
+            <div class="rail-card">{{ listing_card(item) }}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{%- endmacro %}
+
+{% block content %}
+
+{#
+  The hero: the wordmark at the largest size on the site, the statement
+  beside it in the negative space, the hand-off line drawn underneath both,
+  and the marketplace surfacing directly below.
+#}
+<header class="hero">
+    <div class="nav-container hero-inner">
+        {#
+          The opening flight. A paper plane — a dispatched thing, not a
+          chartered one — draws the route hairline across the band and drops
+          the name at the end of it. Pure markup and CSS: no image, so nothing
+          here carries a licence, and nothing claims a class of service the
+          product does not run. It stops dead under prefers-reduced-motion.
+        #}
+        <div class="flight" aria-hidden="true">
+            <div class="flight-craft">
+                <span class="flight-lift">
+                    <span class="flight-banner">HandShake</span>
+                    <svg class="flight-plane" viewBox="0 0 64 34" focusable="false">
+                        <path d="M62 17 L2 2 L21 17 Z"/>
+                        <path class="flight-fold" d="M62 17 L2 32 L21 17 Z"/>
+                    </svg>
+                </span>
+            </div>
+        </div>
+
+        <p class="hero-word">Hand<span class="hero-word-b">Shake</span><sup>&reg;</sup></p>
+
+        <div class="hero-copy">
+            <h1 class="hero-line">We move it. You both stay put.</h1>
+            <p class="hero-lede">
+                Ordinary things, posted by ordinary people and carried across the country by
+                our couriers. Order it, we collect it, and the seller is paid only once it
+                is in your hands.
+            </p>
+            <div class="hero-actions">
+                <a href="/market" class="auth-btn btn-lg">Browse listings</a>
+                <a href="/upload" class="auth-btn auth-btn-muted btn-lg">Post an item</a>
+            </div>
+        </div>
+
+        {#
+          The hand-off line.
+
+          This replaces the empty centrepiece slot the withdrawn aircraft left
+          behind. It is the Delivery pipeline the database actually runs —
+          collected, in transit, handed over — drawn in rules and label type,
+          so it promises nothing the product cannot do. A description list,
+          because that is what it is: three stages and what each one means.
+        #}
+        <section class="handoff" aria-label="How a hand-off works">
+            <dl class="handoff-track">
+                <div class="handoff-stop">
+                    <dt>Collected</dt>
+                    <dd>A courier picks the item up from the seller and reads back the pickup code.</dd>
+                </div>
+                <div class="handoff-stop">
+                    <dt>In transit</dt>
+                    <dd>The item is in someone's care, and every leg of the trip is written down.</dd>
+                </div>
+                <div class="handoff-stop">
+                    <dt>Handed over</dt>
+                    <dd>You give the drop-off code at the door. Only then does the seller get paid.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <div class="hero-facts">
+            <span class="hero-fact"><b>{{ items|length }}</b> listings on the board</span>
+            <span class="hero-fact"><b>Ashgabat</b> and Ahal</span>
+            <span class="hero-fact"><b>Paid</b> on delivery, not before</span>
+        </div>
+    </div>
+</header>
+
+{% if items %}
+
+<section class="rail-section" aria-labelledby="recent-heading">
+    <div class="rail-head">
+        <h2 id="recent-heading">Recently listed</h2>
+        <a href="/market" class="link-action">All listings <svg class="ico" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+    </div>
+    {{ rail(items[:16], 22) }}
+</section>
+
+{% set near_items = items|selectattr('neighborhood')|list %}
+{% if near_items|length > 3 %}
+<section class="rail-section" aria-labelledby="near-heading">
+    <div class="rail-head">
+        <h2 id="near-heading">Near you</h2>
+        <p class="rail-head-note">Shortest hop, smallest delivery fee.</p>
+    </div>
+    {{ rail(near_items[4:20] if near_items|length > 12 else near_items, 17) }}
+</section>
+{% endif %}
+
+{% else %}
+
+<section class="nav-container front-section">
+    <div class="state">
+        <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-box-open"></use></svg></div>
+        <h3>The board is empty</h3>
+        <p>Nothing has been listed yet. Post the first item and it will appear here straight away, in front of everyone looking to buy.</p>
+        <div class="state-actions">
+            <a href="/upload" class="auth-btn">Post an item</a>
+        </div>
+    </div>
+</section>
+
+{% endif %}
+
+{#
+  The dark band. The page has to oscillate between white and dark, and this
+  is where the product explains itself.
+#}
+<section class="band-dark on-dark" aria-labelledby="protocol-heading">
+    <div class="nav-container">
+        <h2 id="protocol-heading" class="visually-hidden">How a hand-off works</h2>
+        <ol class="protocol">
+            <li class="protocol-step">
+                <span class="protocol-num">Step one</span>
+                <h3>Ask before you commit</h3>
+                <p>Chat opens only when both sides agree to it, so your inbox stays yours. Settle the price and where it has to reach in writing.</p>
+            </li>
+            <li class="protocol-step">
+                <span class="protocol-num">Step two</span>
+                <h3>Pay into escrow</h3>
+                <p>The money leaves your wallet but not the seller's way. HandShake holds it for the whole time the item is travelling.</p>
+            </li>
+            <li class="protocol-step">
+                <span class="protocol-num">Step three</span>
+                <h3>Codes at both doors</h3>
+                <p>The courier collects against the seller's code and hands over against yours. Reading your code back is what releases the money.</p>
+            </li>
+        </ol>
+    </div>
+
+    {% set tool_items = items|selectattr('category', 'in', ['tools', 'tech'])|list %}
+    {% if tool_items|length > 3 %}
+    <div class="rail-head" style="margin-top: var(--section-gap)">
+        <h2>Tools and equipment</h2>
+        <p class="rail-head-note">Borrow the thing, not the whole shed.</p>
+    </div>
+    {{ rail(tool_items[:16], 14) }}
+    {% endif %}
+</section>
+
+{#
+  The single clay block. One per page, hard-edged against every pill around
+  it, and the only warm surface on this screen.
+#}
+<section class="nav-container front-section">
+    <div class="clay-card">
+        {% if current_user.is_authenticated %}
+        <h2>Got something that needs to reach another city?</h2>
+        <p>
+            List it and anyone in the country can order it. Our courier collects from your
+            door, and nobody gets your number until you say so.
+        </p>
+        <a href="/upload" class="auth-btn">Post an item</a>
+        {% else %}
+        <h2>Verification takes one passport and about a minute.</h2>
+        <p>
+            Everyone on HandShake has had their documents checked by a person. That is what makes
+            handing a stranger your camera a reasonable thing to do.
+        </p>
+        <a href="/request-access" class="auth-btn">Request access</a>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}

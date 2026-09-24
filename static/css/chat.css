@@ -1,0 +1,624 @@
+/* ==========================================================================
+   HANDSHAKE
+   chat.css — the room where a hand-off is arranged.
+
+   Desktop: two ruled columns inside one hard-edged frame — the list of
+   conversations and the conversation itself.
+
+   Phone: not a card on a page but the screen itself. The masthead stays, the
+   conversation fills everything under it, the message list is the only thing
+   that scrolls, and the composer is pinned to the bottom edge. When the
+   keyboard comes up the tab bar stands down and the composer rides the
+   keyboard, because the two were fighting over the same inch of glass.
+
+   One clay element per page, and on this page it is the marker on the open
+   conversation — or, when no conversation is open, the numbered steps in the
+   placeholder. Those two states are mutually exclusive in the markup, so
+   there is never a second one.
+   ========================================================================== */
+
+.chat-page {
+    display: grid;
+    grid-template-columns: 336px minmax(0, 1fr);
+    /* dvh, not vh: on a phone browser 100vh is the address-bar-less height,
+       so the composer ends up under the chrome for the whole first scroll. */
+    height: calc(100dvh - var(--nav-h) - 48px);
+    max-height: 820px;
+    min-height: 520px;
+    margin-block: var(--s6) var(--s8);
+    background: var(--surface);
+    border: var(--bw) solid var(--rule-2);
+    border-radius: var(--r-md);
+    overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar
+   -------------------------------------------------------------------------- */
+
+.chat-sidebar {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: var(--paper-tint);
+    border-right: var(--bw) solid var(--rule);
+}
+
+.chat-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    flex: none;
+    border-bottom: var(--bw) solid var(--rule);
+}
+
+.chat-tab-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s2);
+    padding: var(--s4) var(--s3);
+    background: none;
+    border: none;
+    border-right: var(--bw) solid var(--rule);
+    min-height: 48px;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-xs);
+    font-weight: 500;
+    letter-spacing: var(--track-label);
+    color: var(--ink-3);
+    cursor: pointer;
+    transition: color var(--d1) var(--ease), background var(--d1) var(--ease);
+}
+.chat-tab-btn:last-child { border-right: 0; }
+.chat-tab-btn:hover { color: var(--ink); background: var(--surface); }
+
+/* Ink, not clay. The clay on this page is spent on the open conversation. */
+.chat-tab-btn::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 3px;
+    background: var(--ink);
+    transform: scaleX(0);
+    transition: transform var(--d2) var(--ease);
+}
+.chat-tab-btn.active {
+    color: var(--ink);
+    background: var(--surface);
+    font-weight: 700;
+}
+.chat-tab-btn.active::after { transform: scaleX(1); }
+
+.chat-request-count {
+    display: grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    /* Ink on the counter: white over clay is 3.75:1, which does not clear AA
+       at counter size, and the page's one clay is spent elsewhere. */
+    background: var(--ink);
+    color: var(--ink-invert);
+    border-radius: var(--r-pill);
+    font-size: var(--t-micro);
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.chat-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule-2) transparent;
+}
+.chat-list::-webkit-scrollbar { width: 7px; }
+.chat-list::-webkit-scrollbar-thumb { background: var(--rule-2); border-radius: 99px; }
+
+/* -- Conversation row ------------------------------------------------------ */
+
+.chat-list-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: var(--s3);
+    min-height: 68px;
+    /* The left pad already allows for the active marker, so selecting a row
+       does not have to animate padding — which would relayout the whole list
+       on every hover. Only the marker moves, and it moves on a transform. */
+    padding: var(--s3) var(--s4) var(--s3) calc(var(--s4) + 3px);
+    border-bottom: var(--bw) solid var(--rule);
+    color: inherit;
+    transition: background-color var(--d1) var(--ease);
+}
+.chat-list-item::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--d2) var(--ease);
+}
+.chat-list-item:hover { background: var(--surface); }
+.chat-list-item.active { background: var(--surface); }
+.chat-list-item.active::before { transform: scaleX(1); }
+
+.chat-avatar-lg,
+.chat-avatar-md,
+.chat-avatar-sm {
+    flex: none;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--surface-2);
+    border: var(--bw) solid var(--rule-2);
+}
+.chat-avatar-lg { width: 42px; height: 42px; }
+.chat-avatar-md { width: 38px; height: 38px; }
+.chat-avatar-sm { width: 32px; height: 32px; }
+
+.chat-list-text { min-width: 0; }
+
+.chat-user-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--t-body);
+    letter-spacing: -0.012em;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-user-meta {
+    margin-top: 3px;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-sm);
+    letter-spacing: 0.005em;
+    color: var(--ink-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* -- Pending request card --------------------------------------------------- */
+
+.chat-request-card {
+    padding: var(--s4);
+    border-bottom: var(--bw) solid var(--rule);
+}
+
+.chat-request-user {
+    display: flex;
+    align-items: center;
+    gap: var(--s3);
+    margin-bottom: var(--s3);
+}
+
+.chat-request-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--t-body);
+    color: var(--ink);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-request-actions { display: flex; gap: var(--s2); }
+
+.chat-action-btn {
+    flex: 1;
+    min-height: 44px;
+    padding: 8px var(--s3);
+    font-size: var(--t-xs);
+}
+.chat-action-btn-muted {
+    background: var(--surface);
+    color: var(--ink-2);
+    border-color: var(--rule-2);
+}
+.chat-action-btn-muted:hover:not(:disabled) {
+    background: var(--danger-soft);
+    border-color: var(--danger);
+    color: var(--danger);
+    box-shadow: var(--press-sm);
+}
+
+/* -- Sidebar empty state ---------------------------------------------------- */
+
+.chat-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--s3);
+    padding: var(--s8) var(--s5);
+    color: var(--ink-3);
+}
+.chat-empty i, .chat-empty .ico {
+    box-sizing: border-box;
+    width: 48px;
+    height: 48px;
+    padding: 13px;
+    border: var(--bw2) solid var(--rule-2);
+    border-radius: 50%;
+    stroke-width: 1.8;
+    overflow: visible;
+}
+.chat-empty p {
+    font-size: var(--t-sm);
+    line-height: 1.5;
+    max-width: 26ch;
+}
+
+/* --------------------------------------------------------------------------
+   Conversation window
+   -------------------------------------------------------------------------- */
+
+.chat-window {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--paper);
+}
+
+.chat-header {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s3);
+    padding: var(--s3) var(--s5);
+    background: var(--surface);
+    border-bottom: var(--bw) solid var(--rule);
+}
+
+.chat-header-user {
+    display: flex;
+    align-items: center;
+    gap: var(--s3);
+    min-width: 0;
+}
+
+/* Back is a control like the two in the opposite corner, so it is drawn like
+   them: a 44px circle, no box. It only exists on a phone. */
+.chat-back {
+    display: none;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-left: -6px;
+    flex: none;
+    border: var(--bw) solid transparent;
+    border-radius: var(--r-pill);
+    color: var(--ink);
+}
+.chat-back:hover { background: var(--surface-2); }
+.chat-back:active { transform: scale(0.95); }
+
+.chat-header-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--t-body);
+    letter-spacing: -0.015em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* One line, always. It used to break after "Passport" and leave the status
+   dot stranded on a line of its own. */
+.chat-header-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-size: var(--t-sm);
+    color: var(--ink-3);
+}
+/* The status dot. Sized as a mark rather than as type, because it is one. */
+.chat-header-status .ico {
+    width: 7px;
+    height: 7px;
+    color: var(--verified);
+}
+
+.chat-header-actions { display: flex; gap: var(--s1); flex: none; }
+
+/* -- Messages --------------------------------------------------------------- */
+
+.message-container {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s3);
+    padding: var(--s6) var(--s5);
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule-2) transparent;
+    /* the ruled page the conversation is written on */
+    background-image:
+        linear-gradient(color-mix(in srgb, var(--ink) 3.5%, transparent) 1px, transparent 1px);
+    background-size: 100% 28px;
+}
+.message-container::-webkit-scrollbar { width: 8px; }
+.message-container::-webkit-scrollbar-thumb { background: var(--rule-2); border-radius: 99px; }
+
+/* A message is running copy, so it is set at the body floor. It was at 17px,
+   which is metadata size in this system and below the floor DESIGN.md sets. */
+.chat-bubble {
+    position: relative;
+    max-width: min(560px, 74%);
+    padding: 11px var(--s4) 10px;
+    border-radius: var(--r-md);
+    font-size: var(--t-body);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    animation: msg-in var(--d3) var(--ease-out) both;
+}
+@keyframes msg-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.chat-bubble.sent {
+    align-self: flex-end;
+    background: var(--ink);
+    color: var(--ink-invert);
+    border-bottom-right-radius: var(--r-xs);
+}
+
+.chat-bubble.received {
+    align-self: flex-start;
+    background: var(--surface);
+    color: var(--ink);
+    border: var(--bw) solid var(--rule-2);
+    border-bottom-left-radius: var(--r-xs);
+}
+
+/* 10px was both illegible and a value that exists nowhere in the token set. */
+.chat-time {
+    margin-top: 5px;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-micro);
+    letter-spacing: 0.005em;
+    text-align: right;
+    opacity: 0.66;
+}
+
+/* Day divider (available for future grouping) */
+.chat-day {
+    align-self: center;
+    padding: 4px 12px;
+    background: var(--surface-2);
+    border-radius: var(--r-pill);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-micro);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+}
+
+/* -- Composer ---------------------------------------------------------------- */
+
+.chat-input-form {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+    padding: var(--s3) var(--s4);
+    background: var(--surface);
+    border-top: var(--bw) solid var(--rule);
+    /* script.js publishes the on-screen keyboard's overlap here. On desktop
+       it is never set, so the fallback keeps this at zero. */
+    padding-bottom: calc(var(--s3) + var(--keyboard-inset, 0px));
+    transition: padding-bottom var(--d2) var(--ease);
+}
+
+.chat-input {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    background: var(--paper);
+}
+
+.chat-send-btn {
+    flex: none;
+    width: 44px;
+    min-height: 44px;
+    padding: 0;
+}
+
+/* -- Placeholder (no conversation selected) ---------------------------------- */
+
+.chat-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: var(--s3);
+    padding: var(--s7) var(--s6);
+    background-image:
+        repeating-linear-gradient(
+            -45deg,
+            transparent 0 11px,
+            color-mix(in srgb, var(--ink) 2.6%, transparent) 11px 12px
+        );
+}
+
+.chat-placeholder-icon {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    border: var(--bw2) solid var(--rule-2);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--ink-3);
+    font-size: 1.6rem;
+    transform: rotate(-8deg);
+    margin-bottom: var(--s2);
+}
+
+.chat-placeholder h2 {
+    font-size: var(--t-h2);
+    letter-spacing: -0.025em;
+}
+
+.chat-placeholder p {
+    max-width: 42ch;
+    font-size: var(--t-body);
+    line-height: var(--lh-body);
+    color: var(--ink-3);
+}
+
+.chat-placeholder-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2);
+    margin-top: var(--s4);
+    text-align: left;
+}
+.chat-placeholder-steps li {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    align-items: baseline;
+    gap: var(--s2);
+    font-size: var(--t-sm);
+    line-height: 1.5;
+    color: var(--ink-2);
+}
+/* This page's one clay element, in the state where no conversation is open.
+   The other state's clay — the marker on the active row — cannot render at
+   the same time, because the placeholder only exists when nothing is open. */
+.chat-placeholder-steps b {
+    color: var(--accent-text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+    .chat-page { grid-template-columns: 276px minmax(0, 1fr); }
+}
+
+/* --------------------------------------------------------------------------
+   PHONE — the conversation is the screen, not a card on a page
+
+   Below 820px the chat stops being a bordered panel inside a scrolling
+   document and becomes a fixed shell filling everything between the masthead
+   and the tab bar. The message list is then the only scroller on the screen,
+   the composer is pinned to the bottom edge instead of drifting with the
+   page, and neither can be scrolled out from under the other.
+
+   This is also where the composer / tab-bar collision is settled. They both
+   want the bottom inch. The rule is that the tab bar yields: while the
+   keyboard is up you are writing, not navigating, so the bar stands down and
+   the composer takes its place directly above the keyboard. script.js sets
+   .keyboard-open on <html> and publishes --keyboard-inset; everything below
+   is driven by those two.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 820px) {
+    .chat-page {
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: calc(var(--nav-h-phone) + env(safe-area-inset-top, 0px));
+        bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+        z-index: 880;            /* under the masthead (900) and the bar (1000) */
+
+        grid-template-columns: 1fr;
+        width: auto;
+        max-width: none;
+        height: auto;
+        min-height: 0;
+        max-height: none;
+        margin: 0;
+        padding-inline: 0;       /* .nav-container's gutter does not apply here */
+        border: 0;
+        border-radius: 0;
+        background: var(--paper);
+    }
+
+    /* One pane at a time. The list is a screen; the conversation is a screen. */
+    .chat-page .chat-sidebar {
+        border-right: 0;
+        min-height: 0;
+    }
+    .chat-page .chat-list { max-height: none; }
+
+    .chat-page.has-active .chat-sidebar { display: none; }
+    .chat-page.has-active .chat-back { display: grid; }
+    .chat-page:not(.has-active) .chat-window { display: none; }
+    .chat-page.is-blank .chat-window { display: flex; }
+
+    .chat-window { height: 100%; }
+
+    .message-container {
+        padding: var(--s4) var(--s3);
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+    .chat-bubble { max-width: 86%; }
+    .chat-header { padding-inline: var(--s2) var(--s3); }
+
+    /* The composer clears the home indicator when the tab bar is not there to
+       do it, and rides the keyboard when there is one. */
+    .chat-input-form {
+        padding-bottom: calc(var(--s3) + var(--keyboard-inset, 0px));
+    }
+}
+
+/* Keyboard up: the tab bar stands down and the shell claims its inch. */
+@media (max-width: 820px) {
+    :root.keyboard-open .tabbar {
+        transform: translate3d(0, 100%, 0);
+        pointer-events: none;
+    }
+    .tabbar { transition: transform var(--d2) var(--ease); }
+
+    :root.keyboard-open .chat-page {
+        bottom: var(--keyboard-inset, 0px);
+    }
+    /* The inset is already taken by the shell's bottom, so the composer must
+       not pay for it twice. */
+    :root.keyboard-open .chat-input-form { padding-bottom: var(--s3); }
+}
+
+/* The document behind a fixed chat shell must not scroll, or the page rubber-
+   bands underneath the conversation. base.html marks the body. */
+@media (max-width: 820px) {
+    body.body--chat { overflow: hidden; }
+    body.body--chat .page-main { padding-bottom: 0; }
+    body.body--chat .site-footer { display: none; }
+}
+
+
+/* --------------------------------------------------------------------------
+   Nothing at all: no conversations, no requests. A two-pane shell with both
+   panes empty is not an empty state, it is a dead screen.
+   -------------------------------------------------------------------------- */
+
+.chat-page.is-blank {
+    grid-template-columns: 1fr;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+}
+.chat-page.is-blank .chat-sidebar { display: none; }
+.chat-page.is-blank .chat-placeholder { padding-block: var(--s10); }

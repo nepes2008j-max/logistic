@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Set your password{% endblock %}
+
+{% block content %}
+<div class="auth-split">
+    <div class="auth-rail">
+        <span class="eyebrow">Approved</span>
+        <h1>You are in, {{ access_request.full_name.split()[0] }}.</h1>
+        <p>
+            An administrator checked your passport against your name and approved the
+            request. One password, and the account is yours.
+        </p>
+        <ul class="auth-facts">
+            <li><b>Once</b><span>This link works a single time and is dead the moment you use it.</span></li>
+            <li><b>Until</b><span>{{ access_request.invite_expires_at.strftime('%d %b %Y') if access_request.invite_expires_at else 'it is used' }} — after that it has to be issued again.</span></li>
+            <li><b>Verified</b><span>Your account starts with its passport check already done, so nothing is held back.</span></li>
+        </ul>
+    </div>
+
+<div class="auth-container">
+    <div class="auth-header">
+        <h2>Set your password</h2>
+        <p>At least eight characters. You will use it with the email below.</p>
+    </div>
+
+    <form class="auth-form" action="{{ url_for('activate', token=token) }}" method="POST">
+        <div class="form-group">
+            <span class="field-label">Email</span>
+            <input type="email" value="{{ access_request.email }}" disabled>
+        </div>
+
+        <div class="form-group">
+            <label for="activate-password">Choose a password</label>
+            <input type="password" name="password" id="activate-password" minlength="8" placeholder="At least 8 characters" required>
+        </div>
+
+        <div class="form-group">
+            <label for="activate-confirm">Type it again</label>
+            <input type="password" name="confirm_password" id="activate-confirm" minlength="8" required>
+        </div>
+
+        <button type="submit" class="auth-btn btn-block btn-lg">Create my account</button>
+    </form>
+
+    <div class="auth-footer">
+        Not you? <a href="{{ url_for('login') }}">Go to sign in</a>
+    </div>
+</div>
+</div>
+{% endblock %}

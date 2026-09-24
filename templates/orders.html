@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Orders{% endblock %}
+
+{% macro order_row(order, side) %}
+<div class="ledger-row">
+    <div class="ledger-row-main">
+        {% if order.item and order.item.image_url %}
+        <img src="{{ order.item.image_url }}" class="ledger-thumb" alt="">
+        {% endif %}
+        <div>
+            <div class="ledger-row-title">
+                <a href="{{ url_for('order_detail', order_id=order.id) }}">
+                    #{{ '%04d'|format(order.id) }} &middot; {{ order.item.title if order.item else 'Removed listing' }}
+                </a>
+            </div>
+            <div class="ledger-row-meta">
+                {% if side == 'buying' %}
+                from {{ order.seller.full_name or order.seller.username }}
+                {% else %}
+                for {{ order.buyer.full_name or order.buyer.username }}
+                {% endif %}
+                &middot; to {{ order.destination_label }}
+            </div>
+            <div class="ledger-row-meta">
+                <span class="status-chip {% if order.status in ('completed',) %}status-chip--closed{% elif order.status in ('placed','accepted') %}status-chip--pending{% else %}status-chip--active{% endif %}">
+                    {{ order.status }}
+                </span>
+                {% if order.delivery %}
+                &middot; delivery <a href="{{ url_for('delivery_detail', delivery_id=order.delivery.id) }}">{{ order.delivery.status.replace('_', ' ') }}</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="ledger-row-side">
+        <div class="ledger-row-amount">{{ "%.2f"|format(order.total) }} TMT</div>
+        <div class="ledger-row-date">{{ order.created_at.strftime('%d %b %Y') if order.created_at else '' }}</div>
+    </div>
+</div>
+{% endmacro %}
+
+{% block content %}
+<div class="nav-container record-page">
+    <header class="record-masthead">
+        <span class="eyebrow">Your account</span>
+        <h1>Orders</h1>
+        <p class="record-masthead-state">What you have ordered, and what people have ordered from you.</p>
+    </header>
+
+    <h2>Buying</h2>
+    {% if purchases %}
+    <div class="ledger-rows">
+        {% for order in purchases %}{{ order_row(order, 'buying') }}{% endfor %}
+    </div>
+    {% else %}
+    <div class="state state--compact"><p>You have not ordered anything yet.</p></div>
+    {% endif %}
+
+    <h2>Selling</h2>
+    {% if sales %}
+    <div class="ledger-rows">
+        {% for order in sales %}{{ order_row(order, 'selling') }}{% endfor %}
+    </div>
+    {% else %}
+    <div class="state state--compact"><p>Nobody has ordered from you yet.</p></div>
+    {% endif %}
+</div>
+{% endblock %}

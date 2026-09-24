@@ -1,0 +1,15 @@
+Hero aircraft — aircraft-1800.webp / aircraft-1000.webp (and .png fallbacks)
+
+Source photograph: "Volkswagen Air Service, Dassault Falcon 7X, VP-CSW"
+  https://commons.wikimedia.org/wiki/File:Volkswagen_Air_Service,_Dassault_Falcon_7X,_VP-CSW_(14524011202).jpg
+  Wikimedia Commons. Reused under its Creative Commons licence; see the file
+  page above for the photographer and the exact terms before shipping to
+  production.
+
+Processing: the sky was keyed out to alpha locally (per-row sky reference
+from the frame margins, blue-minus-red separation, edge-connected flood fill)
+so the aircraft could be composited over the hero's own gradient. No part of
+the aircraft itself was redrawn or generated.
+
+The aircraft is a visual metaphor for goods crossing distance. HandShake is a
+logistics marketplace for ordinary goods; it is not an aviation product.

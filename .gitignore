@@ -1,0 +1,24 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# The live database. It holds real user records, so it stays off the remote;
+# app.py builds and migrates a fresh one on first boot.
+instance/
+
+# Uploaded identity documents. These are scans of real passports and must
+# never leave this machine.
+static/uploads/passports/
+
+# Seeded listing photographs. Regenerate with `python seed_demo_data.py`
+# rather than carrying 28MB of Wikimedia images in the history.
+static/uploads/items/
+
+# Visual QA screenshots — build artefacts, re-shot on every design pass.
+design_qa/
+
+# The rejected aircraft asset: a real registered airframe whose licence the
+# project's own CREDITS.txt could not confirm. Referenced by nothing.
+static/img/aircraft-*

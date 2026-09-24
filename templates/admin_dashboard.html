@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Admin{% endblock %}
+
+{% block content %}
+<div class="nav-container record-page">
+    <header class="record-masthead">
+        <span class="eyebrow">Administration</span>
+        <h1>Control room</h1>
+        <p class="record-masthead-state">Who gets in, who carries the goods, and where the money is sitting.</p>
+    </header>
+
+    <div class="grid-3">
+        <div class="panel panel-pad stat-tile">
+            <span class="field-label">Access requests waiting</span>
+            <p class="display">{{ stats.pending_requests }}</p>
+            <a href="{{ url_for('admin_access_requests') }}" class="auth-btn">Open the queue</a>
+        </div>
+        <div class="panel panel-pad stat-tile">
+            <span class="field-label">Deliveries in motion</span>
+            <p class="display">{{ stats.open_deliveries }}</p>
+            <a href="{{ url_for('admin_deliveries') }}" class="auth-btn auth-btn-muted">Dispatch</a>
+        </div>
+        <div class="panel panel-pad stat-tile">
+            <span class="field-label">People</span>
+            <p class="display">{{ stats.members }}</p>
+            <a href="{{ url_for('admin_users') }}" class="auth-btn auth-btn-muted">Roles</a>
+        </div>
+    </div>
+
+    <div class="panel panel-pad">
+        <h2>Platform account</h2>
+        {% if account %}
+        <div class="receipt-lines">
+            <div class="receipt-line">
+                <span>Fees earned</span>
+                <b>{{ "%.2f"|format(account.balance) }} TMT</b>
+            </div>
+            <div class="receipt-line">
+                <span>Held in escrow for sellers</span>
+                <b>{{ "%.2f"|format(account.escrow_balance) }} TMT</b>
+            </div>
+        </div>
+        {% else %}
+        <p>The platform account is missing. Restart the app to create it.</p>
+        {% endif %}
+    </div>
+
+    <div class="panel panel-pad">
+        <h2>Catalogue</h2>
+        <div class="receipt-lines">
+            <div class="receipt-line"><span>Listings available</span><b>{{ stats.listings }}</b></div>
+            <div class="receipt-line"><span>Orders not yet finished</span><b>{{ stats.open_orders }}</b></div>
+            <div class="receipt-line"><span>Couriers</span><b>{{ stats.couriers }}</b></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

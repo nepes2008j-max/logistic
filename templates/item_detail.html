@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | {{ item.title }}{% endblock %}
+
+{% block content %}
+<div
+    id="ai-expert-sidebar"
+    class="ai-expert-sidebar"
+    role="dialog"
+    aria-label="Ask about this item"
+    data-expert-query="{{ item.title }}. {{ item.description or '' }}"
+>
+    <div class="ai-expert-header">
+        <div class="ai-expert-header-row">
+            <h3>Ask about this item</h3>
+            <button type="button" id="ai-expert-close" class="ai-expert-close" aria-label="Close">
+                <svg class="ico"><use href="#i-times"></use></svg>
+            </button>
+        </div>
+        <span class="ai-expert-eyebrow">Live</span>
+    </div>
+    <div class="ai-expert-status">Nothing runs until you ask.</div>
+    <div class="ai-expert-actions">
+        <button type="button" class="ai-quick-action" data-expert-question="Teach me the basics of this item.">Teach me the basics</button>
+        <button type="button" class="ai-quick-action" data-expert-question="How do I set up this item safely?">Set it up safely</button>
+    </div>
+    <div class="ai-chat-thread" id="ai-chat-thread"></div>
+    <form id="ai-expert-form" class="ai-expert-form">
+        <label for="ai-expert-input" class="visually-hidden">Your question</label>
+        <input id="ai-expert-input" type="text" placeholder="Ask about setup, usage, or first steps">
+        <button type="submit" class="auth-btn">Ask</button>
+    </form>
+</div>
+
+<button type="button" id="ai-expert-launcher" class="ai-expert-launcher">Ask about this item</button>
+
+
+<div class="nav-container">
+    <nav class="item-crumbs" aria-label="Breadcrumb">
+        <a href="{{ url_for('index') }}">Marketplace</a>
+        <span aria-hidden="true">/</span>
+        <a href="{{ url_for('search', q=item.category) }}">{{ item.category|capitalize }}</a>
+        <span aria-hidden="true">/</span>
+        <span>{{ item.title }}</span>
+    </nav>
+</div>
+
+<div class="nav-container item-detail-layout">
+    <div id="product-image-shell">
+        <img src="{{ item.image_url }}" alt="{{ item.title }}" class="plate-img">
+        <div class="plate-caption">
+            <span>Listing <b>#{{ '%04d'|format(item.id) }}</b></span>
+            <span>{{ item.location_label }}</span>
+        </div>
+    </div>
+
+    <div>
+        <div class="record-head">
+            <div class="record-tags">
+                <span class="tag">{{ item.category|capitalize }}</span>
+                <span class="tag">{{ item.size_class|capitalize }} parcel</span>
+                {% if item.weight_kg %}<span class="tag">{{ '{:,g}'.format(item.weight_kg) }} kg</span>{% endif %}
+                {% if item.is_orderable %}
+                <span class="tag tag--verified">Ready to send</span>
+                {% else %}
+                <span class="tag tag--warn">{{ item.status|capitalize }}</span>
+                {% endif %}
+            </div>
+
+            <h1>{{ item.title }}</h1>
+            <p class="record-loc">{{ item.location_label }}</p>
+
+            <div class="price-block">
+                <div>
+                    <div class="price-figure">{{ "%.2f"|format(item.price) }} TMT</div>
+                    <div class="price-unit">before delivery and the 5% service fee</div>
+                </div>
+                <div class="price-side">
+                    Rated
+                    <b>{{ "%.1f"|format(item.rating) }} / 5</b>
+                    {{ item.num_ratings }} review{{ '' if item.num_ratings == 1 else 's' }}
+                </div>
+            </div>
+        </div>
+
+        <div class="record-section">
+            <h2>Who you are dealing with</h2>
+
+            {% if item.owner %}
+            <div class="id-card">
+                {% if item.owner.profile_pic %}
+                <img src="{{ item.owner.profile_pic }}" alt="" class="id-avatar">
+                {% else %}
+                <div class="id-avatar" aria-hidden="true">{{ item.owner.username[0].upper() }}</div>
+                {% endif %}
+                <div>
+                    <div class="id-name">
+                        <a href="{{ url_for('profile', user_id=item.owner.id) }}">{{ item.owner.full_name or item.owner.username }}</a>
+                    </div>
+                    <div class="id-meta">
+                        <span><svg class="ico ico--fill"><use href="#i-star"></use></svg> {{ "%.1f"|format(item.owner.rating) }} rating</span>
+                        <span>{{ item.owner.items|length }} listing{{ '' if item.owner.items|length == 1 else 's' }}</span>
+                        {% if item.owner.kyc_status == 'verified' %}
+                        <span class="seal">Passport checked</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if current_user.is_authenticated and current_user.id != item.owner.id %}
+            {#
+              The order is placed on /order/new, where the destination is chosen
+              and the delivery fee is quoted. Countering the price happens on
+              that same form, so there is no separate negotiate panel any more.
+            #}
+            <div class="deal-panel">
+                <div class="deal-row">
+                    <div class="deal-where">
+                        <span class="field-label">Collected from</span>
+                        <b>{{ item.pickup_label or item.location_label }}</b>
+                    </div>
+                    <div class="deal-total">
+                        Delivery is quoted
+                        <b>once you say where it has to reach</b>
+                    </div>
+                </div>
+
+                <div class="deal-actions">
+                    {% if item.is_orderable %}
+                    <a href="{{ url_for('place_order', item_id=item.id) }}" class="auth-btn">
+                        Order this and have it delivered
+                    </a>
+                    {% else %}
+                    <span class="auth-btn" aria-disabled="true" role="link">This listing is {{ item.status }}</span>
+                    {% endif %}
+
+                    {% if chat_state == 'accepted' %}
+                    <a href="{{ url_for('chat', recipient_id=item.owner.id) }}" class="auth-btn auth-btn-muted">Open chat</a>
+                    {% elif chat_state == 'outgoing_pending' %}
+                    <a href="{{ url_for('profile', user_id=item.owner.id) }}" class="auth-btn auth-btn-muted">Chat request pending</a>
+                    {% elif chat_state == 'incoming_pending' and chat_request %}
+                    <a href="{{ url_for('accept_chat_request', request_id=chat_request.id) }}" class="auth-btn auth-btn-muted">Accept their chat request</a>
+                    {% else %}
+                    <a href="{{ url_for('send_chat_request', recipient_id=item.owner.id) }}" class="auth-btn auth-btn-muted">Ask a question first</a>
+                    {% endif %}
+                </div>
+
+                <p class="deal-note">
+                    You can offer a different price on the order form. The seller has to
+                    accept before anything leaves your wallet.
+                </p>
+            </div>
+            {% elif not current_user.is_authenticated %}
+            <div class="notice">
+                <span class="notice-mark">Sign in</span>
+                <span>You need an account to order this or message the seller. <a href="{{ url_for('login') }}">Log in</a>, or <a href="{{ url_for('request_access') }}">request access</a> and an administrator will review it.</span>
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="state state--compact">
+                <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-user-slash"></use></svg></div>
+                <h3>This seller's account is gone</h3>
+                <p>The listing is still on record, but there is no one to contact. Browse similar items instead.</p>
+                <div class="state-actions">
+                    <a href="{{ url_for('search', q=item.category) }}" class="auth-btn auth-btn-muted">See other {{ item.category }}</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="record-section">
+            <h2>About this item</h2>
+            <p class="record-desc">{{ item.description or "The seller hasn't written a description. Ask them in chat before you commit." }}</p>
+        </div>
+
+        <div class="record-section">
+            <h2>Reviews</h2>
+
+            {% if current_user.is_authenticated and item.owner and current_user.id != item.owner.id %}
+            <form action="{{ url_for('rate_item', item_id=item.id) }}" method="POST" class="review-form">
+                <fieldset style="border:0;padding:0;margin:0 0 16px;">
+                    <legend class="field-label">Your rating</legend>
+                    <div class="star-input">
+                        {% for i in range(1, 6) %}
+                        <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" required>
+                        <label for="star{{ i }}" aria-label="{{ i }} out of 5"><svg class="ico ico--fill"><use href="#i-star"></use></svg></label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+                <div class="form-group">
+                    <label for="review-content">What should the next buyer know?</label>
+                    <textarea name="content" id="review-content" placeholder="Condition, how the hand-off went, anything that surprised you." required></textarea>
+                </div>
+                <button type="submit" class="auth-btn btn-block">Post review</button>
+            </form>
+            {% endif %}
+
+            <div class="review-list">
+                {% for review in reviews %}
+                <div class="review-item">
+                    <div class="review-head">
+                        <span class="review-who">{{ review.reviewer.username }}</span>
+                        <span class="review-stars">{{ review.rating }} / 5 <svg class="ico ico--fill"><use href="#i-star"></use></svg></span>
+                    </div>
+                    <p class="review-body">{{ review.content }}</p>
+                </div>
+                {% else %}
+                <div class="state state--compact">
+                    <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-pen"></use></svg></div>
+                    <h3>No reviews yet</h3>
+                    <p>Nobody has ordered this through HandShake yet. If you do, your review will be the first thing the next person reads.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // The rental duration calculator and the negotiate drawer lived here. Both
+    // are gone: the price is fixed per item, and an offer is made on the order
+    // form where the destination and the delivery fee are settled together.
+
+    // Paint the stars up to the chosen rating, including on keyboard selection.
+    const starInputs = document.querySelectorAll('.star-input input');
+    const starLabels = document.querySelectorAll('.star-input label');
+    starInputs.forEach((input) => {
+        input.addEventListener('change', () => {
+            const value = parseInt(input.value, 10);
+            starLabels.forEach((label, index) => {
+                label.classList.toggle('is-on', index < value);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Marketplace{% endblock %}
+
+{% block content %}
+<div
+    id="ai-expert-sidebar"
+    class="ai-expert-sidebar"
+    role="dialog"
+    aria-label="Ask about this search"
+    {% if expert_query %}data-expert-query="{{ expert_query }}"{% endif %}
+>
+    <div class="ai-expert-header">
+        <div class="ai-expert-header-row">
+            <h3>Ask about this search</h3>
+            <button type="button" id="ai-expert-close" class="ai-expert-close" aria-label="Close">
+                <svg class="ico"><use href="#i-times"></use></svg>
+            </button>
+        </div>
+        <span class="ai-expert-eyebrow">Live</span>
+    </div>
+    <div class="ai-expert-status">Nothing runs until you ask.</div>
+    <div class="ai-expert-actions">
+        <button type="button" class="ai-quick-action" data-expert-question="Teach me what to check for in these results.">What should I check?</button>
+        <button type="button" class="ai-quick-action" data-expert-question="How should I set up or inspect an item like this?">Setup help</button>
+    </div>
+    <div class="ai-chat-thread" id="ai-chat-thread"></div>
+    <form id="ai-expert-form" class="ai-expert-form">
+        <label for="ai-expert-input" class="visually-hidden">Your question</label>
+        <input id="ai-expert-input" type="text" placeholder="Ask about setup, inspection, or usage" {% if not expert_query %}disabled{% endif %}>
+        <button type="submit" class="auth-btn" {% if not expert_query %}disabled{% endif %}>Ask</button>
+    </form>
+</div>
+
+{% if expert_query %}
+<button type="button" id="ai-expert-launcher" class="ai-expert-launcher">Ask about this search</button>
+{% endif %}
+
+
+<div class="nav-container market-head">
+    <div class="market-title">
+        <h1>
+            {% if search_query %}
+                {{ items|length }} listing{{ '' if items|length == 1 else 's' }} for “{{ search_query }}”
+            {% else %}
+                Everything on offer near you
+            {% endif %}
+        </h1>
+        <p class="market-note">
+            Every seller here has had their passport checked by hand. You agree in chat, meet in person, and scan to close the deal.
+        </p>
+    </div>
+</div>
+
+{#
+  Categories live at the top left of the board and stay there while you scroll
+  it. They used to be one horizontally-scrolling strip, which hid most of the
+  list behind a swipe — unusable on a phone once there is more than a handful.
+  Now: a ruled index on desktop, and on a phone a wrapping block that opens to
+  its full height with a native checkbox and no JavaScript at all.
+#}
+<div class="nav-container market-layout">
+    <aside class="cat-panel" aria-labelledby="cat-panel-title">
+        <div class="cat-panel-head">
+            <h2 id="cat-panel-title">Categories</h2>
+            <span class="cat-panel-total">{{ categories|length }}</span>
+        </div>
+
+        <input type="checkbox" id="cat-expand" class="cat-expand">
+        <div class="cat-list">
+            <button type="button" class="category-item active" data-category="all" aria-pressed="true">
+                <span class="category-label">All items</span>
+                <span class="category-count">{{ categories|sum(attribute='count') }}</span>
+            </button>
+            {% for category in categories %}
+            <button type="button" class="category-item{% if not category.count %} is-empty{% endif %}" data-category="{{ category.slug }}" aria-pressed="false">
+                <span class="category-label">{{ category.label }}</span>
+                <span class="category-count">{{ category.count }}</span>
+            </button>
+            {% endfor %}
+        </div>
+        <label for="cat-expand" class="cat-more"></label>
+    </aside>
+
+    <div class="market-main">
+
+    <form action="{{ url_for('search') }}" method="GET" id="location-filter-form" class="filter-bar">
+        <div class="filter-field">
+            <label for="filter-q">Search</label>
+            <input type="text" id="filter-q" name="q" value="{{ search_query or '' }}" placeholder="Drill, camera, bike…">
+        </div>
+        <div class="filter-field">
+            <label for="velayat-filter">Region</label>
+            <select id="velayat-filter" name="velayat_id">
+                <option value="">All regions</option>
+                {% for velayat in location_tree %}
+                <option value="{{ velayat.id }}" {% if selected_location.velayat_id == velayat.id %}selected{% endif %}>{{ velayat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-field">
+            <label for="district-filter">District</label>
+            <select id="district-filter" name="district_id">
+                <option value="">All districts</option>
+            </select>
+        </div>
+        <div class="filter-field">
+            <label for="neighborhood-filter">Street or neighbourhood</label>
+            <select id="neighborhood-filter" name="neighborhood_id">
+                <option value="">Anywhere</option>
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="auth-btn">Apply</button>
+            <a href="{{ url_for('index') }}" class="auth-btn auth-btn-muted">Clear</a>
+        </div>
+    </form>
+    <p class="filter-hint">
+        Pick <code>Ahal</code> to narrow by etrap, or <code>Ashgabat</code> to choose a specific street.
+    </p>
+
+    <h2 class="visually-hidden">Listings</h2>
+    <div class="product-grid">
+    {% for item in items %}
+    <a href="{{ url_for('item_detail', item_id=item.id) }}" class="hs-card" data-category="{{ item.category }}">
+        {# No stock-photo stand-in: a listing with no picture says so in the
+           system's own language rather than borrowing a stranger's shed from
+           a CDN that may not answer. #}
+        <div class="card-img-wrapper{% if not item.image_url %} is-missing{% endif %}" data-fallback="{{ item.category|replace('_', ' ') }}">
+            {#
+              The badge used to read "Sell" on every card, because item.type was a
+              shim that always returned 'sell'. It now carries something a buyer
+              can act on: the delivery size class, which is what the delivery fee
+              is calculated from — or the listing's state when it is not orderable.
+            #}
+            {% if item.status != 'listed' %}
+            <span class="badge badge--state">{{ item.status|capitalize }}</span>
+            {% else %}
+            <span class="badge">{{ item.size_class|capitalize }}</span>
+            {% endif %}
+            {% if item.image_url %}<img src="{{ item.image_url }}" alt="{{ item.title }}" loading="lazy" decoding="async">{% endif %}
+        </div>
+        <div class="card-content">
+            <h3>{{ item.title }}</h3>
+            <p class="location">{{ item.location_label }}</p>
+            <div class="card-foot">
+                <p class="price">{{ '{:,g}'.format(item.price or 0) }} TMT</p>
+                <span class="card-rating"><svg class="ico ico--fill"><use href="#i-star"></use></svg> {{ "%.1f"|format(item.rating) }}</span>
+            </div>
+        </div>
+    </a>
+    {% else %}
+    <div class="grid-state">
+        <div class="state">
+            <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-box-open"></use></svg></div>
+            <h3>Nothing matches these filters yet</h3>
+            <p>
+                {% if search_query %}
+                    No listing mentions “{{ search_query }}” in the area you picked. Try a broader region, or drop the search words and browse a category.
+                {% else %}
+                    No one has posted in this area yet. Widen the region, or be the first to list something here.
+                {% endif %}
+            </p>
+            <div class="state-actions">
+                <a href="{{ url_for('index') }}" class="auth-btn auth-btn-muted">Clear filters</a>
+                <a href="/upload" class="auth-btn">Post an item</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <div class="grid-state hidden" id="category-empty">
+        <div class="state state--compact">
+            <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-filter"></use></svg></div>
+            <h3>Nothing in this category right now</h3>
+            <p>Pick another category, or search the whole marketplace.</p>
+        </div>
+    </div>
+    </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const locationTree = {{ location_tree|tojson }};
+    const selectedLocation = {{ selected_location|tojson }};
+    const velayatSelect = document.getElementById('velayat-filter');
+    const districtSelect = document.getElementById('district-filter');
+    const neighborhoodSelect = document.getElementById('neighborhood-filter');
+
+    function populateSelect(select, options, placeholder, selectedValue) {
+        select.innerHTML = '';
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = placeholder;
+        select.appendChild(placeholderOption);
+
+        options.forEach((option) => {
+            const element = document.createElement('option');
+            element.value = option.id;
+            element.textContent = option.name;
+            if (String(selectedValue || '') === String(option.id)) {
+                element.selected = true;
+            }
+            select.appendChild(element);
+        });
+    }
+
+    function syncDistricts(selectedDistrictId, selectedNeighborhoodId) {
+        const velayat = locationTree.find((entry) => String(entry.id) === velayatSelect.value);
+        const districts = velayat ? velayat.districts : [];
+        populateSelect(districtSelect, districts, 'All districts', selectedDistrictId);
+        syncNeighborhoods(selectedNeighborhoodId);
+    }
+
+    function syncNeighborhoods(selectedNeighborhoodId) {
+        const velayat = locationTree.find((entry) => String(entry.id) === velayatSelect.value);
+        const district = velayat && districtSelect.value
+            ? velayat.districts.find((entry) => String(entry.id) === districtSelect.value)
+            : null;
+        const neighborhoods = district ? district.neighborhoods : [];
+        const label = velayat && velayat.name === 'Ashgabat'
+            ? 'Any street or avenue'
+            : 'Anywhere';
+        populateSelect(neighborhoodSelect, neighborhoods, label, selectedNeighborhoodId);
+    }
+
+    velayatSelect.addEventListener('change', () => {
+        syncDistricts('', '');
+    });
+
+    districtSelect.addEventListener('change', () => {
+        syncNeighborhoods('');
+    });
+
+    syncDistricts(selectedLocation.district_id, selectedLocation.neighborhood_id);
+});
+</script>
+{% endblock %}

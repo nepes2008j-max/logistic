@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | People{% endblock %}
+
+{% block content %}
+<div class="nav-container record-page">
+    <header class="record-masthead">
+        <span class="eyebrow">Administration</span>
+        <h1>People and roles</h1>
+        <p class="record-masthead-state">A courier can move deliveries. An administrator can do everything here.</p>
+    </header>
+
+    <table class="record-table">
+        <thead>
+            <tr>
+                <th scope="col">Person</th>
+                <th scope="col">Where</th>
+                <th scope="col">Passport</th>
+                <th scope="col">Wallet</th>
+                <th scope="col">Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for person in people %}
+            <tr>
+                <td data-col="Person">
+                    <b><a href="{{ url_for('profile', user_id=person.id) }}">{{ person.full_name or person.username or person.email }}</a></b>
+                    <div class="cell-sub">{{ person.email }}</div>
+                </td>
+                <td data-col="Where">{{ person.region or 'not given' }}</td>
+                <td data-col="Passport">
+                    <span class="status-chip {% if person.kyc_status == 'verified' %}status-chip--active{% else %}status-chip--pending{% endif %}">{{ person.kyc_status }}</span>
+                </td>
+                <td data-col="Wallet" class="num">{{ "%.2f"|format(person.wallet_balance or 0) }} TMT</td>
+                <td data-col="Role">
+                    <form action="{{ url_for('admin_set_role', user_id=person.id) }}" method="POST" class="cell-form">
+                        <label class="visually-hidden" for="role-{{ person.id }}">Role for {{ person.email }}</label>
+                        <select name="role" id="role-{{ person.id }}">
+                            <option value="member" {% if person.role == 'member' %}selected{% endif %}>Member</option>
+                            <option value="courier" {% if person.role == 'courier' %}selected{% endif %}>Courier</option>
+                            <option value="admin" {% if person.role == 'admin' %}selected{% endif %}>Administrator</option>
+                        </select>
+                        <button type="submit" class="auth-btn auth-btn-muted">Save</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

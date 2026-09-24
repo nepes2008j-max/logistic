@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Log in{% endblock %}
+
+{% block content %}
+<div class="auth-split">
+    <div class="auth-rail">
+        <h1>Welcome back.</h1>
+        <p>
+            Your wallet, your orders and your open chats are where you left them.
+        </p>
+        <ul class="auth-facts">
+            <li><span>Every member's passport has been checked by a person, not a script.</span></li>
+            <li><span>Your money stays with HandShake until a courier records the handover.</span></li>
+            <li><span>Nobody can message you until you accept their request.</span></li>
+        </ul>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2>Log in</h2>
+            <p>Use the email you registered with.</p>
+        </div>
+
+        <form class="auth-form" action="/login" method="POST">
+            <div class="form-group">
+                <label for="login-email">Email</label>
+                <div class="affix-field">
+                    <span class="affix" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-envelope"></use></svg></span>
+                    <input type="email" name="email" id="login-email" placeholder="you@example.com" autocomplete="email" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <div class="affix-field">
+                    <span class="affix" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-lock"></use></svg></span>
+                    <input type="password" name="password" id="login-password" placeholder="Your password" autocomplete="current-password" required>
+                </div>
+            </div>
+
+            <div class="form-aside">
+                <label for="remember-me">
+                    <input type="checkbox" id="remember-me"> Keep me logged in
+                </label>
+                <a href="{{ url_for('forgot_password') }}">Forgot your password?</a>
+            </div>
+
+            <button type="submit" class="auth-btn btn-block btn-lg">Log in</button>
+        </form>
+
+        <div class="auth-footer">
+            No account yet? <a href="{{ url_for('request_access') }}">Request access</a> —
+            an administrator reviews every one by hand.
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Courier{% endblock %}
+
+{% block content %}
+<div class="nav-container record-page">
+    <header class="record-masthead">
+        <span class="eyebrow">Courier</span>
+        <h1>Your runs</h1>
+        <p class="record-masthead-state">Collect with the seller's code, hand over with the buyer's.</p>
+    </header>
+
+    <h2>Assigned to you</h2>
+    {% if assigned %}
+    <div class="ledger-rows">
+        {% for delivery in assigned %}
+        <div class="ledger-row">
+            <div class="ledger-row-main">
+                <div class="ledger-row-title">
+                    <a href="{{ url_for('delivery_detail', delivery_id=delivery.id) }}">
+                        #{{ '%04d'|format(delivery.id) }} &middot; {{ delivery.order.item.title if delivery.order.item else 'Removed listing' }}
+                    </a>
+                </div>
+                <div class="ledger-row-meta">
+                    {{ delivery.origin_neighborhood.full_path if delivery.origin_neighborhood else 'unknown' }}
+                    &rarr;
+                    {{ delivery.dest_neighborhood.full_path if delivery.dest_neighborhood else 'unknown' }}
+                </div>
+                <div class="ledger-row-meta">
+                    <span class="status-chip">{{ delivery.status.replace('_', ' ') }}</span>
+                    &middot; {{ delivery.order.dest_address_line or 'no address' }}
+                    &middot; {{ delivery.order.dest_contact_phone or 'no phone' }}
+                </div>
+            </div>
+            <div class="ledger-row-side">
+                <a href="{{ url_for('delivery_detail', delivery_id=delivery.id) }}" class="auth-btn auth-btn-muted">Open</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="state state--compact"><p>Nothing assigned to you.</p></div>
+    {% endif %}
+
+    <h2>Waiting for a courier</h2>
+    {% if unclaimed %}
+    <div class="ledger-rows">
+        {% for delivery in unclaimed %}
+        <div class="ledger-row">
+            <div class="ledger-row-main">
+                <div class="ledger-row-title">
+                    #{{ '%04d'|format(delivery.id) }} &middot; {{ delivery.order.item.title if delivery.order.item else 'Removed listing' }}
+                </div>
+                <div class="ledger-row-meta">
+                    {{ delivery.origin_neighborhood.full_path if delivery.origin_neighborhood else 'unknown' }}
+                    &rarr;
+                    {{ delivery.dest_neighborhood.full_path if delivery.dest_neighborhood else 'unknown' }}
+                    &middot; {{ "%.2f"|format(delivery.fee) }} TMT
+                </div>
+            </div>
+            <div class="ledger-row-side">
+                <form action="{{ url_for('claim_delivery', delivery_id=delivery.id) }}" method="POST">
+                    <button type="submit" class="auth-btn">Take it</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="state state--compact"><p>Nothing waiting.</p></div>
+    {% endif %}
+</div>
+{% endblock %}

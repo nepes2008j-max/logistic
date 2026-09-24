@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Order #{{ '%04d'|format(order.id) }}{% endblock %}
+
+{% block content %}
+<div class="nav-container record-page">
+    <header class="record-masthead">
+        <span class="eyebrow">Order #{{ '%04d'|format(order.id) }}</span>
+        <h1>{{ order.item.title if order.item else 'Removed listing' }}</h1>
+        <p class="record-masthead-state">
+            <span class="status-chip {% if order.status in ('completed', 'rejected', 'cancelled') %}status-chip--closed{% elif order.status == 'paid' %}status-chip--active{% else %}status-chip--pending{% endif %}">{{ order.status|capitalize }}</span>
+            <span>Placed {{ order.created_at.strftime('%d %b %Y') if order.created_at else 'date not recorded' }}</span>
+        </p>
+    </header>
+
+    <div class="grid-2">
+        <div class="panel panel-pad">
+            <h2>The journey</h2>
+            <div class="receipt-lines">
+                <div class="receipt-line">
+                    <span>Collected from</span>
+                    <b>{{ order.item.location_label if order.item else 'unknown' }}</b>
+                </div>
+                <div class="receipt-line">
+                    <span>Delivered to</span>
+                    <b>{{ order.destination_label }}</b>
+                </div>
+                <div class="receipt-line">
+                    <span>Address</span>
+                    <b>{{ order.dest_address_line or '—' }}</b>
+                </div>
+                <div class="receipt-line">
+                    <span>Contact</span>
+                    <b>{{ order.dest_contact_phone or '—' }}</b>
+                </div>
+                <div class="receipt-line">
+                    <span>Size</span>
+                    <b>{{ order.item.size_class if order.item else '—' }}</b>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-pad">
+            <h2>The money</h2>
+            <div class="receipt-lines">
+                <div class="receipt-line">
+                    <span>Goods{% if order.is_negotiated %} (agreed price, listed at {{ "%.2f"|format(order.item_price) }}){% endif %}</span>
+                    <b>{{ "%.2f"|format(order.agreed_price) }} TMT</b>
+                </div>
+                <div class="receipt-line"><span>Delivery</span><b>{{ "%.2f"|format(order.delivery_fee) }} TMT</b></div>
+                <div class="receipt-line"><span>Service fee</span><b>{{ "%.2f"|format(order.service_fee) }} TMT</b></div>
+                <div class="receipt-total"><span>Total</span><b>{{ "%.2f"|format(order.total) }} TMT</b></div>
+            </div>
+            <p class="field-help">
+                HandShake holds the goods price from the moment you pay until the courier
+                records the handover. The seller is paid then, not before.
+            </p>
+        </div>
+    </div>
+
+    <div class="panel panel-pad">
+        <h2>People</h2>
+        <div class="receipt-lines">
+            <div class="receipt-line">
+                <span>Buyer</span>
+                <b><a href="{{ url_for('profile', user_id=order.buyer_id) }}">{{ order.buyer.full_name or order.buyer.username }}</a></b>
+            </div>
+            <div class="receipt-line">
+                <span>Seller</span>
+                <b><a href="{{ url_for('profile', user_id=order.seller_id) }}">{{ order.seller.full_name or order.seller.username }}</a></b>
+            </div>
+        </div>
+    </div>
+
+    {% if delivery %}
+    <div class="panel panel-pad">
+        <h2>Delivery</h2>
+        <p>
+            <span class="status-chip {{ 'status-chip--closed' if not delivery.is_open else 'status-chip--active' }}">{{ delivery.status.replace('_', ' ')|capitalize }}</span>
+            {% if delivery.eta_date %} &middot; expected {{ delivery.eta_date.strftime('%d %b %Y') }}{% endif %}
+            {% if delivery.courier %} &middot; carried by {{ delivery.courier.full_name or delivery.courier.email }}{% endif %}
+        </p>
+
+        {% if current_user.id == order.seller_id and delivery.pickup_code %}
+        <div class="code-plate">
+            <span class="field-label">Pickup code</span>
+            <span class="code-plate-value">{{ delivery.pickup_code }}</span>
+            <p>Read this to the courier when they collect. Nobody else is shown it.</p>
+        </div>
+        {% endif %}
+        {% if current_user.id == order.buyer_id and delivery.dropoff_code %}
+        <div class="code-plate">
+            <span class="field-label">Drop-off code</span>
+            <span class="code-plate-value">{{ delivery.dropoff_code }}</span>
+            <p>Read this to the courier once the goods are in your hands. It releases the money to the seller.</p>
+        </div>
+        {% endif %}
+
+        <a href="{{ url_for('delivery_detail', delivery_id=delivery.id) }}" class="auth-btn auth-btn-muted">Track the delivery</a>
+    </div>
+    {% endif %}
+
+    <div class="record-actions">
+        {% if current_user.id == order.seller_id and order.status == 'placed' %}
+        <form action="{{ url_for('accept_order', order_id=order.id) }}" method="POST" style="display:inline;">
+            <button type="submit" class="auth-btn">Accept this order</button>
+        </form>
+        <form action="{{ url_for('reject_order', order_id=order.id) }}" method="POST" style="display:inline;">
+            <button type="submit" class="auth-btn auth-btn-outline-danger">Reject</button>
+        </form>
+        {% endif %}
+
+        {% if current_user.id == order.buyer_id and order.status == 'accepted' %}
+        <a href="{{ url_for('pay_order', order_id=order.id) }}" class="auth-btn">Pay {{ "%.2f"|format(order.total) }} TMT</a>
+        {% endif %}
+
+        {% if current_user.id == order.buyer_id and order.status in ('placed', 'accepted') %}
+        <form action="{{ url_for('cancel_order', order_id=order.id) }}" method="POST" style="display:inline;">
+            <button type="submit" class="auth-btn auth-btn-muted">Cancel the order</button>
+        </form>
+        {% endif %}
+
+        <a href="{{ url_for('orders') }}" class="link-action">All orders</a>
+    </div>
+</div>
+{% endblock %}

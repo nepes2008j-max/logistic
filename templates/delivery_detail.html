@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Delivery #{{ '%04d'|format(delivery.id) }}{% endblock %}
+
+{% block content %}
+<div class="nav-container record-page">
+    <header class="record-masthead">
+        <span class="eyebrow">Delivery #{{ '%04d'|format(delivery.id) }}</span>
+        <h1>{{ order.item.title if order.item else 'Removed listing' }}</h1>
+        <p class="record-masthead-state">
+            <span class="status-chip {{ 'status-chip--closed' if not delivery.is_open else 'status-chip--active' }}">{{ delivery.status.replace('_', ' ')|capitalize }}</span>
+            {% if delivery.eta_date %}<span>Expected {{ delivery.eta_date.strftime('%d %b %Y') }}</span>{% endif %}
+            {% if delivery.courier %}<span>Carried by {{ delivery.courier.full_name or delivery.courier.email }}</span>{% endif %}
+        </p>
+    </header>
+
+    <div class="grid-2">
+        <div class="panel panel-pad">
+            <h2>Route</h2>
+            <div class="receipt-lines">
+                <div class="receipt-line">
+                    <span>From</span>
+                    <b>{{ delivery.origin_neighborhood.full_path if delivery.origin_neighborhood else 'unknown' }}</b>
+                </div>
+                <div class="receipt-line">
+                    <span>To</span>
+                    <b>{{ delivery.dest_neighborhood.full_path if delivery.dest_neighborhood else 'unknown' }}</b>
+                </div>
+                <div class="receipt-line"><span>Address</span><b>{{ order.dest_address_line or '—' }}</b></div>
+                <div class="receipt-line"><span>Contact</span><b>{{ order.dest_contact_phone or '—' }}</b></div>
+                <div class="receipt-line"><span>Delivery fee</span><b>{{ "%.2f"|format(delivery.fee) }} TMT</b></div>
+                <div class="receipt-line">
+                    <span>Courier</span>
+                    <b>{{ delivery.courier.full_name or delivery.courier.email if delivery.courier else 'not assigned yet' }}</b>
+                </div>
+            </div>
+            <a href="{{ url_for('order_detail', order_id=order.id) }}" class="link-action">See the order</a>
+        </div>
+
+        <div class="panel panel-pad">
+            <h2>What has happened</h2>
+            {#
+              DeliveryEvent is append-only, so this is a genuine log rather than
+              a summary: one stop per recorded transition, oldest at the top,
+              the last one filled in because that is where the parcel is now.
+            #}
+            {% if events %}
+            <ol class="timeline">
+                {% for event in events %}
+                <li class="timeline-item{% if loop.last %} timeline-item--current{% endif %}{% if event.status in ('failed', 'returned') %} timeline-item--failed{% endif %}">
+                    <div class="timeline-status">{{ event.status.replace('_', ' ')|capitalize }}</div>
+                    {% if event.note %}<p class="timeline-note">{{ event.note }}</p>{% endif %}
+                    <div class="timeline-meta">
+                        {{ event.created_at.strftime('%d %b %Y, %H:%M') if event.created_at else 'time not recorded' }}
+                        {% if event.actor %} &middot; {{ event.actor.full_name or event.actor.email }}{% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ol>
+            {% else %}
+            <p class="profile-empty">Nothing recorded yet. The first entry appears the moment a courier claims this run.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {#
+      A code is read out loud at a door, so it is set as an object rather than
+      buried in a sentence. Each one is shown to exactly one person: the seller
+      sees the pickup code, the buyer sees the drop-off code, nobody sees both.
+    #}
+    {% if current_user.id == order.seller_id and delivery.pickup_code %}
+    <div class="code-plate">
+        <span class="field-label">Pickup code</span>
+        <span class="code-plate-value">{{ delivery.pickup_code }}</span>
+        <p>Read this to the courier when they collect. It works once, and handing it over is what starts the delivery.</p>
+    </div>
+    {% endif %}
+    {% if current_user.id == order.buyer_id and delivery.dropoff_code %}
+    <div class="code-plate">
+        <span class="field-label">Drop-off code</span>
+        <span class="code-plate-value">{{ delivery.dropoff_code }}</span>
+        <p>Read this to the courier at the door, once the goods are actually in your hands. It is what releases the money to the seller.</p>
+    </div>
+    {% endif %}
+
+    {% if can_drive %}
+    <div class="panel panel-pad courier-actions">
+        <h2>Courier actions</h2>
+
+        {% if delivery.status == 'awaiting_pickup' %}
+        <form action="{{ url_for('delivery_pickup', delivery_id=delivery.id) }}" method="POST" class="form-row">
+            <div class="form-group">
+                <label for="pickup-code">Pickup code from the seller</label>
+                <input type="text" name="code" id="pickup-code" maxlength="12" autocomplete="off" required>
+            </div>
+            <button type="submit" class="auth-btn">Confirm pickup</button>
+        </form>
+        {% endif %}
+
+        {% for target in delivery.next_statuses %}
+        {% if target in ('in_transit', 'out_for_delivery') %}
+        <form action="{{ url_for('advance_delivery', delivery_id=delivery.id) }}" method="POST" style="display:inline;">
+            <input type="hidden" name="status" value="{{ target }}">
+            <button type="submit" class="auth-btn auth-btn-muted">Mark {{ target.replace('_', ' ') }}</button>
+        </form>
+        {% endif %}
+        {% endfor %}
+
+        {% if delivery.status == 'out_for_delivery' %}
+        <form action="{{ url_for('delivery_dropoff', delivery_id=delivery.id) }}" method="POST" class="form-row">
+            <div class="form-group">
+                <label for="dropoff-code">Drop-off code from the buyer</label>
+                <input type="text" name="code" id="dropoff-code" maxlength="12" autocomplete="off" required>
+            </div>
+            <button type="submit" class="auth-btn">Confirm handover</button>
+        </form>
+        {% endif %}
+
+        {% if 'failed' in delivery.next_statuses %}
+        <form action="{{ url_for('fail_delivery', delivery_id=delivery.id) }}" method="POST" class="form-row">
+            <div class="form-group">
+                <label for="fail-note">What went wrong</label>
+                <input type="text" name="note" id="fail-note" placeholder="Nobody at the address">
+            </div>
+            <button type="submit" class="auth-btn auth-btn-outline-danger">Record a failed attempt</button>
+        </form>
+        {% endif %}
+
+        {% if 'returned' in delivery.next_statuses %}
+        <form action="{{ url_for('return_delivery', delivery_id=delivery.id) }}" method="POST" style="display:inline;">
+            <button type="submit" class="auth-btn auth-btn-outline-danger">Return to the seller and refund</button>
+        </form>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

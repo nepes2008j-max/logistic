@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Edit your profile{% endblock %}
+
+{% block content %}
+<div class="auth-container" style="max-width: 680px;">
+    <div class="auth-header">
+        <h1>Edit your profile</h1>
+        <p>This is what other members see before they agree to meet you.</p>
+    </div>
+
+    <form class="auth-form" action="/edit-profile" method="POST" enctype="multipart/form-data">
+        <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: var(--s7);">
+            <span class="field-label" id="pfp-label" style="margin-bottom: var(--s4);">Profile photo</span>
+
+            <div id="pfp-container" class="image-preview-wrapper pfp-wrapper{% if current_user.profile_pic %} active{% endif %}" role="group" aria-labelledby="pfp-label">
+                {% if current_user.profile_pic %}
+                    <img id="pfp-preview" src="{{ current_user.profile_pic }}" alt="Your current profile photo">
+                {% else %}
+                    <svg id="pfp-placeholder" class="ico" style="width: 3rem; height: 3rem; color: var(--ink-3); opacity: 0.45;" aria-hidden="true"><use href="#i-user"></use></svg>
+                    <img id="pfp-preview" alt="Preview of your new photo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="display: none;">
+                {% endif %}
+
+                <div id="camera-area" style="display: none; position: absolute; inset: 0; z-index: 10;">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <button type="button" id="capture-btn" class="auth-btn btn-sm" style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); padding: 5px 14px;">
+                        Capture
+                    </button>
+                </div>
+            </div>
+
+            <div id="upload-controls" class="upload-controls" style="width: 100%; max-width: 380px;">
+                <button type="button" id="start-camera" class="auth-btn auth-btn-muted">Use the camera</button>
+                <div class="file-drop">
+                    <button type="button" class="auth-btn auth-btn-muted" tabindex="-1">Choose a file</button>
+                    <input type="file" name="profile_pic" id="profile_pic_input" accept="image/*" aria-label="Choose a profile photo">
+                </div>
+            </div>
+            <input type="hidden" name="camera_image" id="camera_image">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="edit-full-name">Full name</label>
+                <input type="text" name="full_name" id="edit-full-name" value="{{ current_user.full_name or '' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-region">City you deal in</label>
+                <input type="text" name="region" id="edit-region" value="{{ current_user.region or '' }}" placeholder="e.g. Ashgabat" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="edit-bio">About you</label>
+            <textarea name="bio" id="edit-bio" placeholder="What do you lend out, and what should someone know before meeting you?" style="min-height: 130px;">{{ current_user.bio or '' }}</textarea>
+        </div>
+
+        <div style="display: flex; gap: var(--s3); margin-top: var(--s7);">
+            <button type="submit" class="auth-btn" style="flex: 2;">Save changes</button>
+            <a href="{{ url_for('profile', user_id=current_user.id) }}" class="auth-btn auth-btn-muted" style="flex: 1;">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const captureBtn = document.getElementById('capture-btn');
+    const startCameraBtn = document.getElementById('start-camera');
+    const cameraArea = document.getElementById('camera-area');
+    const cameraImageInput = document.getElementById('camera_image');
+    const fileInput = document.getElementById('profile_pic_input');
+    const pfpPreview = document.getElementById('pfp-preview');
+    const pfpContainer = document.getElementById('pfp-container');
+    const placeholder = document.getElementById('pfp-placeholder');
+
+    function showPreview(src) {
+        pfpPreview.src = src;
+        pfpPreview.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
+        pfpContainer.classList.add('active');
+    }
+
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+            video.srcObject = stream;
+            cameraArea.style.display = 'block';
+            if (placeholder) placeholder.style.display = 'none';
+        } catch (err) {
+            alert("We could not open the camera. Choose a file instead.");
+        }
+    }
+
+    startCameraBtn.addEventListener('click', startCamera);
+
+    captureBtn.addEventListener('click', () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        const imageData = canvas.toDataURL('image/png');
+        cameraImageInput.value = imageData;
+        showPreview(imageData);
+        cameraArea.style.display = 'none';
+
+        if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+        }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => showPreview(event.target.result);
+            reader.readAsDataURL(file);
+        }
+    });
+});
+</script>
+{% endblock %}

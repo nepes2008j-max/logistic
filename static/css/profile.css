@@ -1,0 +1,655 @@
+/* ==========================================================================
+   HANDSHAKE
+   profile.css — the member record: an identity header, then one continuous
+   ledger of everything that member has going on.
+
+   The composition rule here is the system's own: hairline rules, not boxes.
+   The activity sections used to be four separately bordered panels stacked
+   one under another, which read as four unrelated widgets and put three
+   identical dashed empty states in a column. They are now joined edge to
+   edge into a single ruled document, and the review rail is sticky so the
+   right-hand column stops leaving a thousand pixels of void beside it.
+
+   One clay element per page, and on this page it is the identity band across
+   the top of the record. Nothing else on the page is warm.
+   ========================================================================== */
+
+.profile-page { padding-block: var(--s6) var(--s9); }
+
+/* --------------------------------------------------------------------------
+   1. IDENTITY DOSSIER
+   -------------------------------------------------------------------------- */
+
+.profile-header-card {
+    position: relative;
+    background: var(--surface);
+    border: var(--bw) solid var(--rule-2);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    box-shadow: var(--press);
+}
+
+/* Not a photo banner — a ruled index strip, like the top of a filing card */
+.profile-cover {
+    height: 92px;
+    /* The one clay element on this page. It was at 12% and read as grey, so
+       the accent was doing no work at all while a status badge below it was
+       the warmest thing on screen. */
+    background:
+        repeating-linear-gradient(
+            -45deg,
+            transparent 0 12px,
+            color-mix(in srgb, var(--accent) 34%, transparent) 12px 14px
+        ),
+        var(--paper-tint);
+    border-bottom: var(--bw) solid var(--rule);
+}
+
+.profile-header-inner {
+    position: relative;
+    padding: 0 var(--s7) var(--s7);
+}
+
+.profile-avatar {
+    position: relative;
+    width: 116px;
+    height: 116px;
+    margin-top: -58px;
+    margin-bottom: var(--s4);
+    border-radius: 50%;
+    border: 4px solid var(--surface);
+    background: var(--surface-2);
+    overflow: hidden;
+    /* An outline, not a shadow — the system has no elevation to spend. */
+    outline: var(--bw) solid var(--rule-2);
+    outline-offset: -1px;
+}
+
+.profile-avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-avatar-fallback {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-display);
+    font-size: var(--t-h2);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink-2);
+    background: var(--surface-2);
+}
+
+.profile-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--s5);
+}
+
+.profile-meta { min-width: 0; }
+
+.profile-meta h1 {
+    font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+    letter-spacing: -0.035em;
+}
+
+.profile-location {
+    margin-top: 8px;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-sm);
+    color: var(--ink-3);
+}
+
+.profile-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s2);
+    margin-top: var(--s4);
+}
+
+.profile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: var(--bw) solid var(--rule-2);
+    border-radius: var(--r-xs);
+    background: var(--paper-tint);
+    min-height: 32px;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    letter-spacing: 0.005em;
+    color: var(--ink-2);
+    white-space: nowrap;
+}
+.profile-badge i, .profile-badge .ico { color: var(--warn); font-size: var(--t-xs); }
+
+.profile-badge--verified {
+    border-color: var(--verified);
+    background: var(--verified-soft);
+    color: var(--verified);
+}
+.profile-badge--verified i { color: var(--verified); }
+
+.profile-badge--pending {
+    border-color: var(--warn);
+    background: var(--warn-soft);
+    color: var(--warn);
+}
+.profile-badge--pending i { color: var(--warn); }
+
+.profile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s2);
+    align-items: center;
+}
+
+.profile-about {
+    margin-top: var(--s6);
+    padding-top: var(--s5);
+    border-top: var(--bw) solid var(--rule);
+}
+.profile-about h2 {
+    font-family: var(--font-display);
+    font-size: var(--t-body-lg);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: var(--s2);
+}
+.profile-about p {
+    max-width: 68ch;
+    font-size: var(--t-body-lg);
+    line-height: 1.6;
+    color: var(--ink-2);
+}
+
+/* --------------------------------------------------------------------------
+   2. CONTENT GRID
+   -------------------------------------------------------------------------- */
+
+.profile-content-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 340px);
+    gap: var(--s6);
+    align-items: start;
+    margin-top: var(--s6);
+}
+
+/* The review rail follows you down the record instead of sitting at the top
+   of a column that is otherwise a thousand pixels of nothing. */
+.profile-content-grid > aside,
+.profile-content-grid > div:last-child:not(:only-child) {
+    position: sticky;
+    top: calc(var(--nav-h) + var(--s5));
+}
+
+.profile-panel {
+    padding: var(--s6);
+    background: var(--surface);
+    border: var(--bw) solid var(--rule);
+    border-radius: var(--r-md);
+}
+/* Consecutive sections share one edge, so the activity record reads as a
+   single ruled document rather than as a stack of separate widgets. */
+.profile-panel + .profile-panel { margin-top: -1px; }
+
+.profile-panel-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s3);
+    padding-bottom: var(--s3);
+    margin-bottom: var(--s5);
+    border-bottom: var(--bw2) solid var(--ink);
+}
+.profile-panel-header h3 {
+    font-family: var(--font-display);
+    font-size: var(--t-h4);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+.profile-panel-header span {
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-sm);
+    letter-spacing: 0.005em;
+    color: var(--ink-3);
+    white-space: nowrap;
+}
+
+/* -- Listings grid ---------------------------------------------------------- */
+
+.profile-listings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+    gap: var(--s4);
+}
+
+.profile-item-card {
+    display: block;
+    background: var(--surface);
+    border: var(--bw) solid var(--rule);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    transition: transform var(--d2) var(--ease),
+                box-shadow var(--d2) var(--ease),
+                border-color var(--d2) var(--ease);
+}
+.profile-item-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--ink);
+}
+
+.profile-item-image-wrap {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--surface-2);
+    border-bottom: var(--bw) solid var(--rule);
+}
+.profile-item-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--d3) var(--ease-out);
+}
+.profile-item-card:hover .profile-item-image { transform: scale(1.05); }
+
+/* Same ruled hatch the marketplace cards use, so "no photograph" looks the
+   same wherever it happens. */
+.profile-item-image-missing {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    background: repeating-linear-gradient(
+        -45deg,
+        transparent 0 9px,
+        color-mix(in srgb, var(--ink) 5%, transparent) 9px 10px
+    );
+    font-size: var(--t-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+}
+.profile-item-image-wrap.is-missing img { display: none; }
+
+.profile-item-body { padding: var(--s3); }
+
+/* Two lines before truncating: a product name cut to "Yamaha Acoustic Guit…"
+   is a card that has stopped doing its job. */
+.profile-item-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--t-sm);
+    line-height: 1.28;
+    letter-spacing: -0.012em;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    min-height: calc(2 * 1.28em);
+    overflow: hidden;
+}
+
+.profile-item-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s2);
+    margin-top: var(--s2);
+    padding-top: var(--s2);
+    border-top: var(--bw) solid var(--rule);
+}
+
+.profile-item-price {
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.profile-item-rating {
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-micro);
+    color: var(--ink-3);
+}
+
+/* --------------------------------------------------------------------------
+   3. TRANSACTION LEDGER ROWS
+   -------------------------------------------------------------------------- */
+
+.ledger-rows { display: flex; flex-direction: column; }
+
+.ledger-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--s4);
+    padding: var(--s4) 0;
+    border-bottom: var(--bw) solid var(--rule);
+}
+.ledger-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.ledger-row:first-child { padding-top: 0; }
+
+/* A grid, not a flex row. As a flex row this silently depended on every
+   template wrapping its text in one extra div: templates that passed a title
+   and two meta lines directly got three columns instead of three stacked
+   lines, which at phone width shredded the courier console and the orders
+   list. The text blocks now stack however many a template passes, and a
+   thumbnail — when there is one — takes a column of its own beside them. */
+.ledger-row-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: 0 var(--s3);
+    min-width: 0;
+    flex: 1 1 260px;
+}
+.ledger-row-main:has(> .ledger-thumb) {
+    grid-template-columns: auto minmax(0, 1fr);
+}
+.ledger-row-main > .ledger-thumb { grid-row: 1 / -1; }
+
+.ledger-thumb {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border: var(--bw) solid var(--rule-2);
+    border-radius: var(--r-sm);
+    background: var(--surface-2);
+}
+
+.ledger-row-title {
+    font-weight: 500;
+    font-size: var(--t-body);
+    line-height: 1.45;
+    color: var(--ink-2);
+}
+/* Ink, not clay: this repeats once per row, and the page's single clay is
+   the identity band at the top of the record. */
+.ledger-row-title b { color: var(--ink); font-weight: 700; }
+
+.ledger-row-meta {
+    margin-top: 3px;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-micro);
+    letter-spacing: 0.005em;
+    color: var(--ink-3);
+}
+.ledger-row-meta b {
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.ledger-row-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+    flex-wrap: wrap;
+}
+.ledger-row-actions .auth-btn { min-height: 44px; padding: 8px var(--s4); font-size: var(--t-xs); }
+
+.ledger-row-side {
+    text-align: right;
+    flex: none;
+}
+.ledger-row-amount {
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-body);
+    font-weight: 700;
+    color: var(--ink);
+}
+.ledger-row-date {
+    margin-top: 2px;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-micro);
+    letter-spacing: 0.005em;
+    text-transform: none;
+    color: var(--ink-3);
+}
+
+.rental-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 3px 9px;
+    border: var(--bw) solid var(--warn);
+    border-radius: var(--r-xs);
+    background: var(--warn-soft);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-micro);
+    font-weight: 700;
+    letter-spacing: 0.005em;
+    color: var(--warn);
+}
+.rental-timer.is-overdue {
+    border-color: var(--danger);
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    letter-spacing: 0.005em;
+}
+.status-chip--active   { color: var(--verified); }
+.status-chip--pending  { color: var(--warn); }
+.status-chip--closed   { color: var(--ink-3); }
+
+/* --------------------------------------------------------------------------
+   4. PENDING CHAT REQUESTS (own profile)
+   -------------------------------------------------------------------------- */
+
+.profile-request-list { display: flex; flex-direction: column; }
+
+.profile-request-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--s3);
+    padding: var(--s4) 0;
+    border-bottom: var(--bw) solid var(--rule);
+}
+.profile-request-card:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.profile-request-user {
+    display: flex;
+    align-items: center;
+    gap: var(--s3);
+    min-width: 0;
+}
+
+.profile-request-avatar {
+    width: 40px;
+    height: 40px;
+    flex: none;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--surface-2);
+    border: var(--bw) solid var(--rule-2);
+}
+
+.profile-request-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--t-body);
+}
+.profile-request-link {
+    display: block;
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-sm);
+    letter-spacing: 0.005em;
+    color: var(--ink-3);
+}
+.profile-request-link:hover { color: var(--ink); text-decoration: underline; }
+
+.profile-request-actions { display: flex; gap: var(--s2); }
+.profile-request-actions .auth-btn {
+    min-height: 44px;
+    padding: 8px var(--s4);
+    font-size: var(--t-xs);
+}
+
+/* --------------------------------------------------------------------------
+   5. REVIEWS RAIL
+   -------------------------------------------------------------------------- */
+
+.profile-reviews-title {
+    font-family: var(--font-display);
+    font-size: var(--t-h4);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    padding-bottom: var(--s3);
+    margin-bottom: var(--s4);
+    border-bottom: var(--bw2) solid var(--ink);
+}
+
+.profile-reviews-list { display: flex; flex-direction: column; }
+
+.profile-review-item {
+    padding-block: var(--s4);
+    border-bottom: var(--bw) solid var(--rule);
+}
+.profile-review-item:last-child { border-bottom: 0; padding-bottom: 0; }
+.profile-review-item:first-child { padding-top: 0; }
+
+.profile-review-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s3);
+    margin-bottom: 6px;
+}
+
+.profile-review-user {
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+    min-width: 0;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    color: var(--ink-2);
+}
+
+.profile-review-avatar,
+.profile-review-avatar-fallback {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    border-radius: 50%;
+    object-fit: cover;
+    display: grid;
+    place-items: center;
+    background: var(--surface-2);
+    color: var(--ink-3);
+    font-size: var(--t-micro);
+    font-weight: 700;
+}
+
+.profile-review-rating {
+    font-variant-numeric: tabular-nums;
+    font-size: var(--t-sm);
+    color: var(--warn);
+    white-space: nowrap;
+}
+
+.profile-review-content {
+    font-size: var(--t-body);
+    line-height: var(--lh-body);
+    color: var(--ink-2);
+    font-family: var(--font-display);
+}
+
+/* --------------------------------------------------------------------------
+   6. EMPTY STATES
+   -------------------------------------------------------------------------- */
+
+/* An empty section is not a dashed placeholder box — that is the visual
+   language of an unfinished admin template. It is a sentence, set at reading
+   size, hung off a short ink rule like every other opening in the system. */
+.profile-empty {
+    grid-column: 1 / -1;
+    position: relative;
+    margin: 0;
+    padding: var(--s2) 0 var(--s2) var(--s5);
+    max-width: 52ch;
+    border: 0;
+    background: none;
+    font-size: var(--t-sm);
+    line-height: 1.55;
+    letter-spacing: 0;
+    color: var(--ink-3);
+}
+.profile-empty::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--bw2);
+    background: var(--rule-2);
+}
+
+.profile-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s2);
+    padding: var(--s7) var(--s5);
+    text-align: center;
+    font-size: var(--t-sm);
+    line-height: 1.55;
+    color: var(--ink-3);
+}
+
+/* --------------------------------------------------------------------------
+   7. (was the QR hand-off modal)
+   The QR was a bare permanent URL to a confirm endpoint; it has been replaced
+   by single-use pickup and drop-off codes, which live on order_detail and
+   delivery_detail and are styled there as .code-plate. Nothing on a profile
+   renders a QR any more, so its styles are gone with it.
+   -------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------
+   8. RESPONSIVE
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 980px) {
+    .profile-content-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+    .profile-header-inner { padding: 0 var(--s5) var(--s5); }
+    .profile-avatar { width: 92px; height: 92px; margin-top: -46px; }
+    .profile-avatar-fallback { font-size: 2rem; }
+    .profile-cover { height: 76px; }
+    .profile-panel { padding: var(--s5) var(--s4); }
+    .profile-actions { width: 100%; }
+    .profile-actions .auth-btn { flex: 1 1 auto; }
+    .profile-listings-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--s3); }
+    .ledger-row-side { text-align: left; }
+    .ledger-row-actions { width: 100%; }
+    .ledger-row-actions .auth-btn { flex: 1; }
+}

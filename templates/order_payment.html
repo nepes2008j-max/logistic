@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Pay for order #{{ '%04d'|format(order.id) }}{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-header">
+        <h1>Pay for this order</h1>
+        <p>
+            The goods price is held by HandShake until the courier records the handover.
+            The seller is paid then. If we fail to deliver, you get all of it back.
+        </p>
+    </div>
+
+    <div class="receipt">
+        <div class="receipt-head">
+            <span class="tag">#{{ '%04d'|format(order.id) }}</span>
+        </div>
+        <div class="receipt-item">
+            {% if order.item and order.item.image_url %}
+            <img src="{{ order.item.image_url }}" alt="">
+            {% endif %}
+            <div>
+                <div class="receipt-item-title">{{ order.item.title if order.item else 'Removed listing' }}</div>
+                <div class="receipt-item-by">from {{ order.seller.full_name or order.seller.username }}</div>
+            </div>
+        </div>
+        <div class="receipt-lines">
+            <div class="receipt-line">
+                <span>Goods</span>
+                <b>{{ "%.2f"|format(order.agreed_price) }}</b>
+            </div>
+            <div class="receipt-line">
+                <span>Delivery to {{ order.destination_label }}</span>
+                <b>{{ "%.2f"|format(order.delivery_fee) }}</b>
+            </div>
+            <div class="receipt-line">
+                <span>HandShake service fee</span>
+                <b>{{ "%.2f"|format(order.service_fee) }}</b>
+            </div>
+            <div class="receipt-total">
+                <span>Total</span>
+                <b>{{ "%.2f"|format(order.total) }} TMT</b>
+            </div>
+        </div>
+    </div>
+
+    <div class="wallet-chip-row">
+        <span class="wallet-chip">Your wallet: {{ "%.2f"|format(current_user.wallet_balance or 0) }} TMT</span>
+    </div>
+
+    {% if (current_user.wallet_balance or 0) < order.total %}
+    <div class="state state--error">
+        <p>
+            This order needs {{ "%.2f"|format(order.total) }} TMT and you have
+            {{ "%.2f"|format(current_user.wallet_balance or 0) }} TMT.
+        </p>
+        <div class="state-actions">
+            <a href="{{ url_for('order_detail', order_id=order.id) }}" class="auth-btn auth-btn-muted">Back to the order</a>
+        </div>
+    </div>
+    {% else %}
+    <form action="{{ url_for('pay_order', order_id=order.id) }}" method="POST" id="order-payment-form">
+        <button type="submit" class="auth-btn btn-block btn-lg" id="order-pay-button">
+            Pay {{ "%.2f"|format(order.total) }} TMT
+        </button>
+    </form>
+    {% endif %}
+
+    <div class="auth-footer">
+        <a href="{{ url_for('order_detail', order_id=order.id) }}" class="link-action">Cancel and go back</a>
+    </div>
+</div>
+
+<script>
+// A double tap on a slow connection must not become two orders. The server
+// refuses the second one either way; this just stops the confusing round trip.
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('order-payment-form');
+    if (!form) return;
+    form.addEventListener('submit', () => {
+        const button = document.getElementById('order-pay-button');
+        if (button) {
+            button.disabled = true;
+            button.textContent = 'Paying...';
+        }
+    });
+});
+</script>
+{% endblock %}

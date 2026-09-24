@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}HandShake | Request access{% endblock %}
+
+{% block content %}
+{#
+  The front door. It is deliberately a door and not a sign-up form, so the
+  page says why before it asks for anything: the rail on the left carries the
+  reason, the form on the right carries the request. Same two-column
+  composition as the login screen, because they are the same moment.
+#}
+<div class="auth-split auth-split--wide">
+    <div class="auth-rail">
+        <span class="eyebrow">Membership</span>
+        <h1>A person reads every one of these.</h1>
+        <p>
+            HandShake asks strangers to hand real property to each other, so there is
+            no open sign-up. Tell us who you are and an administrator reviews it by
+            hand. If they approve you, a one-time link lets you set a password.
+        </p>
+        <ol class="auth-facts">
+            <li><b>01</b><span>You send this form, including a photograph of your passport.</span></li>
+            <li><b>02</b><span>An administrator checks the passport against the name and declines anything that does not match.</span></li>
+            <li><b>03</b><span>Approval sends a link that works once, and only for seven days.</span></li>
+            <li><b>04</b><span>You choose a password on that link, and the account exists from then on.</span></li>
+        </ol>
+    </div>
+
+<div class="auth-container">
+    <div class="auth-header">
+        <h2>Request access</h2>
+        <p>
+            Everything here is used to decide whether to let you in, and nothing on
+            this form appears on your profile.
+        </p>
+    </div>
+
+    <form class="auth-form" action="{{ url_for('request_access') }}" method="POST" id="access-request-form">
+        <div class="form-group">
+            <label for="ar-full-name">Full name</label>
+            <input type="text" name="full_name" id="ar-full-name" placeholder="As it appears on your passport" required>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="ar-email">Email</label>
+                <input type="email" name="email" id="ar-email" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="ar-phone">Phone</label>
+                <input type="tel" name="phone" id="ar-phone" placeholder="+993 6X XX XX XX" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="ar-velayat">Region</label>
+                <select id="ar-velayat" required>
+                    <option value="">Choose a region</option>
+                    {% for velayat in location_tree %}
+                    <option value="{{ velayat.id }}">{{ velayat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ar-district">District</label>
+                <select id="ar-district" required>
+                    <option value="">Choose a district</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="ar-neighborhood">Street or neighbourhood</label>
+                <select name="neighborhood_id" id="ar-neighborhood" required>
+                    <option value="">Choose where you are</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ar-age">Age</label>
+                <input type="number" name="age" id="ar-age" min="16" max="120" placeholder="Optional">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="ar-reason">Why do you want an account?</label>
+            <textarea name="reason" id="ar-reason" placeholder="What you plan to send or receive. A sentence is enough."></textarea>
+        </div>
+
+        <div class="form-group">
+            <span class="field-label" id="ar-passport-label">Passport photo</span>
+            <p class="field-help">
+                An administrator looks at this before approving you. It is never shown on your profile.
+            </p>
+
+            <div id="ar-preview-container" class="image-preview-wrapper" role="group" aria-labelledby="ar-passport-label">
+                <div class="passport-guide"></div>
+                <img id="ar-passport-preview" alt="Preview of your passport photo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="display: none;">
+                <span class="preview-hint">Fill the frame with the main page</span>
+
+                <div id="ar-camera-area" style="display: none; position: absolute; inset: 0; z-index: 10;">
+                    <video id="ar-video" autoplay playsinline></video>
+                    <canvas id="ar-canvas" style="display: none;"></canvas>
+                    <button type="button" id="ar-capture-btn" class="auth-btn btn-sm" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);">
+                        Capture
+                    </button>
+                </div>
+            </div>
+
+            <div id="ar-upload-controls" class="upload-controls">
+                <button type="button" id="ar-start-camera" class="auth-btn auth-btn-muted">Use the camera</button>
+                <div class="file-drop">
+                    <button type="button" class="auth-btn auth-btn-muted" tabindex="-1">Choose a file</button>
+                    <input type="file" id="ar-passport-file" accept="image/*" aria-label="Choose a photo of your passport">
+                </div>
+            </div>
+
+            <button type="button" id="ar-reset-photo" class="reset-photo" style="display: none;">Use a different photo</button>
+            <input type="hidden" name="passport_image" id="ar-passport-image">
+        </div>
+
+        <button type="submit" class="auth-btn btn-block btn-lg" style="margin-top: var(--s6);">Send my request</button>
+    </form>
+
+    <div class="auth-footer">
+        Already have an account? <a href="{{ url_for('login') }}">Sign in</a>
+    </div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const locationTree = {{ location_tree|tojson }};
+    const velayatSelect = document.getElementById('ar-velayat');
+    const districtSelect = document.getElementById('ar-district');
+    const neighborhoodSelect = document.getElementById('ar-neighborhood');
+
+    function populateSelect(select, options, placeholderText) {
+        select.innerHTML = '';
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.textContent = placeholderText;
+        select.appendChild(placeholderOption);
+        options.forEach((option) => {
+            const element = document.createElement('option');
+            element.value = option.id;
+            element.textContent = option.name;
+            select.appendChild(element);
+        });
+    }
+
+    function syncDistricts() {
+        const velayat = locationTree.find((entry) => String(entry.id) === velayatSelect.value);
+        populateSelect(districtSelect, velayat ? velayat.districts : [], 'Choose a district');
+        syncNeighborhoods();
+    }
+
+    function syncNeighborhoods() {
+        const velayat = locationTree.find((entry) => String(entry.id) === velayatSelect.value);
+        const district = velayat && districtSelect.value
+            ? velayat.districts.find((entry) => String(entry.id) === districtSelect.value)
+            : null;
+        populateSelect(neighborhoodSelect, district ? district.neighborhoods : [], 'Choose where you are');
+    }
+
+    velayatSelect.addEventListener('change', syncDistricts);
+    districtSelect.addEventListener('change', syncNeighborhoods);
+    syncDistricts();
+
+    const video = document.getElementById('ar-video');
+    const canvas = document.getElementById('ar-canvas');
+    const cameraArea = document.getElementById('ar-camera-area');
+    const previewImg = document.getElementById('ar-passport-preview');
+    const previewHint = document.querySelector('#ar-preview-container .preview-hint');
+    const hiddenInput = document.getElementById('ar-passport-image');
+    const controls = document.getElementById('ar-upload-controls');
+    const resetBtn = document.getElementById('ar-reset-photo');
+    const fileInput = document.getElementById('ar-passport-file');
+    let stream = null;
+
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+            stream = null;
+        }
+        cameraArea.style.display = 'none';
+    }
+
+    function showPreview(dataUrl) {
+        hiddenInput.value = dataUrl;
+        previewImg.src = dataUrl;
+        previewImg.style.display = 'block';
+        if (previewHint) previewHint.style.display = 'none';
+        controls.style.display = 'none';
+        resetBtn.style.display = 'block';
+        stopCamera();
+    }
+
+    document.getElementById('ar-start-camera').addEventListener('click', async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            video.srcObject = stream;
+            cameraArea.style.display = 'block';
+        } catch (err) {
+            alert('We could not open the camera. Choose a file instead.');
+        }
+    });
+
+    document.getElementById('ar-capture-btn').addEventListener('click', () => {
+        canvas.width = video.videoWidth || 1024;
+        canvas.height = video.videoHeight || 768;
+        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        showPreview(canvas.toDataURL('image/png'));
+    });
+
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (loaded) => showPreview(loaded.target.result);
+        reader.readAsDataURL(file);
+    });
+
+    resetBtn.addEventListener('click', () => {
+        hiddenInput.value = '';
+        previewImg.style.display = 'none';
+        if (previewHint) previewHint.style.display = '';
+        controls.style.display = '';
+        resetBtn.style.display = 'none';
+        fileInput.value = '';
+    });
+
+    document.getElementById('access-request-form').addEventListener('submit', (event) => {
+        if (!hiddenInput.value) {
+            event.preventDefault();
+            alert('A passport photo is required.');
+        }
+    });
+});
+</script>
+{% endblock %}
