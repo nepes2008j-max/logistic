@@ -17,10 +17,14 @@ COPY . .
 
 # Not root. A stored-XSS or path bug should not come with write access to the
 # application's own source.
-RUN useradd --create-home --uid 10001 handshake \
+# uid 1000 because Hugging Face Spaces runs containers as that user and will
+# not let the process write anywhere it does not own. Other hosts do not care
+# which uid this is, so one value works everywhere.
+RUN useradd --create-home --uid 1000 handshake \
  && mkdir -p instance static/uploads/items static/uploads/profiles \
  && chown -R handshake:handshake /app
 USER handshake
+ENV HOME=/home/handshake
 
 # SQLite and the uploaded images live here. Mount a volume on it or the data
 # disappears with the container — every free host that offers persistent disk
