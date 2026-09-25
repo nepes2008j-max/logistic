@@ -486,6 +486,67 @@ def quote_order(item, destination, price_override=None):
     }
 
 
+# The only image types this application will store. Anything else — most
+# pointedly SVG, which is a document that can carry script, and HTML — would be
+# served back from our own origin by Flask's static handler, which makes it
+# script running against the session cookie of whoever opens it.
+ALLOWED_IMAGE_TYPES = {
+    b'\xff\xd8\xff': '.jpg',                     # JPEG
+    b'\x89PNG\r\n\x1a\n': '.png',              # PNG
+    b'GIF87a': '.gif',
+    b'GIF89a': '.gif',
+}
+MAX_IMAGE_BYTES = 8 * 1024 * 1024
+
+
+def sniff_image_extension(head):
+    """The real type, from the bytes. What the filename claims is irrelevant."""
+    for magic, extension in ALLOWED_IMAGE_TYPES.items():
+        if head.startswith(magic):
+            return extension
+    # WEBP is 'RIFF' + 4 size bytes + 'WEBP', so it needs its own check.
+    if head[:4] == b'RIFF' and head[8:12] == b'WEBP':
+        return '.webp'
+    return None
+
+
+def save_upload_image(storage, folder, stem):
+    """Write an uploaded image, or refuse.
+
+    Returns the stored filename. Raises ValueError with something worth showing
+    a user if the upload is not an image we are willing to serve back.
+
+    The extension comes from the sniffed type, never from the name the browser
+    sent: a file called photo.png containing an SVG used to be saved as .png
+    and served as an image, but one called payload.svg was saved and served as
+    SVG, and that is a script on this origin.
+    """
+    head = storage.stream.read(16)
+    storage.stream.seek(0)
+    extension = sniff_image_extension(head)
+    if extension is None:
+        raise ValueError('That file is not a JPEG, PNG, GIF or WebP image.')
+
+    os.makedirs(folder, exist_ok=True)
+    filename = secure_filename('%s%s' % (stem, extension))
+    path = os.path.join(folder, filename)
+
+    written = 0
+    with open(path, 'wb') as fh:
+        while True:
+            chunk = storage.stream.read(64 * 1024)
+            if not chunk:
+                break
+            written += len(chunk)
+            if written > MAX_IMAGE_BYTES:
+                fh.close()
+                os.remove(path)
+                raise ValueError('That image is larger than %d MB.'
+                                 % (MAX_IMAGE_BYTES // (1024 * 1024)))
+            fh.write(chunk)
+    return filename
+
+
 def save_data_url_image(data_url, destination_path):
     if not data_url or ',' not in data_url:
         raise ValueError("Missing image data")
@@ -495,6 +556,13 @@ def save_data_url_image(data_url, destination_path):
         image_bytes = base64.b64decode(encoded)
     except (ValueError, binascii.Error) as exc:
         raise ValueError("Invalid image data") from exc
+
+    # Same rule as an uploaded file: the bytes decide, not the data URL's
+    # self-declared mime type, which the client chooses.
+    if sniff_image_extension(image_bytes[:16]) is None:
+        raise ValueError("That capture is not a usable image")
+    if len(image_bytes) > MAX_IMAGE_BYTES:
+        raise ValueError("That capture is too large")
 
     with open(destination_path, "wb") as fh:
         fh.write(image_bytes)
@@ -1466,7 +1534,15 @@ def inject_chat_request_count():
 with app.app_context():
     apply_database_updates()
     
-    if not User.query.filter_by(email="nepes@handshake.com").first():
+    # Demo accounts. Their passwords are written a few lines below, in a file
+    # that lives in a git repository, so every one of them is public knowledge
+    # and one of them is an administrator. That is fine on a laptop and it is a
+    # full compromise the moment this answers on a public address, so it is now
+    # opt-in: set HANDSHAKE_DEMO_DATA=1 to get them, and a deployment that does
+    # not set it has no accounts except the ones its own admin creates.
+    demo_data = os.environ.get('HANDSHAKE_DEMO_DATA') == '1'
+
+    if demo_data and not User.query.filter_by(email="nepes@handshake.com").first():
         # Create Dummy Users
         dummy_users = [
             {"name": "Nepes", "email": "nepes@handshake.com", "pass": "nepes123", "region": "Ashgabat", "bio": "Photography enthusiast and tech geek.", "pic": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400"},
@@ -1525,7 +1601,7 @@ with app.app_context():
         db.session.add(review)
         db.session.commit()
 
-    if not User.query.filter_by(email="friend@handshake.com").first():
+    if demo_data and not User.query.filter_by(email="friend@handshake.com").first():
         friend_user = User(
             username="friend",
             full_name="Message Friend",
@@ -1943,16 +2019,24 @@ def upload():
         if not os.path.exists(app.config['UPLOAD_FOLDER_ITEMS']):
             os.makedirs(app.config['UPLOAD_FOLDER_ITEMS'])
 
+        stem = "%s_%s" % (current_user.id, datetime.now().timestamp())
         if file and file.filename != '':
-            filename = secure_filename(f"{current_user.id}_{datetime.now().timestamp()}_{file.filename}")
-            file_path = os.path.join(app.config['UPLOAD_FOLDER_ITEMS'], filename)
-            file.save(file_path)
-            image_url = url_for('static', filename=f'uploads/items/{filename}')
+            try:
+                filename = save_upload_image(file, app.config['UPLOAD_FOLDER_ITEMS'], stem)
+            except ValueError as exc:
+                flash(str(exc))
+                return redirect(url_for('upload'))
+            image_url = url_for('static', filename='uploads/items/%s' % filename)
         elif camera_image:
-            filename = secure_filename(f"{current_user.id}_{datetime.now().timestamp()}_capture.png")
+            filename = secure_filename("%s_capture.png" % stem)
             file_path = os.path.join(app.config['UPLOAD_FOLDER_ITEMS'], filename)
-            save_data_url_image(camera_image, file_path)
-            image_url = url_for('static', filename=f'uploads/items/{filename}')
+            os.makedirs(app.config['UPLOAD_FOLDER_ITEMS'], exist_ok=True)
+            try:
+                save_data_url_image(camera_image, file_path)
+            except ValueError as exc:
+                flash(str(exc))
+                return redirect(url_for('upload'))
+            image_url = url_for('static', filename='uploads/items/%s' % filename)
             
         title = (request.form.get('title') or '').strip()
         category = (request.form.get('category') or '').strip()
@@ -2872,15 +2956,23 @@ def edit_profile():
             os.makedirs(app.config['UPLOAD_FOLDER_PROFILES'])
             
         if file and file.filename != '':
-            filename = secure_filename(f"profile_{current_user.id}_{file.filename}")
-            file_path = os.path.join(app.config['UPLOAD_FOLDER_PROFILES'], filename)
-            file.save(file_path)
-            current_user.profile_pic = url_for('static', filename=f'uploads/profiles/{filename}')
+            try:
+                filename = save_upload_image(
+                    file, app.config['UPLOAD_FOLDER_PROFILES'],
+                    "profile_%s_%s" % (current_user.id, int(datetime.now().timestamp())))
+            except ValueError as exc:
+                flash(str(exc))
+                return redirect(url_for('edit_profile'))
+            current_user.profile_pic = url_for('static', filename='uploads/profiles/%s' % filename)
         elif camera_image:
-            filename = secure_filename(f"profile_{current_user.id}_capture.png")
+            filename = secure_filename("profile_%s_capture.png" % current_user.id)
             file_path = os.path.join(app.config['UPLOAD_FOLDER_PROFILES'], filename)
-            save_data_url_image(camera_image, file_path)
-            current_user.profile_pic = url_for('static', filename=f'uploads/profiles/{filename}')
+            try:
+                save_data_url_image(camera_image, file_path)
+            except ValueError as exc:
+                flash(str(exc))
+                return redirect(url_for('edit_profile'))
+            current_user.profile_pic = url_for('static', filename='uploads/profiles/%s' % filename)
 
         normalize_user_profile_pic(current_user)
         db.session.commit()
