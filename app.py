@@ -1086,17 +1086,62 @@ def platform_account():
 
 
 def ensure_boot_admin():
-    """HANDSHAKE_ADMIN_EMAIL promotes an existing account at boot.
+    """Make sure a fresh deployment has exactly one way in.
 
-    It never creates an account, so setting it cannot conjure a way in.
+    HANDSHAKE_ADMIN_EMAIL promotes an account that already exists. That was the
+    whole of this function, and on a real deployment it was a dead end: with
+    the demo accounts opt-in and no open registration, a fresh database has no
+    accounts, nothing to promote, and therefore no way for anybody to sign in
+    and approve the first access request. The product locked its own operator
+    out.
+
+    So it also creates that first administrator, and only in the one situation
+    where doing so cannot be an escalation: when the user table is completely
+    empty. Once a single account exists this branch never runs again, which
+    means the variable cannot be used later to mint a second admin.
     """
     email = (os.environ.get('HANDSHAKE_ADMIN_EMAIL') or '').strip().lower()
     if not email:
         return
+
     user = User.query.filter_by(email=email).first()
-    if not user:
-        print("HANDSHAKE_ADMIN_EMAIL=%s matches no account; not promoted" % email)
+
+    if user is None:
+        if User.query.count() > 0:
+            print("HANDSHAKE_ADMIN_EMAIL=%s matches no account; not promoted" % email)
+            return
+
+        password = os.environ.get('HANDSHAKE_ADMIN_PASSWORD') or ''
+        generated = False
+        if len(password) < 12:
+            if password:
+                print("HANDSHAKE_ADMIN_PASSWORD is shorter than 12 characters; "
+                      "generating one instead")
+            password = secrets.token_urlsafe(18)
+            generated = True
+
+        user = User(
+            username=email.split('@')[0][:40] or 'admin',
+            full_name='Administrator',
+            email=email,
+            password_hash=generate_password_hash(password, method='scrypt'),
+            region='Ashgabat',
+            age=30,
+            bio='',
+            kyc_status='verified',
+            role='admin',
+            wallet_balance=0.0,
+        )
+        db.session.add(user)
+        db.session.commit()
+        print("created the first administrator: %s" % email)
+        if generated:
+            # Printed once, to the deployment log, because there is no other
+            # channel to hand it over on a host with no shell.
+            print("  its password is: %s" % password)
+            print("  this is the only time it is shown — change it after signing in")
         return
+
     if user.role != 'admin':
         user.role = 'admin'
         db.session.commit()
