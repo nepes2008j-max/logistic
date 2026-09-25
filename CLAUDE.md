@@ -13,14 +13,14 @@ product.
 
 Read the interface through that lens. A listing is goods waiting to move. An
 order starts a journey. A chat is two people arranging the details around it. A
-verified passport is what makes a stranger safe to hand goods to. The product is
-**goods in motion**, and trust between strangers is what makes it work.
+confirmed email address and an administrator's approval are what make a stranger
+safe to hand goods to. The product is **goods in motion**, and trust between
+strangers is what makes it work.
 
 This replaced an earlier rent / sell / swap marketplace. If you find rental
 vocabulary anywhere — `price_unit`, `deposit_price`, a `'rent'` item type,
-`return_item` — you are looking at the old product. The backend no longer has
-those columns; a small compatibility shim at the bottom of `app.py` keeps
-not-yet-migrated templates alive and is marked for deletion.
+`return_item` — you are looking at the old product. Those columns are gone and
+the compatibility shim that once kept old templates alive has been deleted.
 
 ## Access is granted, not self-served
 
@@ -28,11 +28,27 @@ not-yet-migrated templates alive and is marked for deletion.
 administrator can grant it.
 
 - A prospective user submits an **access request** — who they are, how to reach
-  them, and why they want in — and that request sits in a queue.
+  them, and why they want in.
+- They are emailed a link and must **confirm the address**. Until they do, the
+  request is not something an administrator should spend time on.
 - An **administrator** reviews the queue and approves or declines each one.
-- Approval issues a single-use invitation, and only then does the person set a
+  Either way the applicant is emailed the outcome.
+- Approval emails a single-use invitation, and only then does the person set a
   password and gain an account.
-- `/login` continues to work normally for people who already have accounts.
+- `/login` works normally for people who already have accounts, and
+  `/forgot-password` emails a single-use, two-hour reset link.
+
+**There is no passport check.** There used to be, and it is gone: it wrote an
+unvalidated file to disk from an unauthenticated route, it left declined
+applicants' government ID on disk forever, and an administrator looking at a
+phone photograph was never identity verification. A confirmable email address
+replaced it — weaker as proof of who someone is, far stronger as proof that the
+contact details work, and the only one of the two the system can actually
+check. Do not reintroduce it.
+
+**A fresh database has no accounts at all**, so `HANDSHAKE_ADMIN_EMAIL` creates
+the first administrator on an empty user table — the only way into a new
+deployment. Once any account exists it only promotes, never creates.
 
 This is deliberate. The product asks strangers to hand real property to each
 other, so the gate at the front door is a feature, not friction. Do not add a
@@ -46,6 +62,9 @@ vanilla CSS and JavaScript. There is no build step and no frontend framework.
 
 - `app.py` — routes, models and view logic
 - `ai_logic.py` — the AI assistant
+- `mailer.py` — sending email, with `smtplib` and nothing else. Unconfigured it
+  writes `.eml` files into `instance/outbox/` instead of sending, so every flow
+  can be walked without an SMTP account
 - `instance/handshake.db` — SQLite database
 - `templates/` — Jinja templates, all extending `base.html`
 - `static/css/` — `variables.css` (design tokens), `base.css`, `style.css`,
@@ -57,6 +76,8 @@ vanilla CSS and JavaScript. There is no build step and no frontend framework.
   real phone; runs with `debug=False` deliberately, because the Werkzeug
   debugger is remote code execution and must never be exposed to a network
 - `design_qa/` — visual QA screenshots, per page, per theme, per viewport
+- `Dockerfile`, `render.yaml`, `.env.example` — deployment. Every setting is an
+  environment variable, and `.env.example` says what breaks when each is unset
 
 Keep it vanilla. Do not introduce jQuery, a CSS framework, or a bundler to solve
 a problem that plain CSS and a few lines of JavaScript can solve.
@@ -72,13 +93,17 @@ shifts only.
 
 `DESIGN.md` was extracted from an aviation brand, so it talks constantly about
 jets and private travel. **Take its visual system, never its subject matter.**
-HandShake moves ordinary goods for ordinary people; the interface should not
-dress that up as luxury air charter. An earlier attempt at an aircraft hero was
-removed for exactly this reason: a private jet claimed a scale and a class of
-service this product does not have. The backend now genuinely models origin,
-destination, couriers and a delivery pipeline, but that is vans and handoffs
-across Turkmenistan, not aviation. Imagery should show the real thing — the
-goods, the handoff, the people — not a metaphor borrowed from another industry.
+HandShake moves ordinary goods for ordinary people, by road, across
+Turkmenistan.
+
+The home hero does carry an aircraft: a small airliner silhouette that crosses
+the top of the page and leaves, trailing the wordmark. It is public-domain NIH
+BioArt inlined as one vector path — see `static/img/CREDITS.txt` — and it is a
+figure for distance covered, not a description of the fleet. An earlier version
+used a photograph of a real Dassault Falcon 7X whose licence could not be
+confirmed and whose livery belonged to a real company; that was withdrawn and
+must not come back. If you replace the aircraft, replace it with something
+whose licence you can state.
 
 Mobile is a first-class target, not a fallback. At phone width the app presents
 as a native-feeling application with a bottom tab bar, safe-area insets
