@@ -1,0 +1,10 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.git/
+design_qa/
+instance/
+static/uploads/
+*.md
+!CLAUDE.md
