@@ -8,15 +8,19 @@
         <span class="eyebrow">Administration</span>
         <h1>Access requests</h1>
         <p class="record-masthead-state">
-            Approving issues a one-time invitation valid for {{ invite_ttl_days }} days and marks the
-            person's passport as verified. Nothing becomes an account until they use it.
+            Approving emails a one-time invitation, valid for {{ invite_ttl_days }} days. Nothing
+            becomes an account until the person uses it and sets a password.
         </p>
     </header>
 
     {#
-      A review queue, not a list. The passport is the thing being judged, so it
-      is shown rather than linked, and the two decisions sit together at the
-      foot of each dossier with their note fields attached.
+      A review queue, not a list. The two decisions sit together at the foot of
+      each dossier with their note fields attached.
+
+      The passport photograph used to be the left column of every dossier. It
+      is gone along with the rest of the passport flow: whether the address
+      works is now the thing the system can actually attest to, so that is what
+      this column reports.
     #}
     <nav class="queue-filters" aria-label="Filter by status">
         {% for option in ['pending', 'approved', 'rejected', 'all'] %}
@@ -36,15 +40,19 @@
     <div class="queue">
         {% for req in access_requests %}
         <article class="dossier">
-            <div class="dossier-passport">
-                {% if req.passport_img %}
-                <a href="{{ url_for('static', filename='uploads/passports/' ~ req.passport_img) }}" target="_blank" rel="noopener">
-                    <img src="{{ url_for('static', filename='uploads/passports/' ~ req.passport_img) }}"
-                         alt="Passport submitted by {{ req.full_name }}" loading="lazy">
-                    <span class="dossier-passport-hint">Open full size</span>
-                </a>
+            <div class="dossier-proof">
+                {% if req.email_verified_at %}
+                <span class="proof-mark proof-mark--ok" aria-hidden="true">
+                    <svg class="ico"><use href="#i-check-circle"></use></svg>
+                </span>
+                <span class="proof-label">Email confirmed</span>
+                <span class="proof-when">{{ req.email_verified_at.strftime('%d %b, %H:%M') }}</span>
                 {% else %}
-                <div class="dossier-passport-missing">No passport attached</div>
+                <span class="proof-mark" aria-hidden="true">
+                    <svg class="ico"><use href="#i-hourglass-half"></use></svg>
+                </span>
+                <span class="proof-label">Not confirmed</span>
+                <span class="proof-when">They have not opened the link yet</span>
                 {% endif %}
             </div>
 

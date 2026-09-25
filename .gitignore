@@ -22,3 +22,7 @@ design_qa/
 # The rejected aircraft asset: a real registered airframe whose licence the
 # project's own CREDITS.txt could not confirm. Referenced by nothing.
 static/img/aircraft-*
+
+# Spooled mail written when no SMTP is configured. Contains live invite and
+# password-reset links.
+instance/outbox/

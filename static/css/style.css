@@ -2613,7 +2613,7 @@
 
 .dossier {
     display: grid;
-    grid-template-columns: 230px minmax(0, 1fr);
+    grid-template-columns: 210px minmax(0, 1fr);
     gap: var(--s6);
     padding-block: var(--s6);
     border-bottom: var(--bw) solid var(--rule);
@@ -2621,32 +2621,40 @@
 .dossier:first-child { padding-top: 0; }
 .dossier:last-child { border-bottom: 0; }
 
-.dossier-passport a { display: block; position: relative; }
-.dossier-passport img {
-    width: 100%;
-    aspect-ratio: 3 / 2;
-    object-fit: cover;
+/* The proof column. It used to hold a photograph of a passport at 3:2; it
+   holds the one fact the system can actually attest to now — whether the
+   applicant opened the link we emailed them. Narrower, because a sentence
+   does not need 230px of frame. */
+.dossier-proof {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+        "mark  label"
+        ".     when";
+    align-content: start;
+    align-items: center;
+    column-gap: var(--s3);
+    row-gap: 2px;
+    padding: var(--s4);
+    border: var(--bw) solid var(--rule);
     background: var(--surface-2);
-    border: var(--bw) solid var(--rule-2);
 }
-.dossier-passport-hint {
-    display: block;
-    margin-top: 8px;
-    font-size: var(--t-micro);
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-}
-.dossier-passport a:hover .dossier-passport-hint { color: var(--ink); }
-.dossier-passport-missing {
+.dossier-proof .proof-mark {
+    grid-area: mark;
     display: grid;
     place-items: center;
-    aspect-ratio: 3 / 2;
-    padding: var(--s4);
-    text-align: center;
-    border: var(--bw) dashed var(--rule-2);
+    color: var(--ink-3);
+}
+.dossier-proof .proof-mark--ok { color: var(--verified); }
+.dossier-proof .proof-label {
+    grid-area: label;
     font-size: var(--t-sm);
+    font-weight: 700;
+    color: var(--ink);
+}
+.dossier-proof .proof-when {
+    grid-area: when;
+    font-size: var(--t-micro);
     color: var(--ink-3);
 }
 
@@ -2751,7 +2759,7 @@
 
 @media (max-width: 760px) {
     .dossier { grid-template-columns: 1fr; gap: var(--s4); }
-    .dossier-passport { max-width: 260px; }
+    .dossier-proof { max-width: none; }
     .dossier-decide form + form { padding-left: 0; border-left: 0; padding-top: var(--s4); border-top: var(--bw) solid var(--rule); }
     .dossier-decide-row { flex-direction: column; }
     .cell-form { flex-wrap: wrap; }

@@ -8,13 +8,13 @@
         <span class="eyebrow">Approved</span>
         <h1>You are in, {{ access_request.full_name.split()[0] }}.</h1>
         <p>
-            An administrator checked your passport against your name and approved the
+            An administrator reviewed your request and approved the
             request. One password, and the account is yours.
         </p>
         <ul class="auth-facts">
             <li><b>Once</b><span>This link works a single time and is dead the moment you use it.</span></li>
             <li><b>Until</b><span>{{ access_request.invite_expires_at.strftime('%d %b %Y') if access_request.invite_expires_at else 'it is used' }} — after that it has to be issued again.</span></li>
-            <li><b>Verified</b><span>Your account starts with its passport check already done, so nothing is held back.</span></li>
+            <li><b>Verified</b><span>Your address is confirmed and an administrator approved you, so nothing is held back.</span></li>
         </ul>
     </div>
 

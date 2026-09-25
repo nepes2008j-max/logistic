@@ -156,7 +156,7 @@ def main():
     r = public.post("/request-access", data={
         "full_name": "Ayna Test", "email": "ayna.test@example.com",
         "phone": "+99365000000", "age": "28", "reason": "I send parcels to Mary.",
-        "neighborhood_id": str(destination_id), "passport_image": PASSPORT_DATA_URL,
+        "neighborhood_id": str(destination_id),
     }, follow_redirects=True)
     check("access request accepted", r.status_code == 200)
     with a.app_context():
@@ -165,8 +165,11 @@ def main():
         check("request is pending", req and req.status == "pending", req and req.status)
         check("no account created yet",
               handshake.User.query.filter_by(email="ayna.test@example.com").first() is None)
-        check("passport file written", req and req.passport_img and os.path.exists(
-            os.path.join(a.config["UPLOAD_FOLDER"], req.passport_img)))
+        # The passport capture is gone. A confirmable email address replaced
+        # it, so what must exist now is an unspent verification token.
+        check("verification token issued", req and bool(req.verify_token))
+        check("email not confirmed yet", req and req.email_verified_at is None)
+        check("no passport stored", req and not req.passport_img)
         check("region derived from the chosen neighborhood",
               req and req.region == dest_velayat, req and req.region)
         request_id = req.id
@@ -175,7 +178,7 @@ def main():
     public.post("/request-access", data={
         "full_name": "Ayna Test", "email": "ayna.test@example.com",
         "phone": "+99365000000", "neighborhood_id": str(destination_id),
-        "passport_image": PASSPORT_DATA_URL,
+       
     }, follow_redirects=True)
     with a.app_context():
         check("duplicate request is not queued twice",
@@ -237,11 +240,8 @@ def main():
     with a.app_context():
         new_user = handshake.User.query.filter_by(email="ayna.test@example.com").first()
         check("the account now exists", new_user is not None)
-        check("approval verified the passport",
+        check("the approved account is verified",
               new_user and new_user.kyc_status == "verified", new_user and new_user.kyc_status)
-        check("the passport came across",
-              new_user and new_user.passport_img == handshake.AccessRequest.query.get(
-                  request_id).passport_img)
         check("the new account is a plain member",
               new_user and new_user.role == "member", new_user and new_user.role)
 
@@ -263,7 +263,7 @@ def main():
     public2.post("/request-access", data={
         "full_name": "Rejected Person", "email": "rejected@example.com",
         "phone": "+99365111111", "neighborhood_id": str(destination_id),
-        "passport_image": PASSPORT_DATA_URL,
+       
     }, follow_redirects=True)
     with a.app_context():
         rejected = handshake.AccessRequest.query.filter_by(email="rejected@example.com").first()
@@ -291,7 +291,7 @@ def main():
     public3.post("/request-access", data={
         "full_name": "Late Person", "email": "late@example.com",
         "phone": "+99365222222", "neighborhood_id": str(destination_id),
-        "passport_image": PASSPORT_DATA_URL,
+       
     }, follow_redirects=True)
     with a.app_context():
         late = handshake.AccessRequest.query.filter_by(email="late@example.com").first()

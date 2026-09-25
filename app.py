@@ -79,6 +79,12 @@ app.config['UPLOAD_FOLDER_ITEMS'] = 'static/uploads/items'
 app.config['UPLOAD_FOLDER_PROFILES'] = 'static/uploads/profiles'
 app.config['MAX_CONTENT_LENGTH'] = 24 * 1024 * 1024
 
+from mailer import Mailer, looks_like_address
+
+# Real mail. Unconfigured it writes .eml files into instance/outbox instead of
+# sending, so every flow below can be walked without an SMTP account.
+mailer = Mailer(app.instance_path)
+
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
@@ -351,6 +357,92 @@ def code_matches(stored, submitted):
 
 def generate_invite_token():
     return secrets.token_urlsafe(32)
+
+
+# How long a reset link is good for. Short, because it is a password.
+RESET_TTL_HOURS = 2
+# How long someone has to confirm the address they applied with.
+VERIFY_TTL_DAYS = 3
+
+
+def send_verification_email(access_request):
+    """Prove the applicant owns the address before an admin spends time on it."""
+    link = url_for('verify_email', token=access_request.verify_token, _external=True)
+    return mailer.send(
+        access_request.email,
+        "Confirm your email for HandShake",
+        "Hello %s,\n\n"
+        "Someone asked for access to HandShake using this email address. If it\n"
+        "was you, confirm it here:\n\n"
+        "    %s\n\n"
+        "The link is good for %d days. Confirming does not create an account —\n"
+        "an administrator still reviews every request, and you will hear from\n"
+        "us either way.\n\n"
+        "If this was not you, ignore this message. Nothing happens without the\n"
+        "link above.\n\n"
+        "— HandShake\n" % (access_request.full_name, link, VERIFY_TTL_DAYS),
+    )
+
+
+def send_invite_email(access_request):
+    """The approval itself. This link is the only way to become an account."""
+    link = url_for('activate', token=access_request.invite_token, _external=True)
+    return mailer.send(
+        access_request.email,
+        "You have been approved for HandShake",
+        "Hello %s,\n\n"
+        "Your request has been approved. Set a password and your account is\n"
+        "live:\n\n"
+        "    %s\n\n"
+        "The link works once and expires in %d days. Do not forward it — anyone\n"
+        "holding it can claim the account.\n\n"
+        "— HandShake\n" % (access_request.full_name, link, INVITE_TTL_DAYS),
+    )
+
+
+def send_rejection_email(access_request):
+    note = (access_request.review_note or "").strip()
+    reason = ("\n\nThe reviewer noted: %s" % note) if note else ""
+    return mailer.send(
+        access_request.email,
+        "About your HandShake request",
+        "Hello %s,\n\n"
+        "Your request for access was not approved.%s\n\n"
+        "You are welcome to apply again.\n\n"
+        "— HandShake\n" % (access_request.full_name, reason),
+    )
+
+
+def send_password_reset_email(user):
+    link = url_for('reset_password', token=user.reset_token, _external=True)
+    return mailer.send(
+        user.email,
+        "Reset your HandShake password",
+        "Hello %s,\n\n"
+        "Someone asked to reset the password on this account. If it was you,\n"
+        "choose a new one here:\n\n"
+        "    %s\n\n"
+        "The link works once and expires in %d hours. If it was not you, ignore\n"
+        "this message — your current password still works and nothing has\n"
+        "changed.\n\n"
+        "— HandShake\n" % (user.full_name or user.username, link, RESET_TTL_HOURS),
+    )
+
+
+def notify_admins_of_request(access_request):
+    """Tell whoever can act on it that something is waiting."""
+    admins = User.query.filter_by(role='admin').all()
+    if not admins:
+        return
+    link = url_for('admin_access_requests', _external=True)
+    for admin in admins:
+        mailer.send(
+            admin.email,
+            "New access request: %s" % access_request.full_name,
+            "%s (%s) has asked for access and confirmed their email.\n\n"
+            "Review the queue:\n\n    %s\n\n— HandShake\n"
+            % (access_request.full_name, access_request.email, link),
+        )
 
 
 def delivery_distance_band(origin, destination):
@@ -943,6 +1035,35 @@ def ensure_boot_admin():
         print("promoted %s to admin" % email)
 
 
+def ensure_email_auth_schema():
+    """Columns for email verification and password reset.
+
+    Same hand-rolled, guarded-ALTER idiom as the migrations above: check the
+    inspector, add what is missing, do nothing on a database that already has
+    it. Safe to run on every boot, which is how it is run.
+    """
+    inspector = inspect(db.engine)
+
+    request_columns = {c['name'] for c in inspector.get_columns('access_request')}
+    for column, ddl in (
+        ('verify_token', 'ALTER TABLE access_request ADD COLUMN verify_token VARCHAR(64)'),
+        ('verify_sent_at', 'ALTER TABLE access_request ADD COLUMN verify_sent_at DATETIME'),
+        ('email_verified_at', 'ALTER TABLE access_request ADD COLUMN email_verified_at DATETIME'),
+    ):
+        if column not in request_columns:
+            db.session.execute(text(ddl))
+            db.session.commit()
+
+    user_columns = {c['name'] for c in inspector.get_columns('user')}
+    for column, ddl in (
+        ('reset_token', 'ALTER TABLE user ADD COLUMN reset_token VARCHAR(64)'),
+        ('reset_expires_at', 'ALTER TABLE user ADD COLUMN reset_expires_at DATETIME'),
+    ):
+        if column not in user_columns:
+            db.session.execute(text(ddl))
+            db.session.commit()
+
+
 def apply_database_updates():
     db.create_all()
     ensure_location_schema()
@@ -953,6 +1074,7 @@ def apply_database_updates():
     rebuild_item_table_for_logistics()
     migrate_transactions_to_orders()
     backfill_review_targets()
+    ensure_email_auth_schema()
     ensure_platform_account()
 
 
@@ -1046,7 +1168,9 @@ class User(UserMixin, db.Model):
     bio = db.Column(db.Text, nullable=True)
     rating = db.Column(db.Float, default=5.0)
     num_ratings = db.Column(db.Integer, default=1)
-    passport_img = db.Column(db.String(200), nullable=True)
+    passport_img = db.Column(db.String(200), nullable=True)   # legacy, unused
+    reset_token = db.Column(db.String(64), unique=True, nullable=True)
+    reset_expires_at = db.Column(db.DateTime, nullable=True)
     profile_pic = db.Column(db.String(500), nullable=True)
     kyc_status = db.Column(db.String(20), default='pending') # pending, processing, verified, rejected
     role = db.Column(db.String(20), nullable=False, default='member') # member, courier, admin
@@ -1116,6 +1240,12 @@ class AccessRequest(db.Model):
     invite_token = db.Column(db.String(64), unique=True, nullable=True)
     invite_expires_at = db.Column(db.DateTime, nullable=True)
     invite_used_at = db.Column(db.DateTime, nullable=True)
+    # The passport used to be the identity proof. It is the email address now:
+    # a request nobody confirmed from the inbox they claimed is not a request,
+    # it is a typo or a stranger using someone else's address.
+    verify_token = db.Column(db.String(64), unique=True, nullable=True)
+    verify_sent_at = db.Column(db.DateTime, nullable=True)
+    email_verified_at = db.Column(db.DateTime, nullable=True)
 
     neighborhood = db.relationship('Neighborhood', foreign_keys=[neighborhood_id])
     reviewed_by = db.relationship('User', foreign_keys=[reviewed_by_id])
@@ -1352,7 +1482,7 @@ with app.app_context():
             new_u = User(
                 username=u['name'].lower(), full_name=u['name'], email=u['email'],
                 password_hash=generate_password_hash(u['pass'], method='scrypt'),
-                region=u['region'], bio=u['bio'], age=25, passport_img="verified.png",
+                region=u['region'], bio=u['bio'], age=25,
                 kyc_status='verified',
                 profile_pic=u['pic']
             )
@@ -1534,10 +1664,93 @@ def login():
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
+    """Send a reset link. Real now — it used to be a form that refused.
+
+    The response is identical whether or not the address has an account. A
+    reset form that says "no such user" is a free membership oracle, and this
+    is an invite-only product where membership is exactly what an attacker
+    would like to enumerate.
+    """
     if request.method == 'POST':
-        flash('Password reset is currently disabled for security. Please contact an administrator.')
+        email = (request.form.get('email') or '').strip().lower()
+        user = User.query.filter_by(email=email).first() if email else None
+        if user:
+            user.reset_token = generate_invite_token()
+            user.reset_expires_at = datetime.utcnow() + timedelta(hours=RESET_TTL_HOURS)
+            db.session.commit()
+            send_password_reset_email(user)
+        flash('If that address has an account, a reset link is on its way. '
+              'The link expires in %d hours.' % RESET_TTL_HOURS)
         return redirect(url_for('login'))
     return render_template('forgot_password.html')
+
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    """Set a new password against an emailed, single-use, expiring token."""
+    user = User.query.filter_by(reset_token=token).first()
+    expired = (
+        user is None
+        or user.reset_expires_at is None
+        or user.reset_expires_at < datetime.utcnow()
+    )
+    if expired:
+        flash('That reset link is not valid any more. Ask for a new one.')
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form.get('password') or ''
+        confirm = request.form.get('confirm_password') or ''
+        if len(password) < 8:
+            flash('Use at least 8 characters.')
+            return redirect(url_for('reset_password', token=token))
+        if password != confirm:
+            flash('Those two passwords do not match.')
+            return redirect(url_for('reset_password', token=token))
+
+        user.password_hash = generate_password_hash(password, method='scrypt')
+        # Burn the token in the same commit that changes the password, so a
+        # replayed link cannot set it a second time.
+        user.reset_token = None
+        user.reset_expires_at = None
+        db.session.commit()
+        flash('Password changed. Sign in with it.')
+        return redirect(url_for('login'))
+
+    return render_template('reset_password.html', user=user, token=token)
+
+
+@app.route('/verify-email/<token>')
+def verify_email(token):
+    """Confirm the applicant reads the inbox they applied with.
+
+    This replaces the passport as the identity check. It is weaker as proof of
+    who someone is and far stronger as proof that the contact details work —
+    and the contact details are what an administrator, and later a courier,
+    actually need.
+    """
+    access_request = AccessRequest.query.filter_by(verify_token=token).first()
+    if not access_request:
+        flash('That confirmation link is not valid.')
+        return redirect(url_for('request_access'))
+
+    if access_request.email_verified_at:
+        flash('That address is already confirmed. An administrator will be in touch.')
+        return redirect(url_for('login'))
+
+    sent = access_request.verify_sent_at or access_request.created_at
+    if sent and sent < datetime.utcnow() - timedelta(days=VERIFY_TTL_DAYS):
+        flash('That confirmation link has expired. Please submit a new request.')
+        return redirect(url_for('request_access'))
+
+    access_request.email_verified_at = datetime.utcnow()
+    access_request.verify_token = None
+    db.session.commit()
+    notify_admins_of_request(access_request)
+
+    flash('Thank you — your address is confirmed and your request is now with '
+          'our administrators.')
+    return redirect(url_for('login'))
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -1591,21 +1804,13 @@ def request_access():
             flash('Please choose where you are, down to the street or neighbourhood.')
             return redirect(url_for('request_access'))
 
-        passport_data = request.form.get('passport_image')
-        if not passport_data:
-            flash('A passport photo is required. It is what makes you safe to hand goods to.')
-            return redirect(url_for('request_access'))
-
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        # The filename is derived from a random token, not from the email, so a
-        # second request for the same address cannot overwrite the first one's
-        # passport image.
-        filename = secure_filename("request_%s_passport.png" % secrets.token_hex(8))
-        try:
-            save_data_url_image(passport_data, os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        except ValueError:
-            flash('That passport image could not be read. Please capture it again.')
-            return redirect(url_for('request_access'))
+        # The passport capture used to live here. It is gone: it wrote an
+        # unvalidated file to disk from an unauthenticated route before it had
+        # even decided whether to keep the request, it left declined
+        # applicants' government ID on disk indefinitely, and an administrator
+        # squinting at a phone photo was never real identity verification.
+        # A confirmed email address is the proof now, and unlike the passport
+        # it is something the system can actually check.
 
         # Whether the address is already taken or already queued is not
         # disclosed: the response is identical either way.
@@ -1614,7 +1819,7 @@ def request_access():
             or AccessRequest.query.filter_by(email=email, status='pending').first() is not None
         )
         if not already_known:
-            db.session.add(AccessRequest(
+            access_request = AccessRequest(
                 full_name=full_name,
                 email=email,
                 phone=phone,
@@ -1622,12 +1827,15 @@ def request_access():
                 neighborhood_id=neighborhood.id,
                 age=age,
                 reason=reason,
-                passport_img=filename,
                 status='pending',
-            ))
+                verify_token=generate_invite_token(),
+                verify_sent_at=datetime.utcnow(),
+            )
+            db.session.add(access_request)
             db.session.commit()
+            send_verification_email(access_request)
 
-        flash('Your request is with our administrators. We will email you if it is approved.')
+        flash('Check your email and confirm the address. Your request reaches an administrator once you do.')
         return redirect(url_for('login'))
 
     return render_template('request_access.html', location_tree=location_tree)
@@ -1695,10 +1903,10 @@ def activate(token):
             password_hash=generate_password_hash(password, method='scrypt'),
             region=access_request.region or 'Turkmenistan',
             age=access_request.age,
-            passport_img=access_request.passport_img,
-            # An admin looked at the passport before approving, so the account
-            # starts verified. Nothing else in the app ever set this, which is
-            # why the high-value gate used to block every real signup.
+
+            # Verified means: this address was confirmed from the inbox, and
+            # an administrator approved the person behind it. It no longer
+            # means anybody looked at a passport, because nobody does.
             kyc_status='verified',
             role='member',
             wallet_balance=1000.0,
@@ -1864,8 +2072,8 @@ def place_order(item_id):
 
         quote = quote_order(item, destination, price_override=proposed_price)
 
-        # The high-value gate. Approval through the access queue sets
-        # kyc_status='verified', so this is now reachable rather than a wall.
+        # The high-value gate. Everyone who came through the access queue is
+        # verified, so in practice this only stops accounts made another way.
         if quote['goods'] > HIGH_VALUE_THRESHOLD and current_user.kyc_status != 'verified':
             flash('Your account has to be verified before you can order goods over %d TMT.'
                   % int(HIGH_VALUE_THRESHOLD))
@@ -2370,6 +2578,88 @@ def admin_dashboard():
     return render_template('admin_dashboard.html', stats=stats, account=account)
 
 
+@app.route('/admin/listings')
+@admin_required
+def admin_listings():
+    """Every listing, and the power to take one down.
+
+    `withdrawn` has been a declared item status since the logistics pivot with
+    nothing in the application able to set it. This is what sets it: the one
+    page from which a listing that should not be on the board can leave it.
+    """
+    status = request.args.get('status', 'listed')
+    query = Item.query
+    if status in ITEM_STATUSES:
+        query = query.filter_by(status=status)
+    listings = (query.order_by(Item.id.desc())
+                     .options(db.joinedload(Item.owner),
+                              db.joinedload(Item.neighborhood))
+                     .limit(200).all())
+    return render_template(
+        'admin_listings.html',
+        listings=listings,
+        status=status,
+        statuses=ITEM_STATUSES,
+        counts={s: Item.query.filter_by(status=s).count() for s in ITEM_STATUSES},
+    )
+
+
+@app.route('/admin/listings/<int:item_id>/withdraw', methods=['POST'])
+@admin_required
+def admin_withdraw_listing(item_id):
+    item = Item.query.get_or_404(item_id)
+    if item.status == 'withdrawn':
+        flash('That listing is already withdrawn.')
+        return redirect(url_for('admin_listings', status=request.form.get('back') or 'listed'))
+    # A reserved or sold item is attached to an order that is still running;
+    # pulling it out from under the buyer would strand a delivery.
+    if item.status in ('reserved', 'sold'):
+        flash('That listing is part of a live order. Settle the order first.')
+        return redirect(url_for('admin_listings', status=request.form.get('back') or 'listed'))
+    item.status = 'withdrawn'
+    db.session.commit()
+    flash('"%s" has been taken off the board.' % item.title)
+    return redirect(url_for('admin_listings', status=request.form.get('back') or 'listed'))
+
+
+@app.route('/admin/listings/<int:item_id>/restore', methods=['POST'])
+@admin_required
+def admin_restore_listing(item_id):
+    item = Item.query.get_or_404(item_id)
+    if item.status != 'withdrawn':
+        flash('That listing is not withdrawn.')
+        return redirect(url_for('admin_listings', status='withdrawn'))
+    item.status = 'listed'
+    db.session.commit()
+    flash('"%s" is back on the board.' % item.title)
+    return redirect(url_for('admin_listings', status='withdrawn'))
+
+
+@app.route('/admin/orders')
+@admin_required
+def admin_orders():
+    """Every order in the system, whoever it belongs to."""
+    status = request.args.get('status', 'all')
+    query = Order.query
+    if status != 'all':
+        query = query.filter_by(status=status)
+    orders = (query.order_by(Order.id.desc())
+                   .options(db.joinedload(Order.item),
+                            db.joinedload(Order.buyer),
+                            db.joinedload(Order.seller),
+                            db.joinedload(Order.delivery))
+                   .limit(200).all())
+    statuses = ('placed', 'accepted', 'rejected', 'cancelled', 'paid', 'completed')
+    return render_template(
+        'admin_orders.html',
+        orders=orders,
+        status=status,
+        statuses=statuses,
+        counts={s: Order.query.filter_by(status=s).count() for s in statuses},
+        total_held=sum(o.total for o in Order.query.filter_by(status='paid').all()),
+    )
+
+
 @app.route('/admin/access-requests')
 @admin_required
 def admin_access_requests():
@@ -2409,10 +2699,19 @@ def approve_access_request(request_id):
     access_request.invite_used_at = None
     db.session.commit()
 
-    # There is no mail sending in this application, so the admin carries the
-    # link across by hand.
-    flash('Approved. Invitation link (valid %d days): %s'
-          % (INVITE_TTL_DAYS, url_for('activate', token=access_request.invite_token, _external=True)))
+    # The admin used to have to copy this link out of a flash message and
+    # deliver it themselves. It is emailed to the applicant now.
+    delivered = send_invite_email(access_request)
+    if delivered and mailer.configured:
+        flash('Approved. The invitation has been emailed to %s.' % access_request.email)
+    elif delivered:
+        flash('Approved. No SMTP is configured, so the invitation was written to '
+              'instance/outbox instead of sent. Link: %s'
+              % url_for('activate', token=access_request.invite_token, _external=True))
+    else:
+        flash('Approved, but %s is not a valid address, so nothing could be sent. '
+              'Link: %s' % (access_request.email,
+                            url_for('activate', token=access_request.invite_token, _external=True)))
     return redirect(url_for('admin_access_requests'))
 
 
@@ -2432,7 +2731,9 @@ def reject_access_request(request_id):
     access_request.invite_token = None
     access_request.invite_expires_at = None
     db.session.commit()
-    flash('Request rejected.')
+    # Silence is the worst outcome for someone waiting on a decision.
+    send_rejection_email(access_request)
+    flash('Request rejected, and %s has been told.' % access_request.email)
     return redirect(url_for('admin_access_requests'))
 
 
