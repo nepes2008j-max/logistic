@@ -581,20 +581,33 @@
 
 /* The hero content follows the plane in, one beat behind it, so the page
    assembles in the order the story is told. */
-.hero-word,
-.hero-copy,
-.handoff,
-.hero-facts {
+/* Scoped to .splash-done, which script.js sets when the splash clears.
+
+   This used to be unscoped, and `backwards` meant the hero sat at opacity 0
+   until the animation had run — so anything that stopped it running left the
+   first screen of the product simply blank, with the sky gradient and no
+   words on it. That is too much weight for a decorative reveal to carry. The
+   hidden start now only exists once JavaScript has confirmed it is there to
+   finish the job; without it the hero is plainly visible. */
+.splash-done .hero-word,
+.splash-done .hero-copy,
+.splash-done .handoff,
+.splash-done .hero-facts {
     animation: flight-rise 620ms cubic-bezier(0.22, 0.8, 0.3, 1) backwards;
 }
-.hero-word   { animation-delay: 420ms; }
-.hero-copy   { animation-delay: 560ms; }
-.handoff     { animation-delay: 700ms; }
-.hero-facts  { animation-delay: 840ms; }
+.splash-done .hero-word   { animation-delay: 420ms; }
+.splash-done .hero-copy   { animation-delay: 560ms; }
+.splash-done .handoff     { animation-delay: 700ms; }
+.splash-done .hero-facts  { animation-delay: 840ms; }
 
+/* Transform only. This used to animate opacity from 0 with `backwards`, which
+   made the hero's visibility depend on a decorative animation completing —
+   and when it did not run, the first screen of the product was a sky
+   gradient with no words on it. A reveal is not worth that risk, so the
+   content is always opaque and only its position is animated. */
 @keyframes flight-rise {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: none; }
+    from { transform: translateY(14px); }
+    to   { transform: none; }
 }
 
 /* Nothing above is information, so under reduced motion it all simply is. */
@@ -833,7 +846,27 @@
     .hero-actions { gap: var(--s2); }
     .hero-actions .auth-btn { flex: 1 1 auto; }
 
-    .handoff { padding-block: var(--s5) var(--s4); }
+    /* Three facts set identically read as filler. One line, and the listing
+       count — the only one that changes, and the only one that says the
+       board is alive — leads it. */
+    .hero-facts {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: var(--s2) var(--s4);
+        margin-bottom: var(--s4) !important;
+    }
+    .hero-fact { font-size: var(--t-xs); }
+
+    /* The hero used to run to roughly 850px before the first listing on a
+       390px screen — the goods, which are the product, sat two viewports
+       down on the page whose job is to show them. The pipeline keeps its
+       three stops as a strip but drops the sentence under each one; the
+       explanation is repeated in full in the dark band further down, so
+       nothing is lost, and the hero gives back about 300px. */
+    .handoff { padding-block: var(--s4) var(--s3); }
+    .handoff-stop dd { display: none; }
+    .handoff-stop { padding-bottom: var(--s3) !important; }
+
     .handoff-track {
         grid-template-columns: 1fr;
         row-gap: 0;
