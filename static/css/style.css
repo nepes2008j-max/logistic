@@ -1356,7 +1356,6 @@
     color: var(--ink-3);
 }
 
-
 /* Description */
 .record-desc {
     max-width: 68ch;
@@ -1364,7 +1363,6 @@
     line-height: 1.65;
     color: var(--ink-2);
 }
-
 
 /* Reviews */
 .review-list { display: flex; flex-direction: column; }
@@ -1471,7 +1469,6 @@
     grid-template-columns: minmax(0, 0.62fr) minmax(0, 1fr);
     gap: var(--s9);
 }
-
 
 .auth-rail h1 {
     font-size: clamp(2.1rem, 4.4vw, 3.1rem);
@@ -1654,25 +1651,6 @@
 @keyframes step-in {
     from { opacity: 0; transform: translateX(10px); }
     to   { opacity: 1; transform: translateX(0); }
-}
-.passport-guide {
-    position: absolute;
-    inset: 10%;
-    border: var(--bw2) dashed rgba(255, 255, 255, 0.45);
-    border-radius: var(--r-xs);
-    pointer-events: none;
-}
-.passport-guide::after {
-    content: "ALIGN PASSPORT PAGE";
-    position: absolute;
-    left: 50%;
-    bottom: -26px;
-    transform: translateX(-50%);
-    font-variant-numeric: tabular-nums;
-    font-size: var(--t-micro);
-    letter-spacing: 0.005em;
-    color: rgba(255, 255, 255, 0.86);
-    white-space: nowrap;
 }
 
 /* A read-this notice block */
@@ -2271,7 +2249,6 @@
     .upload-controls { flex-direction: column; }
 }
 
-
 /* --------------------------------------------------------------------------
    J. INLINE VALIDATION MESSAGE
    -------------------------------------------------------------------------- */
@@ -2578,7 +2555,8 @@
 .courier-actions form .auth-btn { flex: none; min-height: 52px; }
 
 /* -- The access-request queue --------------------------------------------
-   A dossier per request: the passport on the left because that is the thing
+   A dossier per request: the email-confirmation state on the left because
+   that is the thing
    being judged, the facts in a ruled list beside it, and the two decisions
    at the foot with their note fields attached to them. */
 .queue-filters {

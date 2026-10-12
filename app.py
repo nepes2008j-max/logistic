@@ -74,7 +74,6 @@ app.config['SESSION_COOKIE_SECURE'] = os.environ.get('HANDSHAKE_HTTPS') == '1'
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'HANDSHAKE_DATABASE_URI', 'sqlite:///handshake.db'
 )
-app.config['UPLOAD_FOLDER'] = 'static/uploads/passports'
 app.config['UPLOAD_FOLDER_ITEMS'] = 'static/uploads/items'
 app.config['UPLOAD_FOLDER_PROFILES'] = 'static/uploads/profiles'
 app.config['MAX_CONTENT_LENGTH'] = 24 * 1024 * 1024
@@ -844,12 +843,12 @@ def _columns(table):
 
 
 def ensure_user_schema():
-    """Add User.role, and make passport_img nullable.
+    """Add User.role, and relax a NOT NULL that predates the current product.
 
-    The passport now arrives on the AccessRequest and is copied across on
-    activation, so a User row is created before any file exists. The column was
-    NOT NULL, which would have made that impossible; SQLite cannot drop a NOT
-    NULL in place, so the table is rebuilt.
+    This is historical. The column it rebuilds the table for, passport_img, is
+    dropped entirely by drop_passport_columns() later in the same boot — but a
+    legacy database still has to get past this step first, and SQLite cannot
+    drop a NOT NULL in place, so the rebuild stays.
     """
     columns = _columns('user')
 
@@ -860,7 +859,11 @@ def ensure_user_schema():
         db.session.commit()
         columns = _columns('user')
 
-    if columns['passport_img']['nullable']:
+    # The column is gone on anything that has booted since the passport flow
+    # was removed, and indexing it directly was a KeyError waiting to happen on
+    # the second boot after that.
+    passport = columns.get('passport_img')
+    if passport is None or passport['nullable']:
         return
 
     db.session.execute(text('PRAGMA legacy_alter_table=ON'))
@@ -1148,6 +1151,47 @@ def ensure_boot_admin():
         print("promoted %s to admin" % email)
 
 
+def drop_passport_columns():
+    """Remove the passport columns and the files they pointed at.
+
+    The passport flow is gone from the product, but removing the code left the
+    scans themselves sitting in static/uploads/passports/ — photographs of real
+    government ID, served by Flask's static handler with no authentication at
+    all, for people who in some cases were declined. Dead code is untidy; this
+    was a live exposure.
+
+    SQLite gained ALTER TABLE DROP COLUMN in 3.35, so the columns go properly
+    rather than being left behind as inert vestiges. Both steps are guarded, so
+    this is a no-op on a database that has already been through it.
+    """
+    inspector = inspect(db.engine)
+
+    for table in ('user', 'access_request'):
+        try:
+            columns = {c['name'] for c in inspector.get_columns(table)}
+        except Exception:                                    # noqa: BLE001
+            continue
+        if 'passport_img' in columns:
+            db.session.execute(text('ALTER TABLE %s DROP COLUMN passport_img' % table))
+            db.session.commit()
+            print('dropped %s.passport_img' % table)
+
+    folder = os.path.join('static', 'uploads', 'passports')
+    if os.path.isdir(folder):
+        removed = 0
+        for name in os.listdir(folder):
+            path = os.path.join(folder, name)
+            if os.path.isfile(path):
+                os.remove(path)
+                removed += 1
+        try:
+            os.rmdir(folder)
+        except OSError:
+            pass
+        if removed:
+            print('deleted %d stored passport image(s)' % removed)
+
+
 def ensure_email_auth_schema():
     """Columns for email verification and password reset.
 
@@ -1188,6 +1232,7 @@ def apply_database_updates():
     migrate_transactions_to_orders()
     backfill_review_targets()
     ensure_email_auth_schema()
+    drop_passport_columns()
     ensure_platform_account()
 
 
@@ -1281,7 +1326,6 @@ class User(UserMixin, db.Model):
     bio = db.Column(db.Text, nullable=True)
     rating = db.Column(db.Float, default=5.0)
     num_ratings = db.Column(db.Integer, default=1)
-    passport_img = db.Column(db.String(200), nullable=True)   # legacy, unused
     reset_token = db.Column(db.String(64), unique=True, nullable=True)
     reset_expires_at = db.Column(db.DateTime, nullable=True)
     profile_pic = db.Column(db.String(500), nullable=True)
@@ -1344,7 +1388,6 @@ class AccessRequest(db.Model):
     neighborhood_id = db.Column(db.Integer, db.ForeignKey('neighborhood.id'), nullable=True)
     age = db.Column(db.Integer, nullable=True)
     reason = db.Column(db.Text, nullable=True)
-    passport_img = db.Column(db.String(200), nullable=True)
     status = db.Column(db.String(20), nullable=False, default='pending') # pending, approved, rejected
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     reviewed_at = db.Column(db.DateTime, nullable=True)
@@ -1655,7 +1698,6 @@ with app.app_context():
             region="Ashgabat",
             bio="Seeded test account for chat checks.",
             age=27,
-            passport_img="verified.png"
         )
         db.session.add(friend_user)
         db.session.commit()

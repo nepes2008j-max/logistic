@@ -101,7 +101,7 @@
                         <span><svg class="ico ico--fill"><use href="#i-star"></use></svg> {{ "%.1f"|format(item.owner.rating) }} rating</span>
                         <span>{{ item.owner.items|length }} listing{{ '' if item.owner.items|length == 1 else 's' }}</span>
                         {% if item.owner.kyc_status == 'verified' %}
-                        <span class="seal">Passport checked</span>
+                        <span class="seal">Approved member</span>
                         {% endif %}
                     </div>
                 </div>

@@ -15,7 +15,7 @@
             <tr>
                 <th scope="col">Person</th>
                 <th scope="col">Where</th>
-                <th scope="col">Passport</th>
+                <th scope="col">Standing</th>
                 <th scope="col">Wallet</th>
                 <th scope="col">Role</th>
             </tr>
@@ -28,7 +28,7 @@
                     <div class="cell-sub">{{ person.email }}</div>
                 </td>
                 <td data-col="Where">{{ person.region or 'not given' }}</td>
-                <td data-col="Passport">
+                <td data-col="Standing">
                     <span class="status-chip {% if person.kyc_status == 'verified' %}status-chip--active{% else %}status-chip--pending{% endif %}">{{ person.kyc_status }}</span>
                 </td>
                 <td data-col="Wallet" class="num">{{ "%.2f"|format(person.wallet_balance or 0) }} TMT</td>

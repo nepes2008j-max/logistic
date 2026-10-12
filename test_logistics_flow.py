@@ -27,13 +27,12 @@ from datetime import datetime, timedelta
 FAILURES = []
 CHECKS = 0
 
-# A 1x1 PNG, enough to stand in for a passport capture.
+# A 1x1 PNG, used where a test needs any valid image.
 PNG_1PX = base64.b64encode(bytes.fromhex(
     "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000"
     "000a49444154789c6360000002000100ffff03000006000557bfabd40000000049454e"
     "44ae426082"
 )).decode()
-PASSPORT_DATA_URL = "data:image/png;base64," + PNG_1PX
 
 
 def check(label, condition, detail=""):
@@ -65,10 +64,6 @@ def main():
     db = handshake.db
     a.config["TESTING"] = True
     a.config["WTF_CSRF_ENABLED"] = False
-    # Passport captures go to the scratch directory, never into the real
-    # static/uploads/passports folder.
-    a.config["UPLOAD_FOLDER"] = os.path.join(scratch, "passports")
-    os.makedirs(a.config["UPLOAD_FOLDER"], exist_ok=True)
 
     def money_total():
         with a.app_context():
@@ -165,11 +160,10 @@ def main():
         check("request is pending", req and req.status == "pending", req and req.status)
         check("no account created yet",
               handshake.User.query.filter_by(email="ayna.test@example.com").first() is None)
-        # The passport capture is gone. A confirmable email address replaced
-        # it, so what must exist now is an unspent verification token.
+        # A confirmable email address is the identity proof, so what must
+        # exist is an unspent verification token.
         check("verification token issued", req and bool(req.verify_token))
         check("email not confirmed yet", req and req.email_verified_at is None)
-        check("no passport stored", req and not req.passport_img)
         check("region derived from the chosen neighborhood",
               req and req.region == dest_velayat, req and req.region)
         request_id = req.id
@@ -211,7 +205,7 @@ def main():
           r.status_code == 200 and b"ayna.test@example.com" in r.data, r.status_code)
 
     r = admin_client.post("/admin/access-requests/%d/approve" % request_id,
-                          data={"review_note": "Passport looks fine."}, follow_redirects=True)
+                          data={"review_note": "Looks fine."}, follow_redirects=True)
     check("approve returns 200", r.status_code == 200)
     with a.app_context():
         req = handshake.AccessRequest.query.get(request_id)
