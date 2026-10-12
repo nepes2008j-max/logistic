@@ -32,51 +32,56 @@
        Elevation is expressed by moving along this ramp. There is no shadow
        token to reach for, by design. */
     --paper:        var(--color-pure-white);
-    --paper-tint:   #f4f4f3;
+    --paper-tint:   #f5f8fc;
     --surface:      var(--color-pure-white);
-    --surface-2:    #f1f1f0;
-    --surface-3:    #e7e6e6;
+    --surface-2:    #eef3f9;
+    --surface-3:    #e4ebf4;
 
     /* -- Ink ---------------------------------------------------------------
-       Cool Ash (#8e8e95) is 3.25:1 on white, which is fine for metadata set
-       large but fails AA as running copy. --ink-3 is therefore a darkened
-       step of the same cool grey, and --ash keeps the literal token for
-       large-only use. */
+       Cool Ash (#7E8BA0) is 3.45:1 on white — fine for metadata set large,
+       not fine as running copy. --ink-3 is a darkened step of the same
+       blue-grey at 5.92:1, and --ash keeps the literal token for large-only
+       use. All three are desaturated versions of the navy, so the greys read
+       as part of the blue rather than against it. */
     --ink:          var(--color-deep-ink);
-    --ink-2:        #3c3c44;
-    --ink-3:        #62626a;
+    --ink-2:        #334765;
+    --ink-3:        #54657f;
     --ash:          var(--color-cool-ash);
     --ink-invert:   var(--color-pure-white);
 
     --rule:         var(--color-pebble);
-    --rule-2:       #b7b4b5;
+    --rule-2:       #b9c6d8;
     --rule-ink:     var(--color-deep-ink);
 
     /* WCAG 1.4.11 wants 3:1 on the boundary of a control you have to find.
-       --rule-2 is 2.06:1 on white, which is fine for a decorative hairline
-       and not fine for the edge of every text input in the application.
-       --control-edge measures 3.51:1 on paper and 3.19:1 on the tint. */
-    --control-edge: #8b8889;
+       --rule-2 is a decorative hairline and too faint for the edge of every
+       text input. --control-edge is Cool Ash itself, 3.45:1 on paper. */
+    --control-edge: #7e8ba0;
 
-    /* -- The single warm note ----------------------------------------------
-       One clay element per page. Never two. --accent-ink is what reads on
-       top of a clay fill at body size, because white over clay is 3.75:1 and
-       only clears AA at display scale. */
+    /* -- The one bright note ------------------------------------------------
+       One bright-blue element per page. Never two. The rule survives the
+       palette change: a second accent is what turns a system into decoration.
+       --accent-ink is what reads on top of a bright-blue fill, and unlike the
+       old clay, white clears AA on it at body size (4.95:1), so the fill can
+       carry a label without dropping to display scale. */
     --accent:       var(--color-clay-ember);
-    --accent-deep:  #a75e44;
-    --accent-soft:  #f7ece7;
-    --accent-ghost: rgba(188, 113, 85, 0.18);
-    --accent-ink:   var(--color-deep-ink);
+    --accent-deep:  #0a4fcc;
+    --accent-soft:  #e8f0ff;
+    --accent-ghost: rgba(11, 99, 255, 0.16);
+    --accent-ink:   var(--color-pure-white);
 
-    /* Clay Ember is 3.73:1 on white — measured, not guessed — so it fails AA
-       the moment it is used as type. --accent-text is the same hue and
-       saturation dropped to L 0.42, which measures 5.57:1 on white and 5.06:1
-       on the tinted panel. The literal token stays for fills, rules and
-       marks, where contrast is not the constraint. */
-    --accent-text:  #9a563d;
+    /* The bright blue is 4.95:1 on white, which clears AA for body text but
+       leaves nothing in hand for small or light-weight type. --accent-text is
+       the same hue taken darker, 7.27:1 on white, and is what every link and
+       accented word uses. The literal token stays for fills, rules and marks,
+       where contrast is not the constraint. */
+    --accent-text:  #0d4fbf;
 
-    /* -- Status. Kept monochrome-adjacent so the austerity holds: these are
-       ink weights and one clay, not a second accent family. --------------- */
+    /* -- Status -------------------------------------------------------------
+       Deliberately NOT blue. Every one of these has to be distinguishable
+       from the accent at a glance, and a blue warning in a blue system is
+       invisible. Green, amber and red keep their jobs; they are the only
+       non-blue hues left and they earn it by meaning something. */
     --verified:     #1f5340;
     --verified-soft:#e8efeb;
     --warn:         #7a5326;
@@ -87,16 +92,19 @@
     --focus:        var(--color-deep-ink);
 
     /* -- The hero sky ------------------------------------------------------
-       Pale blue at the top falling to warm cream at the horizon. */
-    --sky-high:     #c9dced;
-    --sky-mid:      #e3ecf1;
-    --sky-low:      #f6efe4;
+       It used to fall from pale blue to warm cream, which was the last warm
+       surface in the application and now the only one. It stays blue the
+       whole way down and lands on white, so the hero dissolves into the page
+       instead of changing temperature halfway. */
+    --sky-high:     #cfe0f7;
+    --sky-mid:      #e6eefb;
+    --sky-low:      #f7fafe;
 
     /* -- Legacy aliases (kept so any stray inline style still resolves) ---- */
     --text-primary: var(--ink);
     --text-main:    var(--ink);
     --text-secondary: var(--ink-3);
-    --accent-rgb:   188, 113, 85;
+    --accent-rgb:   11, 99, 255;
 
     /* -- Type --------------------------------------------------------------
        One face across the system. Geist stands in for HelveticaNowDisplay:
@@ -196,29 +204,31 @@
 
 [data-theme="dark"] {
     --paper:        var(--color-midnight-hull);
-    --paper-tint:   #12121f;
+    --paper-tint:   #0d1a2c;
     --surface:      var(--color-charcoal-deck);
-    --surface-2:    #1c1d2c;
-    --surface-3:    #26273a;
+    --surface-2:    #16263f;
+    --surface-3:    #1e3250;
 
-    --ink:          #f6f6f9;
-    --ink-2:        #c5c5cf;
-    --ink-3:        #9c9ca9;
-    --ash:          #9c9ca9;
+    --ink:          #eef4ff;
+    --ink-2:        #bcc9de;
+    --ink-3:        #93a2bb;
+    --ash:          #93a2bb;
     --ink-invert:   var(--color-midnight-hull);
 
-    --rule:         #2a2b3d;
-    --rule-2:       #3c3d53;
-    --rule-ink:     #4c4d66;
-    --control-edge: #6b6c83;   /* 3.71:1 on the dark canvas, 3.5:1 on surface */
+    --rule:         #1f3350;
+    --rule-2:       #2c4260;
+    --rule-ink:     #3a5478;
+    --control-edge: #667a99;   /* 4.16:1 on the dark canvas, 3.83:1 on surface */
 
-    --accent:       #cd8468;
-    --accent-deep:  #dd9a80;
-    --accent-soft:  #2a1d19;
-    --accent-ghost: rgba(205, 132, 104, 0.22);
+    /* The bright blue is unreadable on a dark ground at its light-theme
+       value, so it lifts rather than inverts: same hue, far more lightness.
+       6.84:1 on the canvas. */
+    --accent:       #5aa0ff;
+    --accent-deep:  #79b2ff;
+    --accent-soft:  #11233d;
+    --accent-ghost: rgba(90, 160, 255, 0.22);
     --accent-ink:   var(--color-midnight-hull);
-    /* On the dark ground the literal accent already measures 6.42:1. */
-    --accent-text:  #cd8468;
+    --accent-text:  #5aa0ff;
 
     --verified:     #6fc39c;
     --verified-soft:#16261f;
@@ -233,7 +243,7 @@
     --sky-mid:      #131523;
     --sky-low:      #1a1722;
 
-    --accent-rgb:   205, 132, 104;
+    --accent-rgb:   90, 160, 255;
 
     --press:    none;
     --press-sm: none;
@@ -780,7 +790,7 @@ textarea:focus-visible,
     gap: 3px;
     min-height: 44px;
     padding-top: 3px;
-    /* --ash is #8e8e95: 3.25:1 on white, below the 4.5:1 AA needs at this
+    /* --ash is #7E8BA0: 3.45:1 on white, below the 4.5:1 AA needs at this
        size, and this was the one place in the stylesheet using it as text —
        its own comment two hundred lines up says it is for large text only.
        --ink-3 is 6.04:1. The size goes up with it: four of the five tabs are

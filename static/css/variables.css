@@ -1,12 +1,22 @@
 :root {
   /* Colors */
-  --color-deep-ink: #000d10;
+  /* Blue system. The names are kept from the original Hyer palette so the
+     hundreds of var() references downstream keep resolving — only the values
+     moved. Every ratio below is measured against white, not estimated.
+
+     --color-deep-ink    #082C5E  13.71:1  the navy that replaced near-black
+     --color-clay-ember  #0B63FF   4.95:1  the bright blue; white on it is
+                                           also 4.95:1, so it carries white
+                                           type at body size
+     --color-cool-ash    #7E8BA0   3.45:1  large text and control edges only
+     --color-pebble      #D3DCE8   1.38:1  hairlines */
+  --color-deep-ink: #082C5E;
   --color-pure-white: #ffffff;
-  --color-cool-ash: #8e8e95;
-  --color-pebble: #d5d3d4;
-  --color-midnight-hull: #0f0f1c;
-  --color-charcoal-deck: #151623;
-  --color-clay-ember: #bc7155;
+  --color-cool-ash: #7E8BA0;
+  --color-pebble: #d3dce8;
+  --color-midnight-hull: #0a1626;
+  --color-charcoal-deck: #101e33;
+  --color-clay-ember: #0b63ff;
 
   /* Typography — Font Families */
   --font-helveticanowdisplay: 'HelveticaNowDisplay', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -82,7 +92,7 @@
   /* Surfaces */
   --surface-canvas-white: #ffffff;
   --surface-card-white: #ffffff;
-  --surface-featured-clay: #bc7155;
-  --surface-dark-slate: #151623;
-  --surface-footer-ink: #000d10;
+  --surface-featured-clay: #0b63ff;
+  --surface-dark-slate: #101e33;
+  --surface-footer-ink: #082c5e;
 }
