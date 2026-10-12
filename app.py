@@ -27,12 +27,12 @@ def resolve_secret_key():
     a cookie for any user id you like, including an administrator's, and every
     @login_required and @admin_required in the file waves you through.
 
-    HANDSHAKE_SECRET_KEY still wins when it is set. Otherwise a random key is
+    GLOBALTRADE_SECRET_KEY still wins when it is set. Otherwise a random key is
     generated once and kept in instance/secret_key, which means the app still
     starts with no configuration — the thing the old default was protecting —
     while the key is unguessable and sessions survive a restart.
     """
-    from_env = os.environ.get('HANDSHAKE_SECRET_KEY')
+    from_env = os.environ.get('GLOBALTRADE_SECRET_KEY')
     if from_env:
         return from_env
 
@@ -63,16 +63,16 @@ app.secret_key = resolve_secret_key()
 # Session cookie hardening. HTTPONLY keeps the cookie away from any script that
 # manages to run on the page; SAMESITE='Lax' stops another site's form post
 # from arriving authenticated, which is the cheapest CSRF mitigation available
-# until real tokens land. SECURE is opt-in through HANDSHAKE_HTTPS because the
+# until real tokens land. SECURE is opt-in through GLOBALTRADE_HTTPS because the
 # app is normally served over plain http on a LAN, and setting it there would
 # silently stop sessions working at all.
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = os.environ.get('HANDSHAKE_HTTPS') == '1'
-# HANDSHAKE_DATABASE_URI lets a test run against a scratch database instead of
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('GLOBALTRADE_HTTPS') == '1'
+# GLOBALTRADE_DATABASE_URI lets a test run against a scratch database instead of
 # the real one. Unset, it is exactly the path it always was.
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-    'HANDSHAKE_DATABASE_URI', 'sqlite:///handshake.db'
+    'GLOBALTRADE_DATABASE_URI', 'sqlite:///globaltrade.db'
 )
 app.config['UPLOAD_FOLDER_ITEMS'] = 'static/uploads/items'
 app.config['UPLOAD_FOLDER_PROFILES'] = 'static/uploads/profiles'
@@ -314,7 +314,7 @@ DELIVERY_DISTANCE_SURCHARGE = {
 DELIVERY_SIZE_MULTIPLIER = {'small': 1.0, 'medium': 1.6, 'large': 2.5}
 HIGH_VALUE_THRESHOLD = 100.0     # above this an unverified buyer cannot order
 INVITE_TTL_DAYS = 7
-PLATFORM_ACCOUNT_NAME = 'handshake'
+PLATFORM_ACCOUNT_NAME = 'globaltrade'
 CODE_ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'   # no 0/O/1/I
 
 
@@ -1091,7 +1091,7 @@ def platform_account():
 def ensure_boot_admin():
     """Make sure a fresh deployment has exactly one way in.
 
-    HANDSHAKE_ADMIN_EMAIL promotes an account that already exists. That was the
+    GLOBALTRADE_ADMIN_EMAIL promotes an account that already exists. That was the
     whole of this function, and on a real deployment it was a dead end: with
     the demo accounts opt-in and no open registration, a fresh database has no
     accounts, nothing to promote, and therefore no way for anybody to sign in
@@ -1103,7 +1103,7 @@ def ensure_boot_admin():
     empty. Once a single account exists this branch never runs again, which
     means the variable cannot be used later to mint a second admin.
     """
-    email = (os.environ.get('HANDSHAKE_ADMIN_EMAIL') or '').strip().lower()
+    email = (os.environ.get('GLOBALTRADE_ADMIN_EMAIL') or '').strip().lower()
     if not email:
         return
 
@@ -1111,14 +1111,14 @@ def ensure_boot_admin():
 
     if user is None:
         if User.query.count() > 0:
-            print("HANDSHAKE_ADMIN_EMAIL=%s matches no account; not promoted" % email)
+            print("GLOBALTRADE_ADMIN_EMAIL=%s matches no account; not promoted" % email)
             return
 
-        password = os.environ.get('HANDSHAKE_ADMIN_PASSWORD') or ''
+        password = os.environ.get('GLOBALTRADE_ADMIN_PASSWORD') or ''
         generated = False
         if len(password) < 12:
             if password:
-                print("HANDSHAKE_ADMIN_PASSWORD is shorter than 12 characters; "
+                print("GLOBALTRADE_ADMIN_PASSWORD is shorter than 12 characters; "
                       "generating one instead")
             password = secrets.token_urlsafe(18)
             generated = True
@@ -1149,6 +1149,35 @@ def ensure_boot_admin():
         user.role = 'admin'
         db.session.commit()
         print("promoted %s to admin" % email)
+
+
+def rename_handshake_to_globaltrade():
+    """Carry the rename into data that already exists.
+
+    Two values are not cosmetic. PLATFORM_ACCOUNT_NAME is how every money
+    movement finds the platform's own row — rename the constant without
+    renaming the row and the next payment cannot find the account it is
+    supposed to credit. And the seeded demo accounts are somebody's actual
+    login, so leaving them on the old domain would lock out whoever was using
+    them.
+
+    Guarded on the old value, so this runs once and is a no-op afterwards.
+    """
+    moved = db.session.execute(
+        text("UPDATE platform_account SET name = :new WHERE name = :old"),
+        {"new": PLATFORM_ACCOUNT_NAME, "old": "handshake"},
+    ).rowcount
+    if moved:
+        db.session.commit()
+        print("renamed the platform account row to %s" % PLATFORM_ACCOUNT_NAME)
+
+    emails = db.session.execute(
+        text("UPDATE user SET email = replace(email, '@handshake.com', "
+             "'@globaltrade.com') WHERE email LIKE '%@handshake.com'")
+    ).rowcount
+    if emails:
+        db.session.commit()
+        print("moved %d demo account(s) to @globaltrade.com" % emails)
 
 
 def drop_passport_columns():
@@ -1233,6 +1262,7 @@ def apply_database_updates():
     backfill_review_targets()
     ensure_email_auth_schema()
     drop_passport_columns()
+    rename_handshake_to_globaltrade()
     ensure_platform_account()
 
 
@@ -1626,19 +1656,19 @@ with app.app_context():
     # that lives in a git repository, so every one of them is public knowledge
     # and one of them is an administrator. That is fine on a laptop and it is a
     # full compromise the moment this answers on a public address, so it is now
-    # opt-in: set HANDSHAKE_DEMO_DATA=1 to get them, and a deployment that does
+    # opt-in: set GLOBALTRADE_DEMO_DATA=1 to get them, and a deployment that does
     # not set it has no accounts except the ones its own admin creates.
-    demo_data = os.environ.get('HANDSHAKE_DEMO_DATA') == '1'
+    demo_data = os.environ.get('GLOBALTRADE_DEMO_DATA') == '1'
 
-    if demo_data and not User.query.filter_by(email="nepes@handshake.com").first():
+    if demo_data and not User.query.filter_by(email="nepes@globaltrade.com").first():
         # Create Dummy Users
         dummy_users = [
-            {"name": "Nepes", "email": "nepes@handshake.com", "pass": "nepes123", "region": "Ashgabat", "bio": "Photography enthusiast and tech geek.", "pic": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400"},
-            {"name": "Aman", "email": "aman@handshake.com", "pass": "aman123", "region": "Ashgabat", "bio": "Professional driver. I sell cars I have looked after myself.", "pic": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400"},
-            {"name": "Selbi", "email": "selbi@handshake.com", "pass": "selbi123", "region": "Ashgabat", "bio": "I love books and sharing knowledge.", "pic": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400"},
-            {"name": "Maral", "email": "maral@handshake.com", "pass": "maral123", "region": "Ashgabat", "bio": "Home renovation expert. I sell good tools I no longer need.", "pic": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400"},
-            {"name": "Arslan", "email": "arslan@handshake.com", "pass": "arslan123", "region": "Ashgabat", "bio": "Gaming is my life. Selling my spare consoles and games.", "pic": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400"},
-            {"name": "User1", "email": "user1@handshake.com", "pass": "user1", "region": "Ashgabat", "bio": "New Global Trade member, ready to send and receive.", "pic": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400"}
+            {"name": "Nepes", "email": "nepes@globaltrade.com", "pass": "nepes123", "region": "Ashgabat", "bio": "Photography enthusiast and tech geek.", "pic": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400"},
+            {"name": "Aman", "email": "aman@globaltrade.com", "pass": "aman123", "region": "Ashgabat", "bio": "Professional driver. I sell cars I have looked after myself.", "pic": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400"},
+            {"name": "Selbi", "email": "selbi@globaltrade.com", "pass": "selbi123", "region": "Ashgabat", "bio": "I love books and sharing knowledge.", "pic": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400"},
+            {"name": "Maral", "email": "maral@globaltrade.com", "pass": "maral123", "region": "Ashgabat", "bio": "Home renovation expert. I sell good tools I no longer need.", "pic": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400"},
+            {"name": "Arslan", "email": "arslan@globaltrade.com", "pass": "arslan123", "region": "Ashgabat", "bio": "Gaming is my life. Selling my spare consoles and games.", "pic": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400"},
+            {"name": "User1", "email": "user1@globaltrade.com", "pass": "user1", "region": "Ashgabat", "bio": "New Global Trade member, ready to send and receive.", "pic": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400"}
         ]
         
         db_users = []
@@ -1689,11 +1719,11 @@ with app.app_context():
         db.session.add(review)
         db.session.commit()
 
-    if demo_data and not User.query.filter_by(email="friend@handshake.com").first():
+    if demo_data and not User.query.filter_by(email="friend@globaltrade.com").first():
         friend_user = User(
             username="friend",
             full_name="Message Friend",
-            email="friend@handshake.com",
+            email="friend@globaltrade.com",
             password_hash=generate_password_hash("friend123", method='scrypt'),
             region="Ashgabat",
             bio="Seeded test account for chat checks.",
@@ -3416,8 +3446,8 @@ if __name__ == '__main__':
     # binds to localhost only, so a mistake here cannot reach the LAN.
     #
     # If you want the debugger while working on a route, ask for it explicitly:
-    #     HANDSHAKE_DEBUG=1 python app.py
-    debug = os.environ.get('HANDSHAKE_DEBUG') == '1'
+    #     GLOBALTRADE_DEBUG=1 python app.py
+    debug = os.environ.get('GLOBALTRADE_DEBUG') == '1'
     if debug:
         print('  WARNING: debugger on. Never do this on a reachable interface.')
     app.run(host='127.0.0.1', port=5000, debug=debug)

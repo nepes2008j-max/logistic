@@ -190,7 +190,7 @@ invite_token, invite_expires_at, invite_used_at, neighborhood, reviewed_by`
 * `invite_is_live` (property)
 
 ### `PlatformAccount`
-`id, name, balance, escrow_balance`. One row, named `handshake`.
+`id, name, balance, escrow_balance`. One row, named `globaltrade`.
 
 ### Gone entirely
 `Transaction` and every attribute on it (`amount`, `commission`,
@@ -395,14 +395,14 @@ cd /home/nepes/Desktop/PROJECTS/new_design_handshake
 .venv/bin/python run_lan.py 5601
 
 # first administrator
-.venv/bin/flask --app app create-admin nepes@handshake.com
-.venv/bin/flask --app app create-courier maral@handshake.com
-# or, at boot:  HANDSHAKE_ADMIN_EMAIL=someone@example.com
+.venv/bin/flask --app app create-admin nepes@globaltrade.com
+.venv/bin/flask --app app create-courier maral@globaltrade.com
+# or, at boot:  GLOBALTRADE_ADMIN_EMAIL=someone@example.com
 
 # the end-to-end suite, against a throwaway copy of the database
 .venv/bin/python test_logistics_flow.py
 ```
 
 Two new environment variables, both optional:
-`HANDSHAKE_SECRET_KEY` (the session key is otherwise the old hardcoded string)
-and `HANDSHAKE_DATABASE_URI` (so a test never touches `instance/handshake.db`).
+`GLOBALTRADE_SECRET_KEY` (the session key is otherwise the old hardcoded string)
+and `GLOBALTRADE_DATABASE_URI` (so a test never touches `instance/globaltrade.db`).

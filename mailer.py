@@ -7,13 +7,13 @@ a dependency to format a string and open a socket would be worse.
 Configuration is entirely environment variables, because credentials must not
 live in the repository:
 
-    HANDSHAKE_SMTP_HOST      smtp.gmail.com
-    HANDSHAKE_SMTP_PORT      587 (STARTTLS, the default) or 465 (implicit TLS)
-    HANDSHAKE_SMTP_USER      the account that authenticates
-    HANDSHAKE_SMTP_PASSWORD  its password — for Gmail this must be an App
+    GLOBALTRADE_SMTP_HOST      smtp.gmail.com
+    GLOBALTRADE_SMTP_PORT      587 (STARTTLS, the default) or 465 (implicit TLS)
+    GLOBALTRADE_SMTP_USER      the account that authenticates
+    GLOBALTRADE_SMTP_PASSWORD  its password — for Gmail this must be an App
                              Password, not the account password
-    HANDSHAKE_MAIL_FROM      what recipients see; defaults to SMTP_USER
-    HANDSHAKE_MAIL_REPLY_TO  optional
+    GLOBALTRADE_MAIL_FROM      what recipients see; defaults to SMTP_USER
+    GLOBALTRADE_MAIL_REPLY_TO  optional
 
 With no host configured nothing is sent. Messages are written to
 `instance/outbox/` as complete .eml files instead and the send is reported as
@@ -50,19 +50,19 @@ def looks_like_address(value):
 
 class Mailer:
     def __init__(self, instance_path):
-        self.host = os.environ.get("HANDSHAKE_SMTP_HOST", "").strip()
-        self.port = int(os.environ.get("HANDSHAKE_SMTP_PORT", "587"))
-        self.user = os.environ.get("HANDSHAKE_SMTP_USER", "").strip()
-        self.password = os.environ.get("HANDSHAKE_SMTP_PASSWORD", "")
-        self.sender = (os.environ.get("HANDSHAKE_MAIL_FROM")
-                       or self.user or "handshake@localhost")
-        self.reply_to = os.environ.get("HANDSHAKE_MAIL_REPLY_TO", "").strip()
+        self.host = os.environ.get("GLOBALTRADE_SMTP_HOST", "").strip()
+        self.port = int(os.environ.get("GLOBALTRADE_SMTP_PORT", "587"))
+        self.user = os.environ.get("GLOBALTRADE_SMTP_USER", "").strip()
+        self.password = os.environ.get("GLOBALTRADE_SMTP_PASSWORD", "")
+        self.sender = (os.environ.get("GLOBALTRADE_MAIL_FROM")
+                       or self.user or "globaltrade@localhost")
+        self.reply_to = os.environ.get("GLOBALTRADE_MAIL_REPLY_TO", "").strip()
         self.outbox = os.path.join(instance_path, "outbox")
-        self.timeout = int(os.environ.get("HANDSHAKE_SMTP_TIMEOUT", "20"))
+        self.timeout = int(os.environ.get("GLOBALTRADE_SMTP_TIMEOUT", "20"))
 
         self._queue = queue.Queue()
         self._worker = threading.Thread(
-            target=self._drain, name="handshake-mailer", daemon=True
+            target=self._drain, name="globaltrade-mailer", daemon=True
         )
         self._worker.start()
 
@@ -86,7 +86,7 @@ class Mailer:
         message["From"] = formataddr(("Global Trade", parseaddr(self.sender)[1] or self.sender))
         message["To"] = to
         message["Date"] = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S +0000")
-        message["Message-ID"] = make_msgid(domain="handshake.local")
+        message["Message-ID"] = make_msgid(domain="globaltrade.local")
         if reply_to or self.reply_to:
             message["Reply-To"] = reply_to or self.reply_to
         # Transactional mail, and this one in particular carries a login link.

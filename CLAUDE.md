@@ -46,7 +46,7 @@ replaced it — weaker as proof of who someone is, far stronger as proof that th
 contact details work, and the only one of the two the system can actually
 check. Do not reintroduce it.
 
-**A fresh database has no accounts at all**, so `HANDSHAKE_ADMIN_EMAIL` creates
+**A fresh database has no accounts at all**, so `GLOBALTRADE_ADMIN_EMAIL` creates
 the first administrator on an empty user table — the only way into a new
 deployment. Once any account exists it only promotes, never creates.
 
@@ -65,7 +65,7 @@ vanilla CSS and JavaScript. There is no build step and no frontend framework.
 - `mailer.py` — sending email, with `smtplib` and nothing else. Unconfigured it
   writes `.eml` files into `instance/outbox/` instead of sending, so every flow
   can be walked without an SMTP account
-- `instance/handshake.db` — SQLite database
+- `instance/globaltrade.db` — SQLite database
 - `templates/` — Jinja templates, all extending `base.html`
 - `static/css/` — `variables.css` (design tokens), `base.css`, `style.css`,
   `profile.css`, `chat.css`

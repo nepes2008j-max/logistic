@@ -444,7 +444,7 @@ def main():
             repair_remote_images()
             return
 
-        sellers = User.query.filter(User.email.like("%@handshake.com")).order_by(User.id).all()
+        sellers = User.query.filter(User.email.like("%@globaltrade.com")).order_by(User.id).all()
         if not sellers:
             print("No users found. Start the app once so it seeds its accounts.")
             return

@@ -40,11 +40,11 @@ by the parcel's size class.
 ```bash
 python -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python seed_demo_data.py        # optional: demo listings with photos
-HANDSHAKE_ADMIN_EMAIL=you@example.com .venv/bin/python run_lan.py 5500
+GLOBALTRADE_ADMIN_EMAIL=you@example.com .venv/bin/python run_lan.py 5500
 ```
 
 That serves on every interface so a real phone on the same Wi-Fi can open it,
-and prints the address. `HANDSHAKE_ADMIN_EMAIL` creates the first administrator
+and prints the address. `GLOBALTRADE_ADMIN_EMAIL` creates the first administrator
 on an empty database — without it a fresh install has no way in, because there
 is no public sign-up.
 
@@ -73,7 +73,7 @@ lives in `DESIGN.md` and its tokens in `static/css/variables.css`.
 ## Tests
 
 ```bash
-HANDSHAKE_DATABASE_URI=sqlite:////tmp/handshake_test.db .venv/bin/python test_logistics_flow.py
+GLOBALTRADE_DATABASE_URI=sqlite:////tmp/handshake_test.db .venv/bin/python test_logistics_flow.py
 ```
 
 154 checks against a throwaway copy of the database: the access flow including

@@ -20,11 +20,11 @@ COPY . .
 # uid 1000 because Hugging Face Spaces runs containers as that user and will
 # not let the process write anywhere it does not own. Other hosts do not care
 # which uid this is, so one value works everywhere.
-RUN useradd --create-home --uid 1000 handshake \
+RUN useradd --create-home --uid 1000 globaltrade \
  && mkdir -p instance static/uploads/items static/uploads/profiles \
- && chown -R handshake:handshake /app
-USER handshake
-ENV HOME=/home/handshake
+ && chown -R globaltrade:globaltrade /app
+USER globaltrade
+ENV HOME=/home/globaltrade
 
 # SQLite and the uploaded images live here. Mount a volume on it or the data
 # disappears with the container — every free host that offers persistent disk

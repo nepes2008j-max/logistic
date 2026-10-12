@@ -1,9 +1,9 @@
 """End-to-end checks for the logistics pivot.
 
 Runs against a throwaway copy of the real database so nothing in
-instance/handshake.db is touched:
+instance/globaltrade.db is touched:
 
-    HANDSHAKE_DATABASE_URI=sqlite:////tmp/handshake_test.db \
+    GLOBALTRADE_DATABASE_URI=sqlite:////tmp/globaltrade_test.db \
         .venv/bin/python test_logistics_flow.py
 
 It exercises, and fails loudly on:
@@ -51,27 +51,27 @@ def section(title):
 
 
 def main():
-    scratch = tempfile.mkdtemp(prefix="handshake_test_")
-    scratch_db = os.path.join(scratch, "handshake_test.db")
-    source_db = os.path.join(os.path.dirname(os.path.abspath(__file__)), "instance", "handshake.db")
+    scratch = tempfile.mkdtemp(prefix="globaltrade_test_")
+    scratch_db = os.path.join(scratch, "globaltrade_test.db")
+    source_db = os.path.join(os.path.dirname(os.path.abspath(__file__)), "instance", "globaltrade.db")
     if os.path.exists(source_db):
         shutil.copy(source_db, scratch_db)
-    os.environ["HANDSHAKE_DATABASE_URI"] = "sqlite:///" + scratch_db
+    os.environ["GLOBALTRADE_DATABASE_URI"] = "sqlite:///" + scratch_db
     print("scratch database: %s" % scratch_db)
 
-    import app as handshake
-    a = handshake.app
-    db = handshake.db
+    import app as globaltrade
+    a = globaltrade.app
+    db = globaltrade.db
     a.config["TESTING"] = True
     a.config["WTF_CSRF_ENABLED"] = False
 
     def money_total():
         with a.app_context():
             wallets = db.session.query(
-                db.func.coalesce(db.func.sum(handshake.User.wallet_balance), 0.0)
+                db.func.coalesce(db.func.sum(globaltrade.User.wallet_balance), 0.0)
             ).scalar()
-            account = handshake.PlatformAccount.query.filter_by(
-                name=handshake.PLATFORM_ACCOUNT_NAME
+            account = globaltrade.PlatformAccount.query.filter_by(
+                name=globaltrade.PLATFORM_ACCOUNT_NAME
             ).first()
             return round(wallets + account.balance + account.escrow_balance, 2)
 
@@ -81,24 +81,24 @@ def main():
 
     # -- fixtures -----------------------------------------------------------
     with a.app_context():
-        admin = handshake.User.query.filter_by(email="nepes@handshake.com").first()
+        admin = globaltrade.User.query.filter_by(email="nepes@globaltrade.com").first()
         admin.role = "admin"
-        admin.password_hash = handshake.generate_password_hash("nepes123", method="scrypt")
-        seller = handshake.User.query.filter_by(email="aman@handshake.com").first()
-        seller.password_hash = handshake.generate_password_hash("aman123", method="scrypt")
-        buyer = handshake.User.query.filter_by(email="selbi@handshake.com").first()
-        buyer.password_hash = handshake.generate_password_hash("selbi123", method="scrypt")
+        admin.password_hash = globaltrade.generate_password_hash("nepes123", method="scrypt")
+        seller = globaltrade.User.query.filter_by(email="aman@globaltrade.com").first()
+        seller.password_hash = globaltrade.generate_password_hash("aman123", method="scrypt")
+        buyer = globaltrade.User.query.filter_by(email="selbi@globaltrade.com").first()
+        buyer.password_hash = globaltrade.generate_password_hash("selbi123", method="scrypt")
         buyer.kyc_status = "verified"
         buyer.wallet_balance = 5000.0
-        courier = handshake.User.query.filter_by(email="maral@handshake.com").first()
+        courier = globaltrade.User.query.filter_by(email="maral@globaltrade.com").first()
         courier.role = "courier"
-        courier.password_hash = handshake.generate_password_hash("maral123", method="scrypt")
-        outsider = handshake.User.query.filter_by(email="arslan@handshake.com").first()
-        outsider.password_hash = handshake.generate_password_hash("arslan123", method="scrypt")
+        courier.password_hash = globaltrade.generate_password_hash("maral123", method="scrypt")
+        outsider = globaltrade.User.query.filter_by(email="arslan@globaltrade.com").first()
+        outsider.password_hash = globaltrade.generate_password_hash("arslan123", method="scrypt")
 
-        origin = handshake.find_seeded_neighborhood("Ashgabat", "Berkararlyk", "Central Ashgabat")
-        destination = handshake.find_seeded_neighborhood("Mary", "Bayramaly", "Bayramaly")
-        item = handshake.Item(
+        origin = globaltrade.find_seeded_neighborhood("Ashgabat", "Berkararlyk", "Central Ashgabat")
+        destination = globaltrade.find_seeded_neighborhood("Mary", "Bayramaly", "Bayramaly")
+        item = globaltrade.Item(
             title="Test parcel, large", price=120.0, category="tools",
             size_class="large", weight_kg=30.0, status="listed",
             neighborhood_id=origin.id, user_id=seller.id,
@@ -115,29 +115,29 @@ def main():
     check("destination is in a different velayat from the origin",
           dest_velayat != origin_velayat, "%s vs %s" % (origin_velayat, dest_velayat))
     with a.app_context():
-        empty = [v["name"] for v in handshake.get_location_tree() if not v["districts"]]
+        empty = [v["name"] for v in globaltrade.get_location_tree() if not v["districts"]]
         check("every velayat has districts", not empty, "empty: %s" % empty)
 
     section("delivery pricing")
     with a.app_context():
-        o = handshake.Neighborhood.query.get(origin_id)
-        d = handshake.Neighborhood.query.get(destination_id)
-        same_district = handshake.find_seeded_neighborhood(
+        o = globaltrade.Neighborhood.query.get(origin_id)
+        d = globaltrade.Neighborhood.query.get(destination_id)
+        same_district = globaltrade.find_seeded_neighborhood(
             "Ashgabat", "Berkararlyk", "Ataturk Street")
-        same_velayat = handshake.find_seeded_neighborhood(
+        same_velayat = globaltrade.find_seeded_neighborhood(
             "Ashgabat", "Kopetdag", "Archabil Avenue")
         check("same neighborhood, small = 15.00",
-              handshake.calculate_delivery_fee(o, o, "small") == 15.0,
-              handshake.calculate_delivery_fee(o, o, "small"))
+              globaltrade.calculate_delivery_fee(o, o, "small") == 15.0,
+              globaltrade.calculate_delivery_fee(o, o, "small"))
         check("same district, small = 25.00",
-              handshake.calculate_delivery_fee(o, same_district, "small") == 25.0,
-              handshake.calculate_delivery_fee(o, same_district, "small"))
+              globaltrade.calculate_delivery_fee(o, same_district, "small") == 25.0,
+              globaltrade.calculate_delivery_fee(o, same_district, "small"))
         check("same velayat, medium = (15+25)*1.6 = 64.00",
-              handshake.calculate_delivery_fee(o, same_velayat, "medium") == 64.0,
-              handshake.calculate_delivery_fee(o, same_velayat, "medium"))
+              globaltrade.calculate_delivery_fee(o, same_velayat, "medium") == 64.0,
+              globaltrade.calculate_delivery_fee(o, same_velayat, "medium"))
         check("cross velayat, large = (15+60)*2.5 = 187.50",
-              handshake.calculate_delivery_fee(o, d, "large") == 187.5,
-              handshake.calculate_delivery_fee(o, d, "large"))
+              globaltrade.calculate_delivery_fee(o, d, "large") == 187.5,
+              globaltrade.calculate_delivery_fee(o, d, "large"))
 
     # -- access flow ---------------------------------------------------------
     section("access flow")
@@ -155,11 +155,11 @@ def main():
     }, follow_redirects=True)
     check("access request accepted", r.status_code == 200)
     with a.app_context():
-        req = handshake.AccessRequest.query.filter_by(email="ayna.test@example.com").first()
+        req = globaltrade.AccessRequest.query.filter_by(email="ayna.test@example.com").first()
         check("access request stored", req is not None)
         check("request is pending", req and req.status == "pending", req and req.status)
         check("no account created yet",
-              handshake.User.query.filter_by(email="ayna.test@example.com").first() is None)
+              globaltrade.User.query.filter_by(email="ayna.test@example.com").first() is None)
         # A confirmable email address is the identity proof, so what must
         # exist is an unspent verification token.
         check("verification token issued", req and bool(req.verify_token))
@@ -176,12 +176,12 @@ def main():
     }, follow_redirects=True)
     with a.app_context():
         check("duplicate request is not queued twice",
-              handshake.AccessRequest.query.filter_by(
+              globaltrade.AccessRequest.query.filter_by(
                   email="ayna.test@example.com", status="pending").count() == 1)
 
     section("admin authorisation")
     member = a.test_client()
-    login(member, "selbi@handshake.com", "selbi123")
+    login(member, "selbi@globaltrade.com", "selbi123")
     r = member.get("/admin")
     check("non-admin is redirected away from /admin", r.status_code == 302, r.status_code)
     check("non-admin lands somewhere other than /admin",
@@ -192,12 +192,12 @@ def main():
           member.post("/admin/access-requests/%d/approve" % request_id).status_code == 302)
     with a.app_context():
         check("the request is still pending after that attempt",
-              handshake.AccessRequest.query.get(request_id).status == "pending")
+              globaltrade.AccessRequest.query.get(request_id).status == "pending")
     anonymous = a.test_client()
     check("anonymous is refused /admin", anonymous.get("/admin").status_code == 302)
 
     admin_client = a.test_client()
-    login(admin_client, "nepes@handshake.com", "nepes123")
+    login(admin_client, "nepes@globaltrade.com", "nepes123")
     r = admin_client.get("/admin")
     check("admin reaches /admin", r.status_code == 200, r.status_code)
     r = admin_client.get("/admin/access-requests")
@@ -208,13 +208,13 @@ def main():
                           data={"review_note": "Looks fine."}, follow_redirects=True)
     check("approve returns 200", r.status_code == 200)
     with a.app_context():
-        req = handshake.AccessRequest.query.get(request_id)
+        req = globaltrade.AccessRequest.query.get(request_id)
         check("request is approved", req.status == "approved", req.status)
         check("an invite token was issued", bool(req.invite_token))
         ttl_days = (req.invite_expires_at - datetime.utcnow()).total_seconds() / 86400.0
         check("the invite expires in 7 days", 6.9 < ttl_days <= 7.0, ttl_days)
         check("still no account before activation",
-              handshake.User.query.filter_by(email="ayna.test@example.com").first() is None)
+              globaltrade.User.query.filter_by(email="ayna.test@example.com").first() is None)
         good_token = req.invite_token
 
     check("activation page renders", public.get("/activate/%s" % good_token).status_code == 200)
@@ -225,14 +225,14 @@ def main():
                     follow_redirects=True)
     with a.app_context():
         check("a short password does not create an account",
-              handshake.User.query.filter_by(email="ayna.test@example.com").first() is None)
+              globaltrade.User.query.filter_by(email="ayna.test@example.com").first() is None)
 
     r = public.post("/activate/%s" % good_token,
                     data={"password": "a-good-password", "confirm_password": "a-good-password"},
                     follow_redirects=True)
     check("activation returns 200", r.status_code == 200)
     with a.app_context():
-        new_user = handshake.User.query.filter_by(email="ayna.test@example.com").first()
+        new_user = globaltrade.User.query.filter_by(email="ayna.test@example.com").first()
         check("the account now exists", new_user is not None)
         check("the approved account is verified",
               new_user and new_user.kyc_status == "verified", new_user and new_user.kyc_status)
@@ -250,7 +250,7 @@ def main():
     check("a used token is refused", r.status_code == 302, r.status_code)
     with a.app_context():
         check("no second account from the replayed token",
-              handshake.User.query.filter_by(email="ayna.test@example.com").count() == 1)
+              globaltrade.User.query.filter_by(email="ayna.test@example.com").count() == 1)
 
     # rejected request
     public2 = a.test_client()
@@ -260,12 +260,12 @@ def main():
        
     }, follow_redirects=True)
     with a.app_context():
-        rejected = handshake.AccessRequest.query.filter_by(email="rejected@example.com").first()
+        rejected = globaltrade.AccessRequest.query.filter_by(email="rejected@example.com").first()
         rejected_id = rejected.id
     admin_client.post("/admin/access-requests/%d/reject" % rejected_id,
                       data={"review_note": "Not this time."}, follow_redirects=True)
     with a.app_context():
-        rejected = handshake.AccessRequest.query.get(rejected_id)
+        rejected = globaltrade.AccessRequest.query.get(rejected_id)
         check("the rejected request holds no token", rejected.invite_token is None)
         check("the rejected request is marked rejected", rejected.status == "rejected")
         # force a token onto it to prove status alone blocks activation
@@ -278,7 +278,7 @@ def main():
     check("a rejected request cannot activate even holding a token", r.status_code == 302)
     with a.app_context():
         check("no account for the rejected person",
-              handshake.User.query.filter_by(email="rejected@example.com").first() is None)
+              globaltrade.User.query.filter_by(email="rejected@example.com").first() is None)
 
     # expired invitation
     public3 = a.test_client()
@@ -288,11 +288,11 @@ def main():
        
     }, follow_redirects=True)
     with a.app_context():
-        late = handshake.AccessRequest.query.filter_by(email="late@example.com").first()
+        late = globaltrade.AccessRequest.query.filter_by(email="late@example.com").first()
         late_id = late.id
     admin_client.post("/admin/access-requests/%d/approve" % late_id, follow_redirects=True)
     with a.app_context():
-        late = handshake.AccessRequest.query.get(late_id)
+        late = globaltrade.AccessRequest.query.get(late_id)
         late.invite_expires_at = datetime.utcnow() - timedelta(minutes=1)
         db.session.commit()
         late_token = late.invite_token
@@ -304,7 +304,7 @@ def main():
     check("an expired token is refused", r.status_code == 302)
     with a.app_context():
         check("no account from the expired token",
-              handshake.User.query.filter_by(email="late@example.com").first() is None)
+              globaltrade.User.query.filter_by(email="late@example.com").first() is None)
 
     # -- order flow ----------------------------------------------------------
     section("order flow")
@@ -312,13 +312,13 @@ def main():
     print("  money in the system before the order: %.2f" % money_before)
 
     buyer_client = a.test_client()
-    login(buyer_client, "selbi@handshake.com", "selbi123")
+    login(buyer_client, "selbi@globaltrade.com", "selbi123")
     seller_client = a.test_client()
-    login(seller_client, "aman@handshake.com", "aman123")
+    login(seller_client, "aman@globaltrade.com", "aman123")
     courier_client = a.test_client()
-    login(courier_client, "maral@handshake.com", "maral123")
+    login(courier_client, "maral@globaltrade.com", "maral123")
     outsider_client = a.test_client()
-    login(outsider_client, "arslan@handshake.com", "arslan123")
+    login(outsider_client, "arslan@globaltrade.com", "arslan123")
 
     check("the order form renders",
           buyer_client.get("/order/new/%d" % item_id).status_code == 200)
@@ -330,8 +330,8 @@ def main():
     }, follow_redirects=False)
     check("placing the order redirects", r.status_code == 302, r.status_code)
     with a.app_context():
-        order = handshake.Order.query.filter_by(item_id=item_id).order_by(
-            handshake.Order.id.desc()).first()
+        order = globaltrade.Order.query.filter_by(item_id=item_id).order_by(
+            globaltrade.Order.id.desc()).first()
         check("the order exists", order is not None)
         order_id = order.id
         check("the order is 'placed'", order.status == "placed", order.status)
@@ -355,35 +355,35 @@ def main():
           buyer_client.post("/order/%d/accept" % order_id).status_code == 404)
     with a.app_context():
         check("the order is still 'placed' after those attempts",
-              handshake.Order.query.get(order_id).status == "placed")
+              globaltrade.Order.query.get(order_id).status == "placed")
 
     check("paying before acceptance is refused",
           buyer_client.post("/order/%d/pay" % order_id, follow_redirects=False).status_code == 302)
     with a.app_context():
         check("the order did not become paid",
-              handshake.Order.query.get(order_id).status == "placed",
-              handshake.Order.query.get(order_id).status)
+              globaltrade.Order.query.get(order_id).status == "placed",
+              globaltrade.Order.query.get(order_id).status)
     check("money did not move", money_total() == money_before,
           "%.2f vs %.2f" % (money_total(), money_before))
 
     seller_client.post("/order/%d/accept" % order_id, follow_redirects=True)
     with a.app_context():
         check("the seller accepted the order",
-              handshake.Order.query.get(order_id).status == "accepted",
-              handshake.Order.query.get(order_id).status)
+              globaltrade.Order.query.get(order_id).status == "accepted",
+              globaltrade.Order.query.get(order_id).status)
 
     with a.app_context():
-        buyer_wallet_before = handshake.User.query.get(buyer_id).wallet_balance
-        seller_wallet_before = handshake.User.query.get(seller_id).wallet_balance
-        account_before = handshake.PlatformAccount.query.filter_by(
-            name=handshake.PLATFORM_ACCOUNT_NAME).first()
+        buyer_wallet_before = globaltrade.User.query.get(buyer_id).wallet_balance
+        seller_wallet_before = globaltrade.User.query.get(seller_id).wallet_balance
+        account_before = globaltrade.PlatformAccount.query.filter_by(
+            name=globaltrade.PLATFORM_ACCOUNT_NAME).first()
         platform_fees_before = account_before.balance
         platform_escrow_before = account_before.escrow_balance
 
     r = buyer_client.post("/order/%d/pay" % order_id, follow_redirects=False)
     check("payment redirects", r.status_code == 302, r.status_code)
     with a.app_context():
-        order = handshake.Order.query.get(order_id)
+        order = globaltrade.Order.query.get(order_id)
         check("the order is paid", order.status == "paid", order.status)
         check("the item is reserved", order.item.status == "reserved", order.item.status)
         check("a delivery was created", order.delivery is not None)
@@ -396,13 +396,13 @@ def main():
               order.delivery and order.delivery.pickup_code != order.delivery.dropoff_code)
         check("an ETA was set", order.delivery and order.delivery.eta_date is not None)
         check("the buyer was debited the full total",
-              round(handshake.User.query.get(buyer_id).wallet_balance, 2)
+              round(globaltrade.User.query.get(buyer_id).wallet_balance, 2)
               == round(buyer_wallet_before - 313.5, 2),
-              handshake.User.query.get(buyer_id).wallet_balance)
+              globaltrade.User.query.get(buyer_id).wallet_balance)
         check("the seller has NOT been paid yet",
-              handshake.User.query.get(seller_id).wallet_balance == seller_wallet_before)
-        account = handshake.PlatformAccount.query.filter_by(
-            name=handshake.PLATFORM_ACCOUNT_NAME).first()
+              globaltrade.User.query.get(seller_id).wallet_balance == seller_wallet_before)
+        account = globaltrade.PlatformAccount.query.filter_by(
+            name=globaltrade.PLATFORM_ACCOUNT_NAME).first()
         check("the goods price is in escrow",
               round(account.escrow_balance - platform_escrow_before, 2) == 120.0,
               account.escrow_balance)
@@ -419,13 +419,13 @@ def main():
     check("the second payment redirects rather than charging", r.status_code == 302)
     with a.app_context():
         check("the buyer was charged exactly once",
-              round(handshake.User.query.get(buyer_id).wallet_balance, 2)
+              round(globaltrade.User.query.get(buyer_id).wallet_balance, 2)
               == round(buyer_wallet_before - 313.5, 2),
-              handshake.User.query.get(buyer_id).wallet_balance)
+              globaltrade.User.query.get(buyer_id).wallet_balance)
         check("still exactly one delivery",
-              handshake.Delivery.query.filter_by(order_id=order_id).count() == 1)
-        account = handshake.PlatformAccount.query.filter_by(
-            name=handshake.PLATFORM_ACCOUNT_NAME).first()
+              globaltrade.Delivery.query.filter_by(order_id=order_id).count() == 1)
+        account = globaltrade.PlatformAccount.query.filter_by(
+            name=globaltrade.PLATFORM_ACCOUNT_NAME).first()
         check("escrow was not doubled",
               round(account.escrow_balance - platform_escrow_before, 2) == 120.0,
               account.escrow_balance)
@@ -446,17 +446,17 @@ def main():
     courier_client.post("/delivery/%d/claim" % delivery_id, follow_redirects=True)
     with a.app_context():
         check("the courier now holds the delivery",
-              handshake.Delivery.query.get(delivery_id).courier_id == courier_id)
+              globaltrade.Delivery.query.get(delivery_id).courier_id == courier_id)
 
     with a.app_context():
-        d = handshake.Delivery.query.get(delivery_id)
+        d = globaltrade.Delivery.query.get(delivery_id)
         pickup_code, dropoff_code = d.pickup_code, d.dropoff_code
 
     courier_client.post("/delivery/%d/pickup" % delivery_id,
                         data={"code": "WRONG1"}, follow_redirects=True)
     with a.app_context():
         check("a wrong pickup code does not move the delivery",
-              handshake.Delivery.query.get(delivery_id).status == "awaiting_pickup")
+              globaltrade.Delivery.query.get(delivery_id).status == "awaiting_pickup")
 
     # A non-ASCII paste used to reach secrets.compare_digest, which raises
     # TypeError on non-ASCII strings, so a doorstep typo became a 500.
@@ -470,20 +470,20 @@ def main():
     check("an empty pickup code is refused", r.status_code == 302, r.status_code)
     with a.app_context():
         check("neither attempt moved the delivery",
-              handshake.Delivery.query.get(delivery_id).status == "awaiting_pickup")
+              globaltrade.Delivery.query.get(delivery_id).status == "awaiting_pickup")
 
     courier_client.post("/delivery/%d/dropoff" % delivery_id,
                         data={"code": dropoff_code}, follow_redirects=True)
     with a.app_context():
         check("a handover cannot be recorded before pickup",
-              handshake.Delivery.query.get(delivery_id).status == "awaiting_pickup")
+              globaltrade.Delivery.query.get(delivery_id).status == "awaiting_pickup")
         check("the seller was not paid by that attempt",
-              handshake.User.query.get(seller_id).wallet_balance == seller_wallet_before)
+              globaltrade.User.query.get(seller_id).wallet_balance == seller_wallet_before)
 
     courier_client.post("/delivery/%d/pickup" % delivery_id,
                         data={"code": pickup_code}, follow_redirects=True)
     with a.app_context():
-        d = handshake.Delivery.query.get(delivery_id)
+        d = globaltrade.Delivery.query.get(delivery_id)
         check("pickup confirmed", d.status == "picked_up", d.status)
         check("picked_up_at was set", d.picked_up_at is not None)
         check("the pickup code was consumed", d.pickup_code is None)
@@ -492,57 +492,57 @@ def main():
                         data={"code": pickup_code}, follow_redirects=True)
     with a.app_context():
         check("the pickup code cannot be replayed",
-              handshake.Delivery.query.get(delivery_id).status == "picked_up")
+              globaltrade.Delivery.query.get(delivery_id).status == "picked_up")
 
     courier_client.post("/delivery/%d/advance" % delivery_id,
                         data={"status": "out_for_delivery"}, follow_redirects=True)
     with a.app_context():
         check("the pipeline cannot be skipped",
-              handshake.Delivery.query.get(delivery_id).status == "picked_up",
-              handshake.Delivery.query.get(delivery_id).status)
+              globaltrade.Delivery.query.get(delivery_id).status == "picked_up",
+              globaltrade.Delivery.query.get(delivery_id).status)
 
     courier_client.post("/delivery/%d/advance" % delivery_id,
                         data={"status": "in_transit"}, follow_redirects=True)
     with a.app_context():
-        check("in transit", handshake.Delivery.query.get(delivery_id).status == "in_transit")
+        check("in transit", globaltrade.Delivery.query.get(delivery_id).status == "in_transit")
 
     courier_client.post("/delivery/%d/advance" % delivery_id,
                         data={"status": "out_for_delivery"}, follow_redirects=True)
     with a.app_context():
         check("out for delivery",
-              handshake.Delivery.query.get(delivery_id).status == "out_for_delivery")
+              globaltrade.Delivery.query.get(delivery_id).status == "out_for_delivery")
 
     check("a stranger cannot drive the delivery",
           outsider_client.post("/delivery/%d/dropoff" % delivery_id,
                                data={"code": dropoff_code}).status_code == 302)
     with a.app_context():
         check("that attempt changed nothing",
-              handshake.Delivery.query.get(delivery_id).status == "out_for_delivery")
+              globaltrade.Delivery.query.get(delivery_id).status == "out_for_delivery")
 
     courier_client.post("/delivery/%d/dropoff" % delivery_id,
                         data={"code": "WRONG2"}, follow_redirects=True)
     with a.app_context():
         check("a wrong dropoff code does not complete the delivery",
-              handshake.Delivery.query.get(delivery_id).status == "out_for_delivery")
+              globaltrade.Delivery.query.get(delivery_id).status == "out_for_delivery")
         check("the seller still has not been paid",
-              handshake.User.query.get(seller_id).wallet_balance == seller_wallet_before)
+              globaltrade.User.query.get(seller_id).wallet_balance == seller_wallet_before)
 
     courier_client.post("/delivery/%d/dropoff" % delivery_id,
                         data={"code": dropoff_code}, follow_redirects=True)
     with a.app_context():
-        d = handshake.Delivery.query.get(delivery_id)
-        order = handshake.Order.query.get(order_id)
+        d = globaltrade.Delivery.query.get(delivery_id)
+        order = globaltrade.Order.query.get(order_id)
         check("delivered", d.status == "delivered", d.status)
         check("delivered_at was set", d.delivered_at is not None)
         check("the dropoff code was consumed", d.dropoff_code is None)
         check("the order is completed", order.status == "completed", order.status)
         check("the item is sold", order.item.status == "sold", order.item.status)
         check("the seller was paid the goods price on delivery",
-              round(handshake.User.query.get(seller_id).wallet_balance, 2)
+              round(globaltrade.User.query.get(seller_id).wallet_balance, 2)
               == round(seller_wallet_before + 120.0, 2),
-              handshake.User.query.get(seller_id).wallet_balance)
-        account = handshake.PlatformAccount.query.filter_by(
-            name=handshake.PLATFORM_ACCOUNT_NAME).first()
+              globaltrade.User.query.get(seller_id).wallet_balance)
+        account = globaltrade.PlatformAccount.query.filter_by(
+            name=globaltrade.PLATFORM_ACCOUNT_NAME).first()
         check("escrow is back where it started",
               round(account.escrow_balance - platform_escrow_before, 2) == 0.0,
               account.escrow_balance)
@@ -563,8 +563,8 @@ def main():
     # -- the failed / returned branch ---------------------------------------
     section("failed and returned refunds the buyer")
     with a.app_context():
-        origin = handshake.Neighborhood.query.get(origin_id)
-        item2 = handshake.Item(
+        origin = globaltrade.Neighborhood.query.get(origin_id)
+        item2 = globaltrade.Item(
             title="Second test parcel", price=50.0, category="books",
             size_class="small", status="listed",
             neighborhood_id=origin.id, user_id=seller_id,
@@ -580,14 +580,14 @@ def main():
         "dest_contact_phone": "+99365999999",
     }, follow_redirects=True)
     with a.app_context():
-        order2 = handshake.Order.query.filter_by(item_id=item2_id).first()
+        order2 = globaltrade.Order.query.filter_by(item_id=item2_id).first()
         order2_id = order2.id
     seller_client.post("/order/%d/accept" % order2_id, follow_redirects=True)
     with a.app_context():
-        buyer_before_return = handshake.User.query.get(buyer_id).wallet_balance
+        buyer_before_return = globaltrade.User.query.get(buyer_id).wallet_balance
     buyer_client.post("/order/%d/pay" % order2_id, follow_redirects=True)
     with a.app_context():
-        delivery2 = handshake.Order.query.get(order2_id).delivery
+        delivery2 = globaltrade.Order.query.get(order2_id).delivery
         delivery2_id = delivery2.id
         code2 = delivery2.pickup_code
     courier_client.post("/delivery/%d/claim" % delivery2_id, follow_redirects=True)
@@ -601,21 +601,21 @@ def main():
                         data={"note": "Nobody at the address."}, follow_redirects=True)
     with a.app_context():
         check("the delivery is marked failed",
-              handshake.Delivery.query.get(delivery2_id).status == "failed")
+              globaltrade.Delivery.query.get(delivery2_id).status == "failed")
         check("a failed attempt moves no money", money_total() == before_return,
               "%.2f vs %.2f" % (money_total(), before_return))
     courier_client.post("/delivery/%d/return" % delivery2_id, follow_redirects=True)
     with a.app_context():
-        d2 = handshake.Delivery.query.get(delivery2_id)
+        d2 = globaltrade.Delivery.query.get(delivery2_id)
         check("the delivery is returned", d2.status == "returned", d2.status)
         check("the order was cancelled",
-              handshake.Order.query.get(order2_id).status == "cancelled")
+              globaltrade.Order.query.get(order2_id).status == "cancelled")
         check("the item is back on the shelf",
-              handshake.Item.query.get(item2_id).status == "listed")
+              globaltrade.Item.query.get(item2_id).status == "listed")
         check("the buyer was made whole",
-              round(handshake.User.query.get(buyer_id).wallet_balance, 2)
+              round(globaltrade.User.query.get(buyer_id).wallet_balance, 2)
               == round(buyer_before_return, 2),
-              handshake.User.query.get(buyer_id).wallet_balance)
+              globaltrade.User.query.get(buyer_id).wallet_balance)
         check("the return is on the audit trail",
               [e.status for e in d2.events][-1] == "returned")
     check("money is conserved across the returned order",
@@ -624,9 +624,9 @@ def main():
     # -- the high value gate -------------------------------------------------
     section("the high-value gate is reachable now")
     with a.app_context():
-        unverified = handshake.User.query.filter_by(email="arslan@handshake.com").first()
+        unverified = globaltrade.User.query.filter_by(email="arslan@globaltrade.com").first()
         unverified.kyc_status = "processing"
-        item3 = handshake.Item(
+        item3 = globaltrade.Item(
             title="Expensive parcel", price=900.0, category="tech",
             size_class="small", status="listed",
             neighborhood_id=origin_id, user_id=seller_id,
@@ -642,8 +642,8 @@ def main():
     }, follow_redirects=True)
     with a.app_context():
         check("an unverified buyer cannot order over 100 TMT",
-              handshake.Order.query.filter_by(item_id=item3_id).count() == 0)
-        verified = handshake.User.query.filter_by(email="selbi@handshake.com").first()
+              globaltrade.Order.query.filter_by(item_id=item3_id).count() == 0)
+        verified = globaltrade.User.query.filter_by(email="selbi@globaltrade.com").first()
         check("a verified buyer is not blocked by the gate",
               verified.kyc_status == "verified")
     buyer_client.post("/order/new/%d" % item3_id, data={
@@ -653,17 +653,17 @@ def main():
     }, follow_redirects=True)
     with a.app_context():
         check("a verified buyer can order over 100 TMT",
-              handshake.Order.query.filter_by(item_id=item3_id).count() == 1)
+              globaltrade.Order.query.filter_by(item_id=item3_id).count() == 1)
 
     # -- the trust layer still bites ----------------------------------------
     section("blocking stops an order, not just a message")
     with a.app_context():
-        blocked_item = handshake.Item(
+        blocked_item = globaltrade.Item(
             title="Item from a blocked seller", price=30.0, category="books",
             size_class="small", status="listed", neighborhood_id=origin_id,
             user_id=seller_id, description="x", image_url="/static/uploads/items/none.jpg")
         db.session.add(blocked_item)
-        db.session.add(handshake.BlockedUser(blocker_id=buyer_id, blocked_id=seller_id))
+        db.session.add(globaltrade.BlockedUser(blocker_id=buyer_id, blocked_id=seller_id))
         db.session.commit()
         blocked_item_id = blocked_item.id
     buyer_client.post("/order/new/%d" % blocked_item_id, data={
@@ -672,14 +672,14 @@ def main():
     }, follow_redirects=True)
     with a.app_context():
         check("a blocked seller's listing cannot be ordered",
-              handshake.Order.query.filter_by(item_id=blocked_item_id).count() == 0)
-        handshake.BlockedUser.query.filter_by(
+              globaltrade.Order.query.filter_by(item_id=blocked_item_id).count() == 0)
+        globaltrade.BlockedUser.query.filter_by(
             blocker_id=buyer_id, blocked_id=seller_id).delete()
         db.session.commit()
 
     section("an item with no seller cannot be ordered")
     with a.app_context():
-        orphan = handshake.Item(
+        orphan = globaltrade.Item(
             title="Orphan listing", price=10.0, category="books",
             size_class="small", status="listed", neighborhood_id=origin_id,
             user_id=None, description="x", image_url="/static/uploads/items/none.jpg")
@@ -694,7 +694,7 @@ def main():
           r.status_code == 302, r.status_code)
     with a.app_context():
         check("no order was written for the ownerless listing",
-              handshake.Order.query.filter_by(item_id=orphan_id).count() == 0)
+              globaltrade.Order.query.filter_by(item_id=orphan_id).count() == 0)
 
     # -- every page still renders -------------------------------------------
     section("pages render")
