@@ -53,7 +53,17 @@
         {% for order in purchases %}{{ order_row(order, 'buying') }}{% endfor %}
     </div>
     {% else %}
-    <div class="state state--compact"><p>You have not ordered anything yet.</p></div>
+    {# The marketplace's empty state, reused verbatim: a mark, a reason, and a
+       way out. A bare sentence in a grey box is a dead end on the one page a
+       new member reaches with nothing on it. #}
+    <div class="state state--compact">
+        <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-box-open"></use></svg></div>
+        <h3>Nothing ordered yet</h3>
+        <p>When you order something, it appears here with its delivery and the codes for the handover.</p>
+        <div class="state-actions">
+            <a href="{{ url_for('index') }}" class="auth-btn auth-btn-accent">Browse listings</a>
+        </div>
+    </div>
     {% endif %}
 
     <h2>Selling</h2>
@@ -62,7 +72,14 @@
         {% for order in sales %}{{ order_row(order, 'selling') }}{% endfor %}
     </div>
     {% else %}
-    <div class="state state--compact"><p>Nobody has ordered from you yet.</p></div>
+    <div class="state state--compact">
+        <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-inbox"></use></svg></div>
+        <h3>No orders yet</h3>
+        <p>Post something and it goes in front of everyone on the board. Orders land here for you to accept.</p>
+        <div class="state-actions">
+            <a href="{{ url_for('upload') }}" class="auth-btn auth-btn-muted">Post an item</a>
+        </div>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

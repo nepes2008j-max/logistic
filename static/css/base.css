@@ -465,8 +465,22 @@ textarea:focus-visible,
 
 .page-main {
     display: block;
-    min-height: 60vh;
+    /* 60vh left a short page — /orders, the 404 — with a band of empty white
+       between the last content and the footer, so the footer read as
+       stranded rather than as the bottom of the page. Filling the viewport
+       less the masthead pushes it to the bottom where it belongs.
+
+       dvh, not vh: on a phone browser vh is the address-bar-less height, so
+       the page would be taller than the screen and scroll for no reason.
+       chat.css learned this already. */
+    min-height: calc(100dvh - var(--nav-h));
     padding-bottom: var(--s11);
+}
+@media (max-width: 820px) {
+    /* Shorter masthead, and the tab bar takes a bite out of the bottom. */
+    .page-main {
+        min-height: calc(100dvh - var(--nav-h-phone) - var(--tabbar-h));
+    }
 }
 
 /* --------------------------------------------------------------------------

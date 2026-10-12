@@ -2129,6 +2129,15 @@
 }
 .ai-expert-form .auth-btn { min-height: 44px; padding-inline: var(--s4); }
 
+/* The launcher is fixed and nothing reserved its height, so it sat on top of
+   whatever happened to be at the foot of the page — the Reviews heading, the
+   price caveat, a footer link. It is an opaque navy pill with no shadow
+   (--pop is none by design), so it did not read as floating above the page;
+   it read as a rendering fault. The content column now ends above it. */
+body:has(.ai-expert-launcher) .page-main {
+    padding-bottom: calc(var(--s11) + 72px);
+}
+
 .ai-expert-launcher {
     position: fixed;
     right: var(--s6);
