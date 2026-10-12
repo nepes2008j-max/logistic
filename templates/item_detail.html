@@ -76,9 +76,19 @@
                     <div class="price-unit">before delivery and the 5% service fee</div>
                 </div>
                 <div class="price-side">
+                    {# Driven by the real rows, not the denormalised counter.
+                       That counter defaults to 1 with nothing behind it, so
+                       the block claimed "1 review" while the section below
+                       said "No reviews yet" — both visible in one scroll. #}
+                    {% if reviews %}
                     Rated
                     <b>{{ "%.1f"|format(item.rating) }} / 5</b>
-                    {{ item.num_ratings }} review{{ '' if item.num_ratings == 1 else 's' }}
+                    {{ reviews|length }} review{{ '' if reviews|length == 1 else 's' }}
+                    {% else %}
+                    Rated
+                    <b>Not yet</b>
+                    first buyer sets it
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -149,6 +159,20 @@
                     You can offer a different price on the order form. The seller has to
                     accept before anything leaves your wallet.
                 </p>
+            </div>
+            {% elif current_user.is_authenticated and current_user.id == item.owner.id %}
+            {#
+              The owner. There was no branch for this case at all, so the
+              person most likely to come back to a listing got the deadest
+              version of the page: no actions, no status, just a gap.
+            #}
+            <div class="notice">
+                <span class="notice-mark">Yours</span>
+                <span>
+                    This is your listing, so you cannot order it.
+                    {% if item.status == 'listed' %}It is on the board and anyone can order it.
+                    {% else %}It is currently <b>{{ item.status }}</b>.{% endif %}
+                </span>
             </div>
             {% elif not current_user.is_authenticated %}
             <div class="notice">
