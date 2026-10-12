@@ -61,7 +61,7 @@
     </div>
     {% else %}
     <form action="{{ url_for('pay_order', order_id=order.id) }}" method="POST" id="order-payment-form">
-        <button type="submit" class="auth-btn btn-block btn-lg" id="order-pay-button">
+        <button type="submit" class="auth-btn auth-btn-accent btn-block btn-lg" id="order-pay-button">
             Pay {{ "%.2f"|format(order.total) }} TMT
         </button>
     </form>

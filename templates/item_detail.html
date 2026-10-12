@@ -127,7 +127,7 @@
 
                 <div class="deal-actions">
                     {% if item.is_orderable %}
-                    <a href="{{ url_for('place_order', item_id=item.id) }}" class="auth-btn">
+                    <a href="{{ url_for('place_order', item_id=item.id) }}" class="auth-btn auth-btn-accent">
                         Order this and have it delivered
                     </a>
                     {% else %}

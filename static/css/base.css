@@ -985,8 +985,9 @@ textarea:focus-visible,
     border-color: color-mix(in srgb, var(--color-pure-white) 84%, var(--color-clay-ember));
 }
 
-/* Accent — clay. This is the page's single warm element wherever it appears,
-   so a screen carrying one of these carries no other clay. */
+/* The accent button. One per page, and the only element on it painted in
+   bright blue — which is what makes the primary action findable when every
+   other control is the same navy as the body text. */
 .auth-btn-accent,
 .btn-accent {
     background: var(--accent);
@@ -1592,13 +1593,18 @@ input[type="radio"]:checked::before { transform: scale(1); }
     letter-spacing: -0.045em;
     color: var(--color-pure-white);
 }
-.footer-word span { color: var(--color-cool-ash); }
+/* Was Cool Ash: 3.97:1 on the footer navy, so the second half of the
+   product's own name looked disabled. The token is qualified for large text
+   on *white*; nobody re-derived it against this surface. */
+.footer-word span { color: var(--color-pebble); }
 
 .footer-note {
     max-width: 46ch;
     font-size: var(--t-body);
     line-height: var(--lh-body);
-    color: var(--color-cool-ash);
+    /* Cool Ash measures 3.97:1 here. It is qualified in variables.css for
+       large text against white, and this is running copy against navy. */
+    color: var(--color-pebble);
 }
 
 .footer-links {
@@ -1612,7 +1618,7 @@ input[type="radio"]:checked::before { transform: scale(1); }
     min-height: 44px;
     font-size: var(--t-body-lg);
     font-weight: 400;
-    color: var(--color-cool-ash);
+    color: var(--color-pebble);
     border-bottom: var(--bw) solid transparent;
     transition: color var(--d1) var(--ease), border-color var(--d1) var(--ease);
 }

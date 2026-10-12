@@ -664,6 +664,18 @@
     border-color: var(--ink);
     color: var(--ink-invert);
 }
+/* The hero scopes its own buttons to ink, which outranks .auth-btn-accent on
+   specificity alone and silently swallowed the accent. The accented one has
+   to be re-stated inside that scope. */
+.hero-actions .auth-btn-accent {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--color-pure-white);
+}
+.hero-actions .auth-btn-accent:hover:not(:disabled) {
+    background: var(--accent-deep);
+    border-color: var(--accent-deep);
+}
 .hero-actions .auth-btn:hover:not(:disabled) {
     background: var(--ink-2);
     border-color: var(--ink-2);
@@ -1073,7 +1085,14 @@
 .clay-card p {
     font-size: var(--t-body);
     line-height: var(--lh-body);
-    color: var(--color-deep-ink);
+    /* White, not ink. The rule above this one used to explain that reading
+       copy here was set in Deep Ink "because white over clay is 3.75:1 and
+       only clears AA at display size" — true of the old #bc7155 clay, and
+       false the moment the accent became #0B63FF. Navy on that blue measures
+       2.77:1; white measures 4.95:1. Nobody revisited it when the token
+       moved, so the single brightest surface in the product had the least
+       readable paragraph in it. */
+    color: var(--color-pure-white);
     max-width: 46ch;
 }
 .clay-card .auth-btn {
@@ -1208,7 +1227,9 @@
     font-size: var(--t-micro);
     letter-spacing: var(--track-label);
     text-transform: none;
-    color: color-mix(in srgb, var(--ink-invert) 62%, transparent);
+    /* Was 62% white on the navy block: 1.52:1, on the one sentence qualifying
+       the number the buyer is about to commit to. */
+    color: color-mix(in srgb, var(--ink-invert) 88%, transparent);
     margin-top: 6px;
 }
 .price-block .price-side {
@@ -2570,6 +2591,9 @@
 .queue-filter {
     display: inline-flex;
     align-items: center;
+    /* A flex container drops whitespace-only text nodes between its children,
+       so "Listed <span>103</span>" rendered as "Listed103". */
+    gap: var(--s2);
     min-height: 44px;
     padding: 8px var(--s5);
     border: var(--bw) solid var(--rule-2);
