@@ -303,7 +303,7 @@ DELIVERY_FLOW = {
     'returned': (),
 }
 
-SERVICE_FEE_RATE = 0.05          # HandShake's cut of the goods price
+SERVICE_FEE_RATE = 0.05          # Global Trade's cut of the goods price
 DELIVERY_BASE_FEE = 15.0         # TMT, every delivery
 DELIVERY_DISTANCE_SURCHARGE = {
     'same_neighborhood': 0.0,
@@ -369,9 +369,9 @@ def send_verification_email(access_request):
     link = url_for('verify_email', token=access_request.verify_token, _external=True)
     return mailer.send(
         access_request.email,
-        "Confirm your email for HandShake",
+        "Confirm your email for Global Trade",
         "Hello %s,\n\n"
-        "Someone asked for access to HandShake using this email address. If it\n"
+        "Someone asked for access to Global Trade using this email address. If it\n"
         "was you, confirm it here:\n\n"
         "    %s\n\n"
         "The link is good for %d days. Confirming does not create an account —\n"
@@ -379,7 +379,7 @@ def send_verification_email(access_request):
         "us either way.\n\n"
         "If this was not you, ignore this message. Nothing happens without the\n"
         "link above.\n\n"
-        "— HandShake\n" % (access_request.full_name, link, VERIFY_TTL_DAYS),
+        "— Global Trade\n" % (access_request.full_name, link, VERIFY_TTL_DAYS),
     )
 
 
@@ -388,14 +388,14 @@ def send_invite_email(access_request):
     link = url_for('activate', token=access_request.invite_token, _external=True)
     return mailer.send(
         access_request.email,
-        "You have been approved for HandShake",
+        "You have been approved for Global Trade",
         "Hello %s,\n\n"
         "Your request has been approved. Set a password and your account is\n"
         "live:\n\n"
         "    %s\n\n"
         "The link works once and expires in %d days. Do not forward it — anyone\n"
         "holding it can claim the account.\n\n"
-        "— HandShake\n" % (access_request.full_name, link, INVITE_TTL_DAYS),
+        "— Global Trade\n" % (access_request.full_name, link, INVITE_TTL_DAYS),
     )
 
 
@@ -404,11 +404,11 @@ def send_rejection_email(access_request):
     reason = ("\n\nThe reviewer noted: %s" % note) if note else ""
     return mailer.send(
         access_request.email,
-        "About your HandShake request",
+        "About your Global Trade request",
         "Hello %s,\n\n"
         "Your request for access was not approved.%s\n\n"
         "You are welcome to apply again.\n\n"
-        "— HandShake\n" % (access_request.full_name, reason),
+        "— Global Trade\n" % (access_request.full_name, reason),
     )
 
 
@@ -416,7 +416,7 @@ def send_password_reset_email(user):
     link = url_for('reset_password', token=user.reset_token, _external=True)
     return mailer.send(
         user.email,
-        "Reset your HandShake password",
+        "Reset your Global Trade password",
         "Hello %s,\n\n"
         "Someone asked to reset the password on this account. If it was you,\n"
         "choose a new one here:\n\n"
@@ -424,7 +424,7 @@ def send_password_reset_email(user):
         "The link works once and expires in %d hours. If it was not you, ignore\n"
         "this message — your current password still works and nothing has\n"
         "changed.\n\n"
-        "— HandShake\n" % (user.full_name or user.username, link, RESET_TTL_HOURS),
+        "— Global Trade\n" % (user.full_name or user.username, link, RESET_TTL_HOURS),
     )
 
 
@@ -439,7 +439,7 @@ def notify_admins_of_request(access_request):
             admin.email,
             "New access request: %s" % access_request.full_name,
             "%s (%s) has asked for access and confirmed their email.\n\n"
-            "Review the queue:\n\n    %s\n\n— HandShake\n"
+            "Review the queue:\n\n    %s\n\n— Global Trade\n"
             % (access_request.full_name, access_request.email, link),
         )
 
@@ -1638,7 +1638,7 @@ with app.app_context():
             {"name": "Selbi", "email": "selbi@handshake.com", "pass": "selbi123", "region": "Ashgabat", "bio": "I love books and sharing knowledge.", "pic": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400"},
             {"name": "Maral", "email": "maral@handshake.com", "pass": "maral123", "region": "Ashgabat", "bio": "Home renovation expert. I sell good tools I no longer need.", "pic": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400"},
             {"name": "Arslan", "email": "arslan@handshake.com", "pass": "arslan123", "region": "Ashgabat", "bio": "Gaming is my life. Selling my spare consoles and games.", "pic": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400"},
-            {"name": "User1", "email": "user1@handshake.com", "pass": "user1", "region": "Ashgabat", "bio": "New HandShake member, ready to send and receive.", "pic": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400"}
+            {"name": "User1", "email": "user1@handshake.com", "pass": "user1", "region": "Ashgabat", "bio": "New Global Trade member, ready to send and receive.", "pic": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400"}
         ]
         
         db_users = []
@@ -2438,7 +2438,7 @@ def pay_order(order_id):
         flash('That payment could not be completed. Nothing has been charged.')
         return redirect(url_for('order_detail', order_id=order.id))
 
-    flash('Paid. HandShake is holding %.2f TMT for the seller until the goods arrive.' % goods)
+    flash('Paid. Global Trade is holding %.2f TMT for the seller until the goods arrive.' % goods)
     return redirect(url_for('order_detail', order_id=order.id))
 
 

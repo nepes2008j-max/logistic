@@ -1,11 +1,11 @@
-# HandShake
+# Global Trade
 
 ## What this application is
 
-HandShake is a **logistics application that delivers goods between people**.
-Someone posts an item. Someone else orders it. HandShake moves it between them:
+Global Trade is a **logistics application that delivers goods between people**.
+Someone posts an item. Someone else orders it. Global Trade moves it between them:
 the platform takes the order, holds the money, dispatches a courier, and records
-the handoff at each end. **HandShake operates the delivery itself** — an
+the handoff at each end. **Global Trade operates the delivery itself** — an
 administrator assigns one of the platform's couriers, who collects from the
 seller and delivers to the buyer. There is no peer-traveller matching and no
 concept of a trip; the marketplace is the front door, and the delivery is the
@@ -93,7 +93,7 @@ shifts only.
 
 `DESIGN.md` was extracted from an aviation brand, so it talks constantly about
 jets and private travel. **Take its visual system, never its subject matter.**
-HandShake moves ordinary goods for ordinary people, by road, across
+Global Trade moves ordinary goods for ordinary people, by road, across
 Turkmenistan.
 
 The home hero does carry an aircraft: a small airliner silhouette that crosses

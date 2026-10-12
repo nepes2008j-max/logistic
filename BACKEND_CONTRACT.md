@@ -10,7 +10,7 @@ verified by running it (`test_logistics_flow.py`, 147 checks, 0 failures).
 
 ## 1. What changed, in one paragraph
 
-HandShake is no longer a rental marketplace. A person posts a **good for sale**
+Global Trade is no longer a rental marketplace. A person posts a **good for sale**
 (`Item`), another person **orders** it and says where it has to arrive
 (`Order`), pays, and that payment creates a **Delivery** that a courier walks
 from `awaiting_pickup` to `delivered`. Every transition writes a
@@ -213,7 +213,7 @@ These are in files the backend agent was told not to touch.
    not "Sign up" / "Get verified".
 2. **Line 129** — the footer note still says "The deposit stays with us until
    the item arrives, and the hand-off is closed in person with a scan."
-   Replace with something true: HandShake holds the goods price until the
+   Replace with something true: Global Trade holds the goods price until the
    courier records the handover, and the handover is closed with a code, not a
    scan.
 3. Add an **Admin** entry to the user dropdown, shown only when
@@ -223,7 +223,7 @@ These are in files the backend agent was told not to touch.
    `{{ url_for('courier_console') }}`.
 5. Add an **Orders** entry pointing at `{{ url_for('orders') }}` for signed-in
    users. There is currently no way to reach `/orders` from the chrome.
-6. `<title>` default is "HandShake | Buy, Sell, Rent" — drop "Rent".
+6. `<title>` default is "Global Trade | Buy, Sell, Rent" — drop "Rent".
 
 ### `login.html`
 * **Line 10** — "Your wallet, your deposits and your open chats are where you
@@ -304,7 +304,7 @@ These are in files the backend agent was told not to touch.
   seller now reads a `pickup_code` to the courier; it is shown on
   `order_detail.html` and `delivery_detail.html`.
 * **Lines 326–333** of the inline script drive the rental timer. Delete.
-* **Line 89** — "HandShake takes 5% of every completed rental". The 5% is now
+* **Line 89** — "Global Trade takes 5% of every completed rental". The 5% is now
   the service fee on the goods price of an order, and it is charged at payment,
   not at completion.
 * **Line 241** — the heading "Your rentals". These are orders.
@@ -321,7 +321,7 @@ These are in files the backend agent was told not to touch.
 ### `register.html`
 * Also dead — `/register` is a redirect and never renders a template. Delete
   it, or cannibalise its five-step passport capture for
-  `request_access.html`. Its line 101 still offers a "HandShake rental
+  `request_access.html`. Its line 101 still offers a "Global Trade rental
   agreement", which is another reason not to leave it lying around.
 
 ### New templates the backend created (yours to style)

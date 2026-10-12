@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}HandShake | Pay for order #{{ '%04d'|format(order.id) }}{% endblock %}
+{% block title %}Global Trade | Pay for order #{{ '%04d'|format(order.id) }}{% endblock %}
 
 {% block content %}
 <div class="auth-container">
     <div class="auth-header">
         <h1>Pay for this order</h1>
         <p>
-            The goods price is held by HandShake until the courier records the handover.
+            The goods price is held by Global Trade until the courier records the handover.
             The seller is paid then. If we fail to deliver, you get all of it back.
         </p>
     </div>
@@ -35,7 +35,7 @@
                 <b>{{ "%.2f"|format(order.delivery_fee) }}</b>
             </div>
             <div class="receipt-line">
-                <span>HandShake service fee</span>
+                <span>Global Trade service fee</span>
                 <b>{{ "%.2f"|format(order.service_fee) }}</b>
             </div>
             <div class="receipt-total">

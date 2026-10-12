@@ -42,7 +42,7 @@ async function typeMentorResponse(data) {
    viewport, a burst of spark particles, and twenty-five music notes floating
    up the screen — which the AI assistant fired after every answer.
 
-   None of it belonged to this product. HandShake moves parcels between towns;
+   None of it belonged to this product. Global Trade moves parcels between towns;
    DESIGN.md's system is deep ink on paper with one warm note and no
    decoration that is not structural. The effects were also the loudest
    generated-UI signature left in the codebase. The assistant now simply

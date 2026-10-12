@@ -1,5 +1,5 @@
 """
-Seed realistic demo goods for HandShake to deliver.
+Seed realistic demo goods for Global Trade to deliver.
 
 Data only. This script inserts rows through the existing SQLAlchemy models and
 never touches the schema, app.py or ai_logic.py. It is safe to run repeatedly:
@@ -35,7 +35,7 @@ WEB_PREFIX = "/static/uploads/items/"
 # and searchable by subject. Files land on disk once and are served locally
 # from then on.
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
-USER_AGENT = "HandShakeSeeder/1.0 (local demo data)"
+USER_AGENT = "GlobalTradeSeeder/1.0 (local demo data)"
 
 # When a subject search comes back with nothing usable, fall back to a broader
 # term for the category rather than to a placeholder.

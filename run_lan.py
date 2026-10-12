@@ -1,4 +1,4 @@
-"""Serve HandShake on the local network so it can be opened from a phone.
+"""Serve Global Trade on the local network so it can be opened from a phone.
 
 app.py is left untouched — this just imports the configured Flask app and binds
 it to every interface instead of localhost.
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     ip = lan_ip()
 
     print()
-    print("  HandShake is live on your network")
+    print("  Global Trade is live on your network")
     print("  ---------------------------------")
     print("  This computer :  http://127.0.0.1:%d/" % port)
     print("  Your phone    :  http://%s:%d/" % (ip, port))

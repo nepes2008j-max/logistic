@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}HandShake | Order #{{ '%04d'|format(order.id) }}{% endblock %}
+{% block title %}Global Trade | Order #{{ '%04d'|format(order.id) }}{% endblock %}
 
 {% block content %}
 <div class="nav-container record-page">
@@ -52,7 +52,7 @@
                 <div class="receipt-total"><span>Total</span><b>{{ "%.2f"|format(order.total) }} TMT</b></div>
             </div>
             <p class="field-help">
-                HandShake holds the goods price from the moment you pay until the courier
+                Global Trade holds the goods price from the moment you pay until the courier
                 records the handover. The seller is paid then, not before.
             </p>
         </div>

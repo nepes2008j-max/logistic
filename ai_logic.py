@@ -94,7 +94,7 @@ class HandshakeLiveEngine:
         request_line = f"User request: {user_request}. " if user_request else ""
         if request_text.lower() in {"hi", "hello", "hey", "yo"}:
             return (
-                "You are HandShake AI, the assistant inside a logistics service that moves goods "
+                "You are Global Trade AI, the assistant inside a logistics service that moves goods "
                 "between people. Return only strict JSON with keys "
                 "teaching_guide, mentor_tip, visual_effect, brand_color. "
                 "For greetings, teaching_guide should be 3 short friendly chat lines that greet the user and ask what they are sending, ordering or checking over. "
@@ -102,8 +102,8 @@ class HandshakeLiveEngine:
                 f"Item query: {item_query}"
             )
         return (
-            "You are HandShake Live Expert. HandShake is a logistics service: people post goods, "
-            "other people order them, and HandShake carries them from the seller to the buyer. "
+            "You are Global Trade Live Expert. Global Trade is a logistics service: people post goods, "
+            "other people order them, and Global Trade carries them from the seller to the buyer. "
             "Advise about the goods themselves and about getting them there intact. "
             "Never speak about renting, returning, deposits or rental periods. "
             "Return only strict JSON with keys "
@@ -300,7 +300,7 @@ class HandshakeLiveEngine:
             headers={
                 **self._headers(api_key),
                 "HTTP-Referer": "http://localhost",
-                "X-Title": "HandShake",
+                "X-Title": "Global Trade",
             },
             json={
                 "model": "openai/gpt-4o-mini",

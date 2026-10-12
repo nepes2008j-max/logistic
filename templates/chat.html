@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% import "_avatar.html" as av %}
 
-{% block title %}HandShake | Messages{% endblock %}
+{% block title %}Global Trade | Messages{% endblock %}
 {# On a phone the conversation is a fixed shell, so the document behind
    it must not scroll. chat.css keys off this class. #}
 {% block body_class %}body--chat{% endblock %}
@@ -28,7 +28,7 @@
                 {{ av.avatar(user, 'chat-avatar-lg') }}
                 <div class="chat-list-text">
                     <div class="chat-user-name">{{ user.full_name or user.username }}</div>
-                    <div class="chat-user-meta">{{ user.region or 'HandShake member' }}</div>
+                    <div class="chat-user-meta">{{ user.region or 'Global Trade member' }}</div>
                 </div>
             </a>
             {% else %}

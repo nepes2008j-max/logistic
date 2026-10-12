@@ -83,7 +83,7 @@ class Mailer:
 
         message = EmailMessage()
         message["Subject"] = subject
-        message["From"] = formataddr(("HandShake", parseaddr(self.sender)[1] or self.sender))
+        message["From"] = formataddr(("Global Trade", parseaddr(self.sender)[1] or self.sender))
         message["To"] = to
         message["Date"] = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S +0000")
         message["Message-ID"] = make_msgid(domain="handshake.local")

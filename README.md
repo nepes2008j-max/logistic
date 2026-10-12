@@ -1,5 +1,5 @@
 ---
-title: HandShake
+title: Global Trade
 emoji: 📦
 colorFrom: gray
 colorTo: blue
@@ -8,7 +8,7 @@ app_port: 8000
 pinned: false
 ---
 
-# HandShake
+# Global Trade
 
 A logistics marketplace. Someone posts an item, someone else orders it, and the
 platform moves it between them: it takes the order, holds the money in escrow,

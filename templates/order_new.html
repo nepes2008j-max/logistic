@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}HandShake | Order {{ item.title }}{% endblock %}
+{% block title %}Global Trade | Order {{ item.title }}{% endblock %}
 
 {% block content %}
 {#
@@ -23,7 +23,7 @@
             <li><b>Base</b><span>{{ "%.2f"|format(base_fee) }} TMT on every delivery.</span></li>
             <li><b>Distance</b><span>Same neighbourhood +{{ "%.2f"|format(distance_surcharge['same_neighborhood']) }} &middot; same district +{{ "%.2f"|format(distance_surcharge['same_district']) }} &middot; same velayat +{{ "%.2f"|format(distance_surcharge['same_velayat']) }} &middot; a different velayat +{{ "%.2f"|format(distance_surcharge['cross_velayat']) }}.</span></li>
             <li><b>Size</b><span>This item is <strong>{{ item.size_class }}</strong>, so the distance total is multiplied by {{ size_multiplier[item.size_class] }}.</span></li>
-            <li><b>Fee</b><span>HandShake takes {{ (service_fee_rate * 100)|int }}% of the goods price, and the seller is not paid until it arrives.</span></li>
+            <li><b>Fee</b><span>Global Trade takes {{ (service_fee_rate * 100)|int }}% of the goods price, and the seller is not paid until it arrives.</span></li>
         </ul>
     </div>
 

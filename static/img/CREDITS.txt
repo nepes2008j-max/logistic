@@ -12,10 +12,10 @@ costs no extra request. The silhouette is unmodified.
 
 Why this and not the previous asset: the hero used to carry a photograph of a
 Dassault Falcon 7X (registration VP-CSW) whose licence this file could not
-confirm, and which claimed a class of service HandShake does not run. It was
+confirm, and which claimed a class of service Global Trade does not run. It was
 withdrawn. The files aircraft-1000.* and aircraft-1800.* are what is left of
 it — they are referenced by nothing and excluded from the repository.
 
-HandShake is a logistics marketplace for ordinary goods. The aircraft is a
+Global Trade is a logistics marketplace for ordinary goods. The aircraft is a
 figure for distance covered, not a description of the fleet; the goods move
 by road.
