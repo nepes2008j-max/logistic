@@ -2540,24 +2540,69 @@ body:has(.ai-expert-launcher) .page-main {
     .record-table tbody,
     .record-table tr,
     .record-table td { display: block; width: 100%; }
+    .record-table,
+    .record-table tbody { display: block; width: 100%; }
+
+    /* One labelled line per cell is right for a three-column table and wrong
+       for a seven-column one: a single listing filled most of a phone screen,
+       so 103 of them were hundreds of scrolls. The row becomes a two-column
+       grid instead, so the pairs sit side by side and a record is four lines
+       rather than seven. */
     .record-table tr {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: var(--s4);
+        row-gap: 2px;
         padding-block: var(--s4);
         border-bottom: var(--bw) solid var(--rule);
     }
     .record-table td {
+        display: block;
         padding: 2px 0;
         border: 0;
+        min-width: 0;
     }
+    /* The second cell is the one a person recognises the record by — the item
+       title, not the id in column one. It leads, full width, and `order`
+       lifts it above the id that precedes it in the markup. The action gets
+       its own line so the button never shares a column with a number. */
+    .record-table td:nth-child(2),
+    .record-table td:last-child {
+        grid-column: 1 / -1;
+    }
+    .record-table td:nth-child(2) {
+        order: -1;
+        font-size: var(--t-body);
+        font-weight: 700;
+        color: var(--ink);
+        padding-bottom: var(--s2);
+    }
+    .record-table td:nth-child(2)::before { display: none; }
+
     .record-table td[data-col]::before {
-        content: attr(data-col) " ";
-        display: inline-block;
-        min-width: 9ch;
+        content: attr(data-col);
+        display: block;
         font-size: var(--t-micro);
         font-weight: 700;
         letter-spacing: 0.06em;
         text-transform: uppercase;
         color: var(--ink-3);
     }
+    /* Has to carry [data-col] too: the rule above matches on the attribute,
+       which ties on specificity and wins on source order, so a plain
+       :nth-child hide was silently ignored and the title kept its label. */
+    .record-table td:nth-child(2)[data-col]::before { display: none; }
+
+    /* A full address pushed one record to five lines on its own. Two lines
+       is enough to recognise it; the desktop table still shows all of it. */
+    .record-table td {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .record-table td:last-child { display: block; overflow: visible; }
+    .record-table td.num { text-align: left; }
 }
 
 /* -- Stat tiles on the administration dashboard --------------------------- */
