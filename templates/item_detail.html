@@ -241,6 +241,42 @@
     </div>
 </div>
 
+
+{#
+  The sticky action bar. On a phone the thing you came to do sat about
+  1200px down the page, below the seller card — you had to hunt for it, and
+  once you scrolled past it to read the description and the reviews it was
+  gone. The bottom edge of a phone is also the easiest place on the screen
+  for a thumb to reach, and this is the page's one decision, so it lives
+  there and stays there.
+
+  It also absorbs the floating "Ask about this item" pill, which was a second
+  thing fighting for the same corner and covering the reviews. One bar, the
+  price you are deciding about, and the two things you can do.
+#}
+<div class="item-actionbar" aria-label="Order this listing">
+    <div class="item-actionbar-price">
+        <b>{{ '{:,g}'.format(item.price or 0) }} TMT</b>
+        <span>+ delivery</span>
+    </div>
+
+    <button type="button" id="ai-expert-launcher-bar" class="item-actionbar-ask" aria-label="Ask about this item">
+        <svg class="ico" aria-hidden="true"><use href="#i-comments"></use></svg>
+    </button>
+
+    {% if current_user.is_authenticated and current_user.id != item.owner.id %}
+        {% if item.is_orderable %}
+        <a href="{{ url_for('place_order', item_id=item.id) }}" class="auth-btn auth-btn-accent item-actionbar-go">Order it</a>
+        {% else %}
+        <span class="auth-btn item-actionbar-go" aria-disabled="true" role="link">{{ item.status|capitalize }}</span>
+        {% endif %}
+    {% elif current_user.is_authenticated %}
+        <span class="item-actionbar-note">Your listing</span>
+    {% else %}
+        <a href="{{ url_for('login') }}" class="auth-btn auth-btn-accent item-actionbar-go">Log in to order</a>
+    {% endif %}
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // The rental duration calculator and the negotiate drawer lived here. Both

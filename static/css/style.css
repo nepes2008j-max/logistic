@@ -202,6 +202,141 @@
     .market-main .filter-bar { padding-top: 0; border-top: 0; }
 }
 
+/* -- The sticky action bar on an item page ---------------------------------
+   Pinned above the tab bar on a phone. The decision this page exists for was
+   sitting about 1200px down and disappeared the moment you scrolled past it
+   to read the reviews; the bottom edge is also the easiest part of a phone
+   screen to reach. Price and action together, because those are the two
+   things being weighed against each other.
+
+   Desktop does not get it: there the deal panel is already in view. */
+.item-actionbar { display: none; }
+
+@media (max-width: 820px) {
+    .item-actionbar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+        z-index: 1100;          /* under the tab bar (1000 is the bar itself) */
+        display: flex;
+        align-items: center;
+        gap: var(--s3);
+        padding: var(--s3) var(--gutter);
+        background: var(--paper);
+        border-top: var(--bw) solid var(--rule);
+    }
+    .item-actionbar-price {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+        min-width: 0;
+    }
+    .item-actionbar-price b {
+        font-size: var(--t-body-lg);
+        font-weight: 700;
+        color: var(--ink);
+        white-space: nowrap;
+    }
+    .item-actionbar-price span {
+        font-size: var(--t-micro);
+        color: var(--ink-3);
+    }
+    .item-actionbar-ask {
+        flex: none;
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border: var(--bw) solid var(--rule-2);
+        border-radius: var(--r-pill);
+        background: var(--paper);
+        color: var(--ink);
+        cursor: pointer;
+    }
+    .item-actionbar-ask.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
+    .item-actionbar-go {
+        flex: 1 1 auto;
+        margin-left: auto;
+        min-height: 48px;
+        white-space: nowrap;
+    }
+    .item-actionbar-note {
+        margin-left: auto;
+        font-size: var(--t-sm);
+        font-weight: 700;
+        color: var(--ink-3);
+    }
+
+    /* The floating pill is folded into the bar, so it must not also float. */
+    body:has(.item-actionbar) .ai-expert-launcher { display: none !important; }
+    /* And the page has to end above the bar, not under it. */
+    body:has(.item-actionbar) .page-main {
+        padding-bottom: calc(var(--s11) + 76px);
+    }
+    body:has(.item-actionbar) .ai-expert-sidebar {
+        bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 76px);
+    }
+}
+
+/* -- Filters, behind a disclosure ------------------------------------------
+   The summary is the control; it is a 48px pill so it is a comfortable
+   target, and it says what it does rather than showing an icon alone. When a
+   filter is actually applied the block starts open and the summary says so,
+   because a filtered view that looks unfiltered is how people conclude the
+   catalogue is empty. */
+.filter-disclosure {
+    margin-bottom: var(--s5);
+    border-bottom: var(--bw) solid var(--rule);
+}
+.filter-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s3);
+    min-height: 48px;
+    padding: 10px var(--s5);
+    margin-bottom: var(--s4);
+    border: var(--bw) solid var(--rule-2);
+    border-radius: var(--r-pill);
+    cursor: pointer;
+    list-style: none;
+    font-size: var(--t-sm);
+    font-weight: 700;
+    color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
+}
+.filter-summary::-webkit-details-marker { display: none; }
+.filter-summary:hover { border-color: var(--ink); }
+.filter-disclosure[open] .filter-summary {
+    background: var(--surface-2);
+    border-color: var(--ink);
+}
+.filter-summary-label { display: inline-flex; align-items: center; gap: var(--s2); }
+.filter-summary-label .ico { width: 18px; height: 18px; }
+/* The one place a chevron earns its keep: it is the only affordance saying
+   this row opens rather than navigates. */
+.filter-summary::after {
+    content: "";
+    width: 9px;
+    height: 9px;
+    margin-left: auto;
+    border-right: var(--bw2) solid var(--ink-3);
+    border-bottom: var(--bw2) solid var(--ink-3);
+    transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform var(--d1) var(--ease);
+}
+.filter-disclosure[open] .filter-summary::after {
+    transform: rotate(-135deg) translate(-2px, -2px);
+}
+.filter-summary-state {
+    font-size: var(--t-xs);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-text);
+}
+
 /* -- Filter bar ------------------------------------------------------------ */
 
 .filter-bar {

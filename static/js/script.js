@@ -74,6 +74,13 @@ async function fetchExpertData(itemQuery, question) {
 function initExpertChat() {
     const sidebar = document.getElementById('ai-expert-sidebar');
     const launcher = document.getElementById('ai-expert-launcher');
+    /* The sticky action bar on an item page carries its own ask button, so
+       the panel has two openers. Collecting them here keeps every
+       show/hide below working on both without repeating itself. */
+    const launchers = [
+        launcher,
+        document.getElementById('ai-expert-launcher-bar'),
+    ].filter(Boolean);
     const closeButton = document.getElementById('ai-expert-close');
     const form = document.getElementById('ai-expert-form');
     const input = document.getElementById('ai-expert-input');
@@ -90,13 +97,13 @@ function initExpertChat() {
 
     function openSidebar() {
         sidebar.classList.add('visible');
-        launcher.classList.add('hidden');
+        launchers.forEach((el) => el.classList.add('hidden'));
         input.focus();
     }
 
     function closeSidebarIfEmpty() {
         sidebar.classList.remove('visible');
-        launcher.classList.remove('hidden');
+        launchers.forEach((el) => el.classList.remove('hidden'));
     }
 
     async function ask(question) {
@@ -142,7 +149,7 @@ function initExpertChat() {
         }
     }
 
-    launcher.addEventListener('click', openSidebar);
+    launchers.forEach((el) => el.addEventListener('click', openSidebar));
     if (closeButton) {
         closeButton.addEventListener('click', closeSidebarIfEmpty);
     }
