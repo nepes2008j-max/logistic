@@ -202,6 +202,68 @@
     .market-main .filter-bar { padding-top: 0; border-top: 0; }
 }
 
+/* -- Where you are in the order -------------------------------------------
+   Three steps, named, with the current one filled. Drawn in the system's own
+   rules and numerals rather than as a progress bar, because a bar implies a
+   percentage and these are discrete decisions. */
+.flowsteps {
+    max-width: var(--wrap);
+    margin-inline: auto;
+    padding: var(--s6) var(--gutter) 0;
+}
+.flowsteps ol {
+    display: flex;
+    align-items: center;
+    gap: var(--s3);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.flowstep {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s2);
+    font-size: var(--t-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    white-space: nowrap;
+}
+.flowstep span {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: var(--bw) solid var(--rule-2);
+    border-radius: 50%;
+    font-variant-numeric: tabular-nums;
+}
+/* A hairline between the steps, so they read as a sequence rather than three
+   separate labels. */
+.flowstep:not(:last-child)::after {
+    content: "";
+    width: clamp(12px, 4vw, 40px);
+    height: var(--bw);
+    margin-left: var(--s2);
+    background: var(--rule);
+}
+.flowstep.is-current { color: var(--ink); }
+/* Ink, not accent. The submit button on these pages is the accent, and two
+   bright-blue marks on one screen is exactly the dilution the one-per-page
+   rule exists to stop. The current step is carried by weight and fill. */
+.flowstep.is-current span {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--ink-invert);
+}
+.flowstep.is-done { color: var(--ink-3); }
+.flowstep.is-done span {
+    background: transparent;
+    border-color: var(--ink-3);
+    color: var(--ink-3);
+}
+
 /* -- The sticky action bar on an item page ---------------------------------
    Pinned above the tab bar on a phone. The decision this page exists for was
    sitting about 1200px down and disappeared the moment you scrolled past it
@@ -1687,7 +1749,10 @@
 }
 .auth-facts li {
     display: grid;
-    grid-template-columns: 3.5rem minmax(0, 1fr);
+    /* Was a fixed 3.5rem, which "DISTANCE" overruns — the label and its value
+       collided into "DISTANCESame neighbourhood". Sized to the longest label
+       instead, so any wording fits. */
+    grid-template-columns: max-content minmax(0, 1fr);
     align-items: baseline;
     gap: var(--s3);
     padding-block: var(--s4);

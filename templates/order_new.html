@@ -10,6 +10,21 @@
   surprise. The schedule used to sit inside the form, between the last input
   and the submit button, where it read as something to fill in.
 #}
+{#
+  Where you are in the order. Three screens — place it, pay it, track it —
+  with nothing telling you how many were left, which is where people stop:
+  an unknown number of remaining steps reads as "this could go on", and the
+  commitment feels larger than it is. Naming all three and marking the
+  current one makes the end visible from the first screen.
+#}
+<nav class="flowsteps" aria-label="Order progress">
+    <ol>
+        <li class="flowstep is-current" aria-current="step"><span>1</span> Where to</li>
+        <li class="flowstep"><span>2</span> Pay</li>
+        <li class="flowstep"><span>3</span> Track</li>
+    </ol>
+</nav>
+
 <div class="auth-split auth-split--wide">
     <div class="auth-rail">
         <span class="eyebrow">Delivery</span>

@@ -3,6 +3,14 @@
 {% block title %}Global Trade | Pay for order #{{ '%04d'|format(order.id) }}{% endblock %}
 
 {% block content %}
+<nav class="flowsteps" aria-label="Order progress">
+    <ol>
+        <li class="flowstep is-done"><span>1</span> Where to</li>
+        <li class="flowstep is-current" aria-current="step"><span>2</span> Pay</li>
+        <li class="flowstep"><span>3</span> Track</li>
+    </ol>
+</nav>
+
 <div class="auth-container">
     <div class="auth-header">
         <h1>Pay for this order</h1>
