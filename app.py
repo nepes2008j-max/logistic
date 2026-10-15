@@ -2,11 +2,12 @@ import os
 import base64
 import binascii
 import secrets
+from urllib.parse import urlparse
 import click
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from datetime import datetime, timedelta
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, abort, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.exceptions import RequestEntityTooLarge
@@ -79,6 +80,7 @@ app.config['UPLOAD_FOLDER_PROFILES'] = 'static/uploads/profiles'
 app.config['MAX_CONTENT_LENGTH'] = 24 * 1024 * 1024
 
 from mailer import Mailer, looks_like_address
+from translations import LANGUAGES, DEFAULT_LANGUAGE, translate
 
 # Real mail. Unconfigured it writes .eml files into instance/outbox instead of
 # sending, so every flow below can be walked without an SMTP account.
@@ -1630,6 +1632,62 @@ def record_delivery_event(delivery, status, note=None, actor=None):
     )
     db.session.add(event)
     return event
+
+
+LANGUAGE_COOKIE = 'globaltrade_lang'
+
+
+def current_language():
+    """Which language to render in.
+
+    A cookie rather than the session, so the choice survives signing out and
+    applies to someone who has no account yet — the access-request page is the
+    first thing a new person reads and is exactly where the wrong language
+    costs you them. Falls back to the browser's Accept-Language, then English.
+    """
+    chosen = request.cookies.get(LANGUAGE_COOKIE)
+    if chosen in LANGUAGES:
+        return chosen
+    # best_match returns None when nothing overlaps, hence the final default
+    return request.accept_languages.best_match(list(LANGUAGES)) or DEFAULT_LANGUAGE
+
+
+@app.route('/language/<code>')
+def set_language(code):
+    """Switch language and return to where the person was.
+
+    Only ever redirects to a path on this site: `next` comes from the Referer
+    header, which is attacker-influenceable, so anything with a scheme or a
+    host is discarded rather than followed.
+    """
+    target = request.referrer or url_for('dashboard')
+    parsed = urlparse(target)
+    if parsed.scheme or parsed.netloc:
+        target = url_for('dashboard')
+
+    if code not in LANGUAGES:
+        return redirect(target)
+
+    response = make_response(redirect(target))
+    response.set_cookie(
+        LANGUAGE_COOKIE, code,
+        max_age=60 * 60 * 24 * 365,
+        samesite='Lax',
+        httponly=False,      # no secret in it, and it is handy to read in JS
+        secure=app.config.get('SESSION_COOKIE_SECURE', False),
+    )
+    return response
+
+
+@app.context_processor
+def inject_language():
+    """`t('some.key')` in any template, plus what is needed to draw a switcher."""
+    language = current_language()
+    return {
+        't': lambda key: translate(key, language),
+        'current_lang': language,
+        'languages': LANGUAGES,
+    }
 
 
 @app.context_processor

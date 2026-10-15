@@ -43,7 +43,7 @@
             {% if search_query %}
                 {{ items|length }} listing{{ '' if items|length == 1 else 's' }} for “{{ search_query }}”
             {% else %}
-                Everything on offer near you
+                {{ t('market.title') }}
             {% endif %}
         </h1>
         {# The trust copy that used to live here — every seller approved by
@@ -67,14 +67,14 @@
 <div class="nav-container market-layout">
     <aside class="cat-panel" aria-labelledby="cat-panel-title">
         <div class="cat-panel-head">
-            <h2 id="cat-panel-title">Categories</h2>
+            <h2 id="cat-panel-title">{{ t('market.categories') }}</h2>
             <span class="cat-panel-total">{{ categories|length }}</span>
         </div>
 
         <input type="checkbox" id="cat-expand" class="cat-expand">
         <div class="cat-list">
             <button type="button" class="category-item active" data-category="all" aria-pressed="true">
-                <span class="category-label">All items</span>
+                <span class="category-label">{{ t('market.all_items') }}</span>
                 <span class="category-count">{{ categories|sum(attribute='count') }}</span>
             </button>
             {% for category in categories %}
@@ -84,7 +84,10 @@
             </button>
             {% endfor %}
         </div>
-        <label for="cat-expand" class="cat-more"></label>
+        <label for="cat-expand" class="cat-more">
+            <span class="cat-more-all">{{ t('market.all_cats') }} +</span>
+            <span class="cat-more-less">{{ t('market.fewer') }} &minus;</span>
+        </label>
     </aside>
 
     <div class="market-main">
@@ -105,42 +108,42 @@
         <summary class="filter-summary">
             <span class="filter-summary-label">
                 <svg class="ico" aria-hidden="true"><use href="#i-filter"></use></svg>
-                Search and filter
+                {{ t('market.filter') }}
             </span>
             {% if search_query or selected_location.velayat_id %}
-            <span class="filter-summary-state">on</span>
+            <span class="filter-summary-state">{{ t('market.filter_on') }}</span>
             {% endif %}
         </summary>
 
     <form action="{{ url_for('search') }}" method="GET" id="location-filter-form" class="filter-bar">
         <div class="filter-field">
-            <label for="filter-q">Search</label>
+            <label for="filter-q">{{ t('market.search') }}</label>
             <input type="text" id="filter-q" name="q" value="{{ search_query or '' }}" placeholder="Drill, camera, bike…">
         </div>
         <div class="filter-field">
-            <label for="velayat-filter">Region</label>
+            <label for="velayat-filter">{{ t('market.region') }}</label>
             <select id="velayat-filter" name="velayat_id">
-                <option value="">All regions</option>
+                <option value="">{{ t('market.all_regions') }}</option>
                 {% for velayat in location_tree %}
                 <option value="{{ velayat.id }}" {% if selected_location.velayat_id == velayat.id %}selected{% endif %}>{{ velayat.name }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="filter-field">
-            <label for="district-filter">District</label>
+            <label for="district-filter">{{ t('market.district') }}</label>
             <select id="district-filter" name="district_id">
-                <option value="">All districts</option>
+                <option value="">{{ t('market.all_districts') }}</option>
             </select>
         </div>
         <div class="filter-field">
-            <label for="neighborhood-filter">Street or neighbourhood</label>
+            <label for="neighborhood-filter">{{ t('market.street') }}</label>
             <select id="neighborhood-filter" name="neighborhood_id">
-                <option value="">Anywhere</option>
+                <option value="">{{ t('market.anywhere') }}</option>
             </select>
         </div>
         <div class="filter-actions">
-            <button type="submit" class="auth-btn">Apply</button>
-            <a href="{{ url_for('index') }}" class="auth-btn auth-btn-muted">Clear</a>
+            <button type="submit" class="auth-btn">{{ t('market.apply') }}</button>
+            <a href="{{ url_for('index') }}" class="auth-btn auth-btn-muted">{{ t('market.clear') }}</a>
         </div>
     </form>
     <p class="filter-hint">

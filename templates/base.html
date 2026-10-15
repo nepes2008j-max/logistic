@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="{{ current_lang }}" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -79,15 +79,30 @@
             </div>
 
             <div class="nav-actions">
-                <a href="/market" class="post-link" data-nav="market"{% if request.path in ['/market', '/search'] %} aria-current="page"{% endif %}>Marketplace</a>
+                <a href="/market" class="post-link" data-nav="market"{% if request.path in ['/market', '/search'] %} aria-current="page"{% endif %}>{{ t('nav.marketplace') }}</a>
                 <a href="{% if pending_chat_request_count %}{{ url_for('chat', tab='requests') }}{% else %}/chat{% endif %}" class="icon-btn nav-chat-link" title="Messages" aria-label="Messages{% if pending_chat_request_count %} — {{ pending_chat_request_count }} pending request{{ 's' if pending_chat_request_count > 1 else '' }}{% endif %}">
                     <svg class="ico"><use href="#i-comments"></use></svg>
                     {% if pending_chat_request_count %}
                     <span class="nav-request-badge">{{ pending_chat_request_count }}</span>
                     {% endif %}
                 </a>
-                <a href="/upload" class="post-link"{% if request.path == '/upload' %} aria-current="page"{% endif %}>Post an item</a>
-                <button id="theme-toggle" class="icon-btn" aria-label="Switch between light and dark theme" title="Switch theme"><svg class="ico"><use href="#i-moon"></use></svg></button>
+                <a href="/upload" class="post-link"{% if request.path == '/upload' %} aria-current="page"{% endif %}>{{ t('nav.post') }}</a>
+                {#
+                  Language. A <form> of buttons rather than a <select>: it
+                  needs no JavaScript, each option is a real 44px target
+                  rather than a native picker, and the current one can be
+                  shown as pressed. Three languages is few enough to show
+                  them all; a dropdown would hide two of them behind a tap.
+                #}
+                <div class="lang-switch" role="group" aria-label="{{ t('nav.language') }}">
+                    {% for code, label in languages.items() %}
+                    <a href="{{ url_for('set_language', code=code) }}"
+                       class="lang-option{% if code == current_lang %} is-current{% endif %}"
+                       hreflang="{{ code }}"
+                       {% if code == current_lang %}aria-current="true"{% endif %}>{{ code|upper }}</a>
+                    {% endfor %}
+                </div>
+                <button id="theme-toggle" class="icon-btn" aria-label="Switch between light and dark theme" title="{{ t('nav.theme') }}"><svg class="ico"><use href="#i-moon"></use></svg></button>
                 <div class="user-menu">
                     <button class="user-menu-btn" aria-label="Account menu" aria-haspopup="true" aria-expanded="false">
                         <svg class="ico"><use href="#i-bars"></use></svg>
@@ -98,6 +113,19 @@
                         {% endif %}
                     </button>
                     <div class="user-dropdown">
+                        {#
+                          The language row repeats here because the nav has no
+                          space for it on a phone, and the account menu is the
+                          one place every page already offers.
+                        #}
+                        <div class="dropdown-langs" role="group" aria-label="{{ t('nav.language') }}">
+                            {% for code, label in languages.items() %}
+                            <a href="{{ url_for('set_language', code=code) }}"
+                               class="lang-option{% if code == current_lang %} is-current{% endif %}"
+                               hreflang="{{ code }}">{{ label }}</a>
+                            {% endfor %}
+                        </div>
+
                         {% if current_user.is_authenticated %}
                             <a href="{{ url_for('profile', user_id=current_user.id) }}" class="dropdown-item"><b>{{ current_user.full_name or current_user.username }}</b></a>
                             <a href="{{ url_for('profile', user_id=current_user.id) }}" class="dropdown-item">My listings</a>
@@ -180,13 +208,13 @@
             <a href="{{ url_for('dashboard') }}" class="tab"
                {% if request.path == '/' %}aria-current="page"{% endif %}>
                 <svg class="ico" aria-hidden="true"><use href="#i-home"></use></svg>
-                <span>Home</span>
+                <span>{{ t('tab.home') }}</span>
             </a>
 
             <a href="{{ url_for('index') }}" class="tab"
                {% if request.path in ['/market', '/search'] %}aria-current="page"{% endif %}>
                 <svg class="ico" aria-hidden="true"><use href="#i-search"></use></svg>
-                <span>Browse</span>
+                <span>{{ t('tab.browse') }}</span>
             </a>
 
             <a href="/upload" class="tab tab--post"
@@ -194,14 +222,14 @@
                 <span class="tab-plus" aria-hidden="true">
                     <svg class="ico"><use href="#i-plus"></use></svg>
                 </span>
-                <span>Post</span>
+                <span>{{ t('tab.post') }}</span>
             </a>
 
             <a href="{% if pending_chat_request_count %}{{ url_for('chat', tab='requests') }}{% else %}{{ url_for('chat') }}{% endif %}"
                class="tab"
                {% if request.path.startswith('/chat') %}aria-current="page"{% endif %}>
                 <svg class="ico" aria-hidden="true"><use href="#i-comments"></use></svg>
-                <span>Messages</span>
+                <span>{{ t('tab.messages') }}</span>
                 {% if pending_chat_request_count %}
                 <span class="tab-badge" aria-hidden="true">{{ pending_chat_request_count }}</span>
                 <span class="visually-hidden">{{ pending_chat_request_count }} pending chat request{{ 's' if pending_chat_request_count > 1 else '' }}</span>
@@ -218,13 +246,13 @@
             <a href="{{ url_for('profile', user_id=current_user.id) }}" class="tab"
                {% if request.path.startswith(('/profile', '/order', '/delivery', '/courier', '/admin')) or request.path == '/edit-profile' %}aria-current="page"{% endif %}>
                 <svg class="ico" aria-hidden="true"><use href="#i-user"></use></svg>
-                <span>Profile</span>
+                <span>{{ t('tab.profile') }}</span>
             </a>
             {% else %}
             <a href="/login" class="tab"
                {% if request.path in ['/login', '/request-access'] or request.path.startswith('/activate') %}aria-current="page"{% endif %}>
                 <svg class="ico" aria-hidden="true"><use href="#i-user"></use></svg>
-                <span>Account</span>
+                <span>{{ t('tab.account') }}</span>
             </a>
             {% endif %}
         </div>

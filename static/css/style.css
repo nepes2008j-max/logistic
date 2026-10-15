@@ -177,8 +177,11 @@
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
     }
-    .cat-more::after { content: "All categories +"; }
-    .cat-expand:checked ~ .cat-more::after { content: "Fewer \2212"; }
+    /* The labels are in the markup, not in content:, so they can be
+       translated — CSS content cannot reach the translation table. */
+    .cat-more .cat-more-less { display: none; }
+    .cat-expand:checked ~ .cat-more .cat-more-all { display: none; }
+    .cat-expand:checked ~ .cat-more .cat-more-less { display: inline; }
     .cat-expand:focus-visible ~ .cat-more {
         outline: 2px solid var(--ink);
         outline-offset: 3px;

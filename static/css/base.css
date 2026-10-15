@@ -483,6 +483,60 @@ textarea:focus-visible,
     }
 }
 
+/* -- Language switcher -----------------------------------------------------
+   Three codes in a row rather than a dropdown. With only three languages a
+   picker would hide two of them behind a tap and give no clue which is
+   active; this shows the state and costs one tap to change. Each option is a
+   real target, and on a phone the row drops into the account menu where
+   there is room for it. */
+.lang-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: var(--bw) solid var(--rule);
+    border-radius: var(--r-pill);
+}
+.lang-option {
+    display: inline-grid;
+    place-items: center;
+    min-width: 38px;
+    min-height: 32px;
+    padding-inline: 6px;
+    border-radius: var(--r-pill);
+    font-size: var(--t-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ink-3);
+    text-decoration: none;
+    transition: color var(--d1) var(--ease), background-color var(--d1) var(--ease);
+}
+.lang-option:hover { color: var(--ink); background: var(--surface-2); }
+.lang-option.is-current {
+    background: var(--ink);
+    color: var(--ink-invert);
+}
+
+/* The nav runs out of room on a phone — the switcher landed on top of the
+   wordmark — so below the masthead breakpoint it lives in the account menu
+   instead, where the labels can be the language's own name rather than a
+   two-letter code. */
+.dropdown-langs {
+    display: none;
+    gap: var(--s2);
+    padding: var(--s3) var(--s4);
+    border-bottom: var(--bw) solid var(--rule);
+}
+.dropdown-langs .lang-option {
+    flex: 1 1 auto;
+    min-height: 40px;
+    font-size: var(--t-xs);
+}
+@media (max-width: 820px) {
+    .nav-actions .lang-switch { display: none; }
+    .dropdown-langs { display: flex; }
+}
+
 /* --------------------------------------------------------------------------
    6. MASTHEAD / NAV
 

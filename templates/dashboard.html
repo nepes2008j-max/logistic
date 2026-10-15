@@ -86,15 +86,13 @@
         <p class="hero-word">Global <span class="hero-word-b">Trade</span></p>
 
         <div class="hero-copy">
-            <h1 class="hero-line">We move it. You both stay put.</h1>
+            <h1 class="hero-line">{{ t('home.headline') }}</h1>
             <p class="hero-lede">
-                Ordinary things, posted by ordinary people and carried across the country by
-                our couriers. Order it, we collect it, and the seller is paid only once it
-                is in your hands.
+                {{ t('home.lede') }}
             </p>
             <div class="hero-actions">
-                <a href="/market" class="auth-btn auth-btn-accent btn-lg">Browse listings</a>
-                <a href="/upload" class="auth-btn auth-btn-muted btn-lg">Post an item</a>
+                <a href="/market" class="auth-btn auth-btn-accent btn-lg">{{ t('home.browse') }}</a>
+                <a href="/upload" class="auth-btn auth-btn-muted btn-lg">{{ t('home.post') }}</a>
             </div>
         </div>
 
@@ -110,15 +108,15 @@
         <section class="handoff" aria-label="How a hand-off works">
             <dl class="handoff-track">
                 <div class="handoff-stop">
-                    <dt>Collected</dt>
+                    <dt>{{ t('home.collected') }}</dt>
                     <dd>A courier picks the item up from the seller and reads back the pickup code.</dd>
                 </div>
                 <div class="handoff-stop">
-                    <dt>In transit</dt>
+                    <dt>{{ t('home.in_transit') }}</dt>
                     <dd>The item is in someone's care, and every leg of the trip is written down.</dd>
                 </div>
                 <div class="handoff-stop">
-                    <dt>Handed over</dt>
+                    <dt>{{ t('home.handed_over') }}</dt>
                     <dd>You give the drop-off code at the door. Only then does the seller get paid.</dd>
                 </div>
             </dl>
@@ -136,7 +134,7 @@
 
 <section class="rail-section" aria-labelledby="recent-heading">
     <div class="rail-head">
-        <h2 id="recent-heading">Recently listed</h2>
+        <h2 id="recent-heading">{{ t('home.recent') }}</h2>
         <a href="/market" class="link-action">All listings <svg class="ico" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
     </div>
     {{ rail(items[:16], 22) }}
@@ -146,7 +144,7 @@
 {% if near_items|length > 3 %}
 <section class="rail-section" aria-labelledby="near-heading">
     <div class="rail-head">
-        <h2 id="near-heading">Near you</h2>
+        <h2 id="near-heading">{{ t('home.near_you') }}</h2>
         <p class="rail-head-note">Shortest hop, smallest delivery fee.</p>
     </div>
     {{ rail(near_items[4:20] if near_items|length > 12 else near_items, 17) }}
