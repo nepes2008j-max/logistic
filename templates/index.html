@@ -78,11 +78,10 @@
     {# Phone-only: tapping outside the open drawer closes it. #}
     <label for="cat-expand" class="cat-backdrop" aria-hidden="true"></label>
 
-    <aside class="cat-panel" aria-labelledby="cat-panel-title">
+    <aside class="cat-panel" aria-label="{{ t('market.categories') }}">
+        {# No heading: the button that opened this already names it, so the
+           drawer just carries the list and a close control. #}
         <div class="cat-panel-head">
-            <h2 id="cat-panel-title">{{ t('market.categories') }}</h2>
-            <span class="cat-panel-total">{{ categories|length }}</span>
-            {# Phone-only close control inside the drawer. #}
             <label for="cat-expand" class="cat-close" aria-label="Close">
                 <svg class="ico" aria-hidden="true"><use href="#i-times"></use></svg>
             </label>
