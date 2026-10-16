@@ -5,12 +5,12 @@
 {% block content %}
 <div class="nav-container record-page">
     <header class="record-masthead">
-        <span class="eyebrow">Courier</span>
-        <h1>Your runs</h1>
-        <p class="record-masthead-state">Collect with the seller's code, hand over with the buyer's.</p>
+        <span class="eyebrow">{{ t('adm.courier_eyebrow') }}</span>
+        <h1>{{ t('adm.your_runs') }}</h1>
+        <p class="record-masthead-state">{{ t('adm.your_runs_desc') }}</p>
     </header>
 
-    <h2>Assigned to you</h2>
+    <h2>{{ t('adm.assigned_you') }}</h2>
     {% if assigned %}
     <div class="ledger-rows">
         {% for delivery in assigned %}
@@ -18,56 +18,56 @@
             <div class="ledger-row-main">
                 <div class="ledger-row-title">
                     <a href="{{ url_for('delivery_detail', delivery_id=delivery.id) }}">
-                        #{{ '%04d'|format(delivery.id) }} &middot; {{ delivery.order.item.title if delivery.order.item else 'Removed listing' }}
+                        #{{ '%04d'|format(delivery.id) }} &middot; {{ delivery.order.item.title if delivery.order.item else t('adm.removed_listing') }}
                     </a>
                 </div>
                 <div class="ledger-row-meta">
-                    {{ delivery.origin_neighborhood.full_path if delivery.origin_neighborhood else 'unknown' }}
+                    {{ delivery.origin_neighborhood.full_path if delivery.origin_neighborhood else t('adm.unknown') }}
                     &rarr;
-                    {{ delivery.dest_neighborhood.full_path if delivery.dest_neighborhood else 'unknown' }}
+                    {{ delivery.dest_neighborhood.full_path if delivery.dest_neighborhood else t('adm.unknown') }}
                 </div>
                 <div class="ledger-row-meta">
-                    <span class="status-chip">{{ delivery.status.replace('_', ' ') }}</span>
-                    &middot; {{ delivery.order.dest_address_line or 'no address' }}
-                    &middot; {{ delivery.order.dest_contact_phone or 'no phone' }}
+                    <span class="status-chip">{{ t('dstat.' ~ delivery.status) }}</span>
+                    &middot; {{ delivery.order.dest_address_line or t('adm.no_address') }}
+                    &middot; {{ delivery.order.dest_contact_phone or t('adm.no_phone') }}
                 </div>
             </div>
             <div class="ledger-row-side">
-                <a href="{{ url_for('delivery_detail', delivery_id=delivery.id) }}" class="auth-btn auth-btn-muted">Open</a>
+                <a href="{{ url_for('delivery_detail', delivery_id=delivery.id) }}" class="auth-btn auth-btn-muted">{{ t('adm.open_word') }}</a>
             </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="state state--compact"><p>Nothing assigned to you.</p></div>
+    <div class="state state--compact"><p>{{ t('adm.nothing_assigned') }}</p></div>
     {% endif %}
 
-    <h2>Waiting for a courier</h2>
+    <h2>{{ t('adm.waiting_courier') }}</h2>
     {% if unclaimed %}
     <div class="ledger-rows">
         {% for delivery in unclaimed %}
         <div class="ledger-row">
             <div class="ledger-row-main">
                 <div class="ledger-row-title">
-                    #{{ '%04d'|format(delivery.id) }} &middot; {{ delivery.order.item.title if delivery.order.item else 'Removed listing' }}
+                    #{{ '%04d'|format(delivery.id) }} &middot; {{ delivery.order.item.title if delivery.order.item else t('adm.removed_listing') }}
                 </div>
                 <div class="ledger-row-meta">
-                    {{ delivery.origin_neighborhood.full_path if delivery.origin_neighborhood else 'unknown' }}
+                    {{ delivery.origin_neighborhood.full_path if delivery.origin_neighborhood else t('adm.unknown') }}
                     &rarr;
-                    {{ delivery.dest_neighborhood.full_path if delivery.dest_neighborhood else 'unknown' }}
+                    {{ delivery.dest_neighborhood.full_path if delivery.dest_neighborhood else t('adm.unknown') }}
                     &middot; {{ "%.2f"|format(delivery.fee) }} TMT
                 </div>
             </div>
             <div class="ledger-row-side">
                 <form action="{{ url_for('claim_delivery', delivery_id=delivery.id) }}" method="POST">
-                    <button type="submit" class="auth-btn">Take it</button>
+                    <button type="submit" class="auth-btn">{{ t('adm.assign') }}</button>
                 </form>
             </div>
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="state state--compact"><p>Nothing waiting.</p></div>
+    <div class="state state--compact"><p>{{ t('adm.nothing_motion') }}</p></div>
     {% endif %}
 </div>
 {% endblock %}

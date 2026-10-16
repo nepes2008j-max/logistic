@@ -5,24 +5,23 @@
 {% block content %}
 <div class="nav-container record-page">
     <header class="record-masthead">
-        <span class="eyebrow">Administration</span>
-        <h1>Orders</h1>
+        <span class="eyebrow">{{ t('adm.administration') }}</span>
+        <h1>{{ t('adm.orders') }}</h1>
         <p class="record-masthead-state">
-            Every order in the system, whoever it belongs to.
+            {{ t('adm.orders_desc') }}
             {% if total_held %}
-            <b>{{ '%.2f'|format(total_held) }} TMT</b> is sitting in escrow across
-            the orders that are paid but not yet handed over.
+            <b>{{ '%.2f'|format(total_held) }} TMT</b> {{ t('adm.escrow_sitting_a') }}
             {% endif %}
         </p>
     </header>
 
-    <nav class="queue-filters" aria-label="Filter by status">
+    <nav class="queue-filters" aria-label="{{ t('adm.filter_status') }}">
         <a href="{{ url_for('admin_orders', status='all') }}"
-           class="queue-filter"{% if status == 'all' %} aria-current="page"{% endif %}>All</a>
+           class="queue-filter"{% if status == 'all' %} aria-current="page"{% endif %}>{{ t('adm.all') }}</a>
         {% for option in statuses %}
         <a href="{{ url_for('admin_orders', status=option) }}"
            class="queue-filter"{% if status == option %} aria-current="page"{% endif %}>
-            {{ option|capitalize }} <span class="queue-filter-count">{{ counts[option] }}</span>
+            {{ t('ostat.' ~ option) }} <span class="queue-filter-count">{{ counts[option] }}</span>
         </a>
         {% endfor %}
     </nav>
@@ -30,8 +29,8 @@
     {% if not orders %}
     <div class="state state--compact">
         <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-inbox"></use></svg></div>
-        <h3>No {{ status }} orders</h3>
-        <p>Pick another status above.</p>
+        <h3>{{ t('adm.no_orders_a') }} {{ t('ostat.' ~ status) }} {{ t('adm.orders_word') }}</h3>
+        <p>{{ t('adm.pick_status') }}</p>
     </div>
     {% else %}
     <table class="record-table">
@@ -39,19 +38,19 @@
         <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Item</th>
-                <th scope="col">Buyer</th>
-                <th scope="col">Seller</th>
-                <th scope="col" class="num">Total</th>
-                <th scope="col">Status</th>
-                <th scope="col">Delivery</th>
+                <th scope="col">{{ t('adm.col_item') }}</th>
+                <th scope="col">{{ t('adm.col_buyer') }}</th>
+                <th scope="col">{{ t('adm.col_seller') }}</th>
+                <th scope="col" class="num">{{ t('adm.col_total') }}</th>
+                <th scope="col">{{ t('adm.col_status') }}</th>
+                <th scope="col">{{ t('adm.col_delivery') }}</th>
             </tr>
         </thead>
         <tbody>
             {% for order in orders %}
             <tr>
                 <td data-col="#"><a href="{{ url_for('order_detail', order_id=order.id) }}">{{ '%04d'|format(order.id) }}</a></td>
-                <td data-col="Item">{{ order.item.title if order.item else 'removed listing' }}</td>
+                <td data-col="Item">{{ order.item.title if order.item else t('adm.removed_listing') }}</td>
                 <td data-col="Buyer">
                     <a href="{{ url_for('profile', user_id=order.buyer_id) }}">{{ order.buyer.full_name or order.buyer.username }}</a>
                 </td>
@@ -60,13 +59,13 @@
                 </td>
                 <td data-col="Total" class="num">{{ '%.2f'|format(order.total) }} TMT</td>
                 <td data-col="Status">
-                    <span class="status-chip {% if order.status == 'completed' %}status-chip--active{% elif order.status in ('rejected', 'cancelled') %}status-chip--closed{% else %}status-chip--pending{% endif %}">{{ order.status }}</span>
+                    <span class="status-chip {% if order.status == 'completed' %}status-chip--active{% elif order.status in ('rejected', 'cancelled') %}status-chip--closed{% else %}status-chip--pending{% endif %}">{{ t('ostat.' ~ order.status) }}</span>
                 </td>
                 <td data-col="Delivery">
                     {% if order.delivery %}
-                    <a href="{{ url_for('delivery_detail', delivery_id=order.delivery.id) }}">{{ order.delivery.status.replace('_', ' ') }}</a>
+                    <a href="{{ url_for('delivery_detail', delivery_id=order.delivery.id) }}">{{ t('dstat.' ~ order.delivery.status) }}</a>
                     {% else %}
-                    <span class="muted">not dispatched</span>
+                    <span class="muted">{{ t('adm.not_dispatched') }}</span>
                     {% endif %}
                 </td>
             </tr>

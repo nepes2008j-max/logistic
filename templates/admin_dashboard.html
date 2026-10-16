@@ -5,68 +5,68 @@
 {% block content %}
 <div class="nav-container record-page">
     <header class="record-masthead">
-        <span class="eyebrow">Administration</span>
-        <h1>Control room</h1>
-        <p class="record-masthead-state">Who gets in, who carries the goods, and where the money is sitting.</p>
+        <span class="eyebrow">{{ t('adm.administration') }}</span>
+        <h1>{{ t('adm.control_room') }}</h1>
+        <p class="record-masthead-state">{{ t('adm.control_desc') }}</p>
     </header>
 
     <div class="grid-3">
         <div class="panel panel-pad stat-tile">
-            <span class="field-label">Access requests waiting</span>
+            <span class="field-label">{{ t('adm.req_waiting') }}</span>
             <p class="display">{{ stats.pending_requests }}</p>
-            <a href="{{ url_for('admin_access_requests') }}" class="auth-btn">Open the queue</a>
+            <a href="{{ url_for('admin_access_requests') }}" class="auth-btn">{{ t('adm.open_queue') }}</a>
         </div>
         <div class="panel panel-pad stat-tile">
-            <span class="field-label">Deliveries in motion</span>
+            <span class="field-label">{{ t('adm.deliv_motion') }}</span>
             <p class="display">{{ stats.open_deliveries }}</p>
-            <a href="{{ url_for('admin_deliveries') }}" class="auth-btn auth-btn-muted">Dispatch</a>
+            <a href="{{ url_for('admin_deliveries') }}" class="auth-btn auth-btn-muted">{{ t('adm.dispatch') }}</a>
         </div>
         <div class="panel panel-pad stat-tile">
-            <span class="field-label">People</span>
+            <span class="field-label">{{ t('adm.people') }}</span>
             <p class="display">{{ stats.members }}</p>
-            <a href="{{ url_for('admin_users') }}" class="auth-btn auth-btn-muted">Roles</a>
+            <a href="{{ url_for('admin_users') }}" class="auth-btn auth-btn-muted">{{ t('adm.roles') }}</a>
         </div>
         <div class="panel panel-pad stat-tile">
-            <span class="field-label">Listings on the board</span>
+            <span class="field-label">{{ t('adm.listings_board') }}</span>
             <p class="display">{{ stats.listings }}</p>
-            <a href="{{ url_for('admin_listings') }}" class="auth-btn auth-btn-muted">Listings</a>
+            <a href="{{ url_for('admin_listings') }}" class="auth-btn auth-btn-muted">{{ t('adm.listings') }}</a>
         </div>
         <div class="panel panel-pad stat-tile">
-            <span class="field-label">Orders running</span>
+            <span class="field-label">{{ t('adm.orders_running') }}</span>
             <p class="display">{{ stats.open_orders }}</p>
-            <a href="{{ url_for('admin_orders') }}" class="auth-btn auth-btn-muted">Orders</a>
+            <a href="{{ url_for('admin_orders') }}" class="auth-btn auth-btn-muted">{{ t('adm.orders') }}</a>
         </div>
         <div class="panel panel-pad stat-tile">
-            <span class="field-label">Couriers</span>
+            <span class="field-label">{{ t('adm.couriers') }}</span>
             <p class="display">{{ stats.couriers }}</p>
-            <a href="{{ url_for('admin_users', role='courier') }}" class="auth-btn auth-btn-muted">Couriers</a>
+            <a href="{{ url_for('admin_users', role='courier') }}" class="auth-btn auth-btn-muted">{{ t('adm.couriers') }}</a>
         </div>
     </div>
 
     <div class="panel panel-pad">
-        <h2>Platform account</h2>
+        <h2>{{ t('adm.platform_account') }}</h2>
         {% if account %}
         <div class="receipt-lines">
             <div class="receipt-line">
-                <span>Fees earned</span>
+                <span>{{ t('adm.fees_earned') }}</span>
                 <b>{{ "%.2f"|format(account.balance) }} TMT</b>
             </div>
             <div class="receipt-line">
-                <span>Held in escrow for sellers</span>
+                <span>{{ t('adm.held_escrow') }}</span>
                 <b>{{ "%.2f"|format(account.escrow_balance) }} TMT</b>
             </div>
         </div>
         {% else %}
-        <p>The platform account is missing. Restart the app to create it.</p>
+        <p>{{ t('adm.account_missing') }}</p>
         {% endif %}
     </div>
 
     <div class="panel panel-pad">
-        <h2>Catalogue</h2>
+        <h2>{{ t('adm.catalogue') }}</h2>
         <div class="receipt-lines">
-            <div class="receipt-line"><span>Listings available</span><b>{{ stats.listings }}</b></div>
-            <div class="receipt-line"><span>Orders not yet finished</span><b>{{ stats.open_orders }}</b></div>
-            <div class="receipt-line"><span>Couriers</span><b>{{ stats.couriers }}</b></div>
+            <div class="receipt-line"><span>{{ t('adm.listings_avail') }}</span><b>{{ stats.listings }}</b></div>
+            <div class="receipt-line"><span>{{ t('adm.orders_open') }}</span><b>{{ stats.open_orders }}</b></div>
+            <div class="receipt-line"><span>{{ t('adm.couriers') }}</span><b>{{ stats.couriers }}</b></div>
         </div>
     </div>
 </div>

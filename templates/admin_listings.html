@@ -5,19 +5,18 @@
 {% block content %}
 <div class="nav-container record-page">
     <header class="record-masthead">
-        <span class="eyebrow">Administration</span>
-        <h1>Listings</h1>
+        <span class="eyebrow">{{ t('adm.administration') }}</span>
+        <h1>{{ t('adm.listings') }}</h1>
         <p class="record-masthead-state">
-            Every item on the board, whoever posted it. Withdrawing takes a listing
-            out of the marketplace without deleting it or touching its history.
+            {{ t('adm.listings_desc') }}
         </p>
     </header>
 
-    <nav class="queue-filters" aria-label="Filter by status">
+    <nav class="queue-filters" aria-label="{{ t('adm.filter_status') }}">
         {% for option in statuses %}
         <a href="{{ url_for('admin_listings', status=option) }}"
            class="queue-filter"{% if status == option %} aria-current="page"{% endif %}>
-            {{ option|capitalize }} <span class="queue-filter-count">{{ counts[option] }}</span>
+            {{ t('status.' ~ option) }} <span class="queue-filter-count">{{ counts[option] }}</span>
         </a>
         {% endfor %}
     </nav>
@@ -25,8 +24,8 @@
     {% if not listings %}
     <div class="state state--compact">
         <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-box-open"></use></svg></div>
-        <h3>Nothing is {{ status }}</h3>
-        <p>Pick another status above.</p>
+        <h3>{{ t('adm.nothing_is') }} {{ t('status.' ~ status) }}</h3>
+        <p>{{ t('adm.pick_status') }}</p>
     </div>
     {% else %}
 
@@ -40,12 +39,12 @@
         <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Item</th>
-                <th scope="col">Seller</th>
-                <th scope="col">Where</th>
-                <th scope="col" class="num">Price</th>
-                <th scope="col">Status</th>
-                <th scope="col"><span class="visually-hidden">Actions</span></th>
+                <th scope="col">{{ t('adm.col_item') }}</th>
+                <th scope="col">{{ t('adm.col_seller') }}</th>
+                <th scope="col">{{ t('adm.col_where') }}</th>
+                <th scope="col" class="num">{{ t('adm.col_price') }}</th>
+                <th scope="col">{{ t('adm.col_status') }}</th>
+                <th scope="col"><span class="visually-hidden">{{ t('adm.col_actions') }}</span></th>
             </tr>
         </thead>
         <tbody>
@@ -58,25 +57,25 @@
                 <td data-col="Seller">
                     {% if item.owner %}
                     <a href="{{ url_for('profile', user_id=item.owner.id) }}">{{ item.owner.full_name or item.owner.username }}</a>
-                    {% else %}<span class="muted">no owner</span>{% endif %}
+                    {% else %}<span class="muted">{{ t('adm.no_owner') }}</span>{% endif %}
                 </td>
                 <td data-col="Where">{{ item.location_label }}</td>
                 <td data-col="Price" class="num">{{ '{:,g}'.format(item.price or 0) }} TMT</td>
                 <td data-col="Status">
-                    <span class="status-chip {% if item.status == 'listed' %}status-chip--active{% elif item.status == 'withdrawn' %}status-chip--closed{% else %}status-chip--pending{% endif %}">{{ item.status }}</span>
+                    <span class="status-chip {% if item.status == 'listed' %}status-chip--active{% elif item.status == 'withdrawn' %}status-chip--closed{% else %}status-chip--pending{% endif %}">{{ t('status.' ~ item.status) }}</span>
                 </td>
                 <td data-col="Actions">
                     {% if item.status == 'withdrawn' %}
                     <form action="{{ url_for('admin_restore_listing', item_id=item.id) }}" method="POST" class="cell-form">
-                        <button type="submit" class="auth-btn auth-btn-muted btn-sm">Restore</button>
+                        <button type="submit" class="auth-btn auth-btn-muted btn-sm">{{ t('adm.restore') }}</button>
                     </form>
                     {% elif item.status == 'listed' %}
                     <form action="{{ url_for('admin_withdraw_listing', item_id=item.id) }}" method="POST" class="cell-form">
                         <input type="hidden" name="back" value="{{ status }}">
-                        <button type="submit" class="auth-btn auth-btn-muted btn-sm">Withdraw</button>
+                        <button type="submit" class="auth-btn auth-btn-muted btn-sm">{{ t('adm.withdraw') }}</button>
                     </form>
                     {% else %}
-                    <span class="muted">in an order</span>
+                    <span class="muted">{{ t('adm.in_order') }}</span>
                     {% endif %}
                 </td>
             </tr>

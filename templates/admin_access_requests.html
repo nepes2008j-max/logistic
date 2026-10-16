@@ -5,11 +5,10 @@
 {% block content %}
 <div class="nav-container record-page">
     <header class="record-masthead">
-        <span class="eyebrow">Administration</span>
-        <h1>Access requests</h1>
+        <span class="eyebrow">{{ t('adm.administration') }}</span>
+        <h1>{{ t('adm.access_requests') }}</h1>
         <p class="record-masthead-state">
-            Approving emails a one-time invitation, valid for {{ invite_ttl_days }} days. Nothing
-            becomes an account until the person uses it and sets a password.
+            {{ t('adm.access_desc_a') }} {{ invite_ttl_days }} {{ t('adm.access_desc_b') }}
         </p>
     </header>
 
@@ -22,18 +21,18 @@
       works is now the thing the system can actually attest to, so that is what
       this column reports.
     #}
-    <nav class="queue-filters" aria-label="Filter by status">
+    <nav class="queue-filters" aria-label="{{ t('adm.filter_status') }}">
         {% for option in ['pending', 'approved', 'rejected', 'all'] %}
         <a href="{{ url_for('admin_access_requests', status=option) }}"
-           class="queue-filter"{% if status == option %} aria-current="page"{% endif %}>{{ option|capitalize }}</a>
+           class="queue-filter"{% if status == option %} aria-current="page"{% endif %}>{% if option == 'all' %}{{ t('adm.all') }}{% else %}{{ t('invite.' ~ option) }}{% endif %}</a>
         {% endfor %}
     </nav>
 
     {% if not access_requests %}
     <div class="state state--compact">
         <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-inbox"></use></svg></div>
-        <h3>The {{ status }} queue is empty</h3>
-        <p>Nothing is waiting on you here. New requests land in <a href="{{ url_for('admin_access_requests', status='pending') }}">pending</a> the moment somebody sends one.</p>
+        <h3>{{ t('adm.queue_empty_a') }} {% if status == 'all' %}{{ t('adm.all') }}{% else %}{{ t('invite.' ~ status) }}{% endif %} {{ t('adm.queue_empty_b') }}</h3>
+        <p>{{ t('adm.queue_empty_p_a') }} <a href="{{ url_for('admin_access_requests', status='pending') }}">{{ t('adm.pending_word') }}</a> {{ t('adm.queue_empty_p_b') }}</p>
     </div>
     {% endif %}
 
@@ -45,29 +44,29 @@
                 <span class="proof-mark proof-mark--ok" aria-hidden="true">
                     <svg class="ico"><use href="#i-check-circle"></use></svg>
                 </span>
-                <span class="proof-label">Email confirmed</span>
+                <span class="proof-label">{{ t('adm.email_confirmed') }}</span>
                 <span class="proof-when">{{ req.email_verified_at.strftime('%d %b, %H:%M') }}</span>
                 {% else %}
                 <span class="proof-mark" aria-hidden="true">
                     <svg class="ico"><use href="#i-hourglass-half"></use></svg>
                 </span>
-                <span class="proof-label">Not confirmed</span>
-                <span class="proof-when">They have not opened the link yet</span>
+                <span class="proof-label">{{ t('adm.not_confirmed') }}</span>
+                <span class="proof-when">{{ t('adm.not_opened') }}</span>
                 {% endif %}
             </div>
 
             <div class="dossier-body">
                 <div class="dossier-head">
                     <h2>{{ req.full_name }}</h2>
-                    <span class="status-chip {% if req.invite_state in ('rejected', 'expired') %}status-chip--closed{% elif req.invite_state == 'pending' %}status-chip--pending{% else %}status-chip--active{% endif %}">{{ req.invite_state }}</span>
+                    <span class="status-chip {% if req.invite_state in ('rejected', 'expired') %}status-chip--closed{% elif req.invite_state == 'pending' %}status-chip--pending{% else %}status-chip--active{% endif %}">{{ t('invite.' ~ req.invite_state) }}</span>
                 </div>
 
                 <dl class="dossier-facts">
-                    <div><dt>Email</dt><dd>{{ req.email }}</dd></div>
-                    <div><dt>Phone</dt><dd>{{ req.phone or 'not given' }}</dd></div>
-                    <div><dt>Age</dt><dd>{{ req.age or 'not given' }}</dd></div>
-                    <div><dt>Where</dt><dd>{{ req.neighborhood.full_path if req.neighborhood else (req.region or 'not given') }}</dd></div>
-                    <div><dt>Sent</dt><dd>{{ req.created_at.strftime('%d %b %Y, %H:%M') if req.created_at else 'unknown' }}</dd></div>
+                    <div><dt>{{ t('adm.f_email') }}</dt><dd>{{ req.email }}</dd></div>
+                    <div><dt>{{ t('adm.f_phone') }}</dt><dd>{{ req.phone or t('adm.not_given') }}</dd></div>
+                    <div><dt>{{ t('adm.f_age') }}</dt><dd>{{ req.age or t('adm.not_given') }}</dd></div>
+                    <div><dt>{{ t('adm.col_where') }}</dt><dd>{{ req.neighborhood.full_path if req.neighborhood else (req.region or t('adm.not_given')) }}</dd></div>
+                    <div><dt>{{ t('adm.f_sent') }}</dt><dd>{{ req.created_at.strftime('%d %b %Y, %H:%M') if req.created_at else t('adm.unknown') }}</dd></div>
                 </dl>
 
                 {% if req.reason %}
@@ -76,7 +75,7 @@
 
                 {% if req.reviewed_by %}
                 <p class="dossier-review">
-                    Reviewed by {{ req.reviewed_by.full_name or req.reviewed_by.email }}
+                    {{ t('adm.reviewed_by') }} {{ req.reviewed_by.full_name or req.reviewed_by.email }}
                     {%- if req.reviewed_at %} on {{ req.reviewed_at.strftime('%d %b %Y') }}{% endif -%}
                     {%- if req.review_note %} &mdash; &ldquo;{{ req.review_note }}&rdquo;{% endif %}
                 </p>
@@ -84,26 +83,26 @@
 
                 {% if req.invite_is_live %}
                 <div class="code-plate code-plate--link">
-                    <span class="field-label">Invitation link, live</span>
+                    <span class="field-label">{{ t('adm.invite_live') }}</span>
                     <span class="code-plate-link">{{ url_for('activate', token=req.invite_token, _external=True) }}</span>
-                    <p>Send this to {{ req.email }}. It works once, and expires on {{ req.invite_expires_at.strftime('%d %b %Y') if req.invite_expires_at else 'use' }}.</p>
+                    <p>{{ t('adm.send_this_a') }} {{ req.email }}. {{ t('adm.send_this_b') }} {{ req.invite_expires_at.strftime('%d %b %Y') if req.invite_expires_at else 'use' }}.</p>
                 </div>
                 {% endif %}
 
                 {% if req.status == 'pending' %}
                 <div class="dossier-decide">
                     <form action="{{ url_for('approve_access_request', request_id=req.id) }}" method="POST">
-                        <label for="approve-note-{{ req.id }}">Let {{ req.full_name.split()[0] }} in</label>
+                        <label for="approve-note-{{ req.id }}">{{ t('adm.let_in_a') }} {{ req.full_name.split()[0] }}</label>
                         <div class="dossier-decide-row">
-                            <input type="text" name="review_note" id="approve-note-{{ req.id }}" placeholder="Note, optional">
-                            <button type="submit" class="auth-btn auth-btn-accent">Approve</button>
+                            <input type="text" name="review_note" id="approve-note-{{ req.id }}" placeholder="{{ t('adm.note_optional') }}">
+                            <button type="submit" class="auth-btn auth-btn-accent">{{ t('adm.approve') }}</button>
                         </div>
                     </form>
                     <form action="{{ url_for('reject_access_request', request_id=req.id) }}" method="POST">
-                        <label for="reject-note-{{ req.id }}">Turn this request down</label>
+                        <label for="reject-note-{{ req.id }}">{{ t('adm.turn_down') }}</label>
                         <div class="dossier-decide-row">
-                            <input type="text" name="review_note" id="reject-note-{{ req.id }}" placeholder="Reason, optional">
-                            <button type="submit" class="auth-btn auth-btn-outline-danger">Reject</button>
+                            <input type="text" name="review_note" id="reject-note-{{ req.id }}" placeholder="{{ t('adm.reason_optional') }}">
+                            <button type="submit" class="auth-btn auth-btn-outline-danger">{{ t('adm.reject') }}</button>
                         </div>
                     </form>
                 </div>

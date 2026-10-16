@@ -5,27 +5,27 @@
 {% block content %}
 <div class="nav-container record-page">
     <header class="record-masthead">
-        <span class="eyebrow">Administration</span>
-        <h1>Dispatch</h1>
-        <p class="record-masthead-state">Every journey that has not finished, and who is carrying it.</p>
+        <span class="eyebrow">{{ t('adm.administration') }}</span>
+        <h1>{{ t('adm.dispatch') }}</h1>
+        <p class="record-masthead-state">{{ t('adm.dispatch_desc') }}</p>
     </header>
 
-    <h2 class="visually-hidden">In motion</h2>
+    <h2 class="visually-hidden">{{ t('adm.in_motion') }}</h2>
     {% if not open_deliveries %}
     <div class="state state--compact">
         <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-box-open"></use></svg></div>
-        <h3>Nothing is in motion</h3>
-        <p>A delivery appears here the moment a buyer pays for an accepted order.</p>
+        <h3>{{ t('adm.nothing_motion') }}</h3>
+        <p>{{ t('adm.nothing_motion_p') }}</p>
     </div>
     {% else %}
     <table class="record-table">
         <thead>
             <tr>
-                <th scope="col">Delivery</th>
-                <th scope="col">Route</th>
-                <th scope="col">State</th>
-                <th scope="col">Fee</th>
-                <th scope="col">Courier</th>
+                <th scope="col">{{ t('adm.col_deliv') }}</th>
+                <th scope="col">{{ t('adm.col_route') }}</th>
+                <th scope="col">{{ t('adm.col_state') }}</th>
+                <th scope="col">{{ t('adm.col_fee') }}</th>
+                <th scope="col">{{ t('adm.col_courier') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -33,27 +33,27 @@
             <tr>
                 <td data-col="Delivery">
                     <b><a href="{{ url_for('delivery_detail', delivery_id=delivery.id) }}">#{{ '%04d'|format(delivery.id) }}</a></b>
-                    <div class="cell-sub">{{ delivery.order.item.title if delivery.order.item else 'Removed listing' }}</div>
+                    <div class="cell-sub">{{ delivery.order.item.title if delivery.order.item else t('adm.removed_listing') }}</div>
                 </td>
                 <td data-col="Route">
-                    {{ delivery.origin_neighborhood.full_path if delivery.origin_neighborhood else 'unknown' }}
-                    <div class="cell-sub">to {{ delivery.dest_neighborhood.full_path if delivery.dest_neighborhood else 'unknown' }}</div>
+                    {{ delivery.origin_neighborhood.full_path if delivery.origin_neighborhood else t('adm.unknown') }}
+                    <div class="cell-sub">{{ t('adm.to_word') }} {{ delivery.dest_neighborhood.full_path if delivery.dest_neighborhood else t('adm.unknown') }}</div>
                 </td>
                 <td data-col="State">
-                    <span class="status-chip status-chip--active">{{ delivery.status.replace('_', ' ')|capitalize }}</span>
-                    {% if delivery.eta_date %}<div class="cell-sub">due {{ delivery.eta_date.strftime('%d %b') }}</div>{% endif %}
+                    <span class="status-chip status-chip--active">{{ t('dstat.' ~ delivery.status) }}</span>
+                    {% if delivery.eta_date %}<div class="cell-sub">{{ t('adm.due_word') }} {{ delivery.eta_date.strftime('%d %b') }}</div>{% endif %}
                 </td>
                 <td data-col="Fee" class="num">{{ "%.2f"|format(delivery.fee) }} TMT</td>
                 <td data-col="Courier">
                     <form action="{{ url_for('admin_assign_courier', delivery_id=delivery.id) }}" method="POST" class="cell-form">
                         <label class="visually-hidden" for="courier-{{ delivery.id }}">Courier for delivery {{ delivery.id }}</label>
                         <select name="courier_id" id="courier-{{ delivery.id }}">
-                            <option value="">Unassigned</option>
+                            <option value="">{{ t('adm.unassigned') }}</option>
                             {% for courier in couriers %}
                             <option value="{{ courier.id }}" {% if delivery.courier_id == courier.id %}selected{% endif %}>{{ courier.full_name or courier.email }}</option>
                             {% endfor %}
                         </select>
-                        <button type="submit" class="auth-btn auth-btn-muted">Assign</button>
+                        <button type="submit" class="auth-btn auth-btn-muted">{{ t('adm.assign') }}</button>
                     </form>
                 </td>
             </tr>
@@ -63,13 +63,13 @@
     {% endif %}
 
     {% if closed %}
-    <h2>Finished</h2>
+    <h2>{{ t('adm.finished') }}</h2>
     <table class="record-table">
         <thead>
             <tr>
-                <th scope="col">Delivery</th>
-                <th scope="col">Outcome</th>
-                <th scope="col">Closed</th>
+                <th scope="col">{{ t('adm.col_deliv') }}</th>
+                <th scope="col">{{ t('adm.col_outcome') }}</th>
+                <th scope="col">{{ t('adm.col_closed') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -77,10 +77,10 @@
             <tr>
                 <td data-col="Delivery">
                     <b><a href="{{ url_for('delivery_detail', delivery_id=delivery.id) }}">#{{ '%04d'|format(delivery.id) }}</a></b>
-                    <div class="cell-sub">{{ delivery.order.item.title if delivery.order.item else 'Removed listing' }}</div>
+                    <div class="cell-sub">{{ delivery.order.item.title if delivery.order.item else t('adm.removed_listing') }}</div>
                 </td>
                 <td data-col="Outcome">
-                    <span class="status-chip status-chip--closed">{{ delivery.status|capitalize }}</span>
+                    <span class="status-chip status-chip--closed">{{ t('dstat.' ~ delivery.status) }}</span>
                 </td>
                 <td data-col="Closed">{{ delivery.delivered_at.strftime('%d %b %Y') if delivery.delivered_at else '—' }}</td>
             </tr>
