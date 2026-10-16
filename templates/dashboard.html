@@ -105,27 +105,27 @@
           so it promises nothing the product cannot do. A description list,
           because that is what it is: three stages and what each one means.
         #}
-        <section class="handoff" aria-label="How a hand-off works">
+        <section class="handoff" aria-label="{{ t('home.howto') }}">
             <dl class="handoff-track">
                 <div class="handoff-stop">
                     <dt>{{ t('home.collected') }}</dt>
-                    <dd>A courier picks the item up from the seller and reads back the pickup code.</dd>
+                    <dd>{{ t('home.collected_d') }}</dd>
                 </div>
                 <div class="handoff-stop">
                     <dt>{{ t('home.in_transit') }}</dt>
-                    <dd>The item is in someone's care, and every leg of the trip is written down.</dd>
+                    <dd>{{ t('home.in_transit_d') }}</dd>
                 </div>
                 <div class="handoff-stop">
                     <dt>{{ t('home.handed_over') }}</dt>
-                    <dd>You give the drop-off code at the door. Only then does the seller get paid.</dd>
+                    <dd>{{ t('home.handed_over_d') }}</dd>
                 </div>
             </dl>
         </section>
 
         <div class="hero-facts">
-            <span class="hero-fact"><b>{{ items|length }}</b> listings on the board</span>
-            <span class="hero-fact"><b>Ashgabat</b> and Ahal</span>
-            <span class="hero-fact"><b>Paid</b> on delivery, not before</span>
+            <span class="hero-fact"><b>{{ items|length }}</b> {{ t('home.fact_listings') }}</span>
+            <span class="hero-fact"><b>Ashgabat</b> {{ t('home.fact_region') }}</span>
+            <span class="hero-fact"><b>{{ t('home.fact_paid_b') }}</b> {{ t('home.fact_paid') }}</span>
         </div>
     </div>
 </header>
@@ -135,7 +135,7 @@
 <section class="rail-section" aria-labelledby="recent-heading">
     <div class="rail-head">
         <h2 id="recent-heading">{{ t('home.recent') }}</h2>
-        <a href="/market" class="link-action">All listings <svg class="ico" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+        <a href="/market" class="link-action">{{ t('home.all_listings') }} <svg class="ico" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
     </div>
     {{ rail(items[:16], 22) }}
 </section>
@@ -145,7 +145,7 @@
 <section class="rail-section" aria-labelledby="near-heading">
     <div class="rail-head">
         <h2 id="near-heading">{{ t('home.near_you') }}</h2>
-        <p class="rail-head-note">Shortest hop, smallest delivery fee.</p>
+        <p class="rail-head-note">{{ t('home.hop') }}</p>
     </div>
     {{ rail(near_items[4:20] if near_items|length > 12 else near_items, 17) }}
 </section>
@@ -156,10 +156,10 @@
 <section class="nav-container front-section">
     <div class="state">
         <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-box-open"></use></svg></div>
-        <h3>The board is empty</h3>
-        <p>Nothing has been listed yet. Post the first item and it will appear here straight away, in front of everyone looking to buy.</p>
+        <h3>{{ t('home.empty_h') }}</h3>
+        <p>{{ t('home.empty_p') }}</p>
         <div class="state-actions">
-            <a href="/upload" class="auth-btn">Post an item</a>
+            <a href="/upload" class="auth-btn">{{ t('home.post') }}</a>
         </div>
     </div>
 </section>
@@ -172,22 +172,22 @@
 #}
 <section class="band-dark on-dark" aria-labelledby="protocol-heading">
     <div class="nav-container">
-        <h2 id="protocol-heading" class="visually-hidden">How a hand-off works</h2>
+        <h2 id="protocol-heading" class="visually-hidden">{{ t('home.howto') }}</h2>
         <ol class="protocol">
             <li class="protocol-step">
-                <span class="protocol-num">Step one</span>
-                <h3>Ask before you commit</h3>
-                <p>Chat opens only when both sides agree to it, so your inbox stays yours. Settle the price and where it has to reach in writing.</p>
+                <span class="protocol-num">{{ t('home.step_one') }}</span>
+                <h3>{{ t('home.p1_h') }}</h3>
+                <p>{{ t('home.p1_p') }}</p>
             </li>
             <li class="protocol-step">
-                <span class="protocol-num">Step two</span>
-                <h3>Pay into escrow</h3>
-                <p>The money leaves your wallet but not the seller's way. Global Trade holds it for the whole time the item is travelling.</p>
+                <span class="protocol-num">{{ t('home.step_two') }}</span>
+                <h3>{{ t('home.p2_h') }}</h3>
+                <p>{{ t('home.p2_p') }}</p>
             </li>
             <li class="protocol-step">
-                <span class="protocol-num">Step three</span>
-                <h3>Codes at both doors</h3>
-                <p>The courier collects against the seller's code and hands over against yours. Reading your code back is what releases the money.</p>
+                <span class="protocol-num">{{ t('home.step_three') }}</span>
+                <h3>{{ t('home.p3_h') }}</h3>
+                <p>{{ t('home.p3_p') }}</p>
             </li>
         </ol>
     </div>
@@ -195,8 +195,8 @@
     {% set tool_items = items|selectattr('category', 'in', ['tools', 'tech'])|list %}
     {% if tool_items|length > 3 %}
     <div class="rail-head" style="margin-top: var(--section-gap)">
-        <h2>Tools and equipment</h2>
-        <p class="rail-head-note">Borrow the thing, not the whole shed.</p>
+        <h2>{{ t('home.tools_h') }}</h2>
+        <p class="rail-head-note">{{ t('home.tools_note') }}</p>
     </div>
     {{ rail(tool_items[:16], 14) }}
     {% endif %}
@@ -209,19 +209,13 @@
 <section class="nav-container front-section">
     <div class="clay-card">
         {% if current_user.is_authenticated %}
-        <h2>Got something that needs to reach another city?</h2>
-        <p>
-            List it and anyone in the country can order it. Our courier collects from your
-            door, and nobody gets your number until you say so.
-        </p>
-        <a href="/upload" class="auth-btn">Post an item</a>
+        <h2>{{ t('home.cta_h') }}</h2>
+        <p>{{ t('home.cta_p') }}</p>
+        <a href="/upload" class="auth-btn">{{ t('home.post') }}</a>
         {% else %}
-        <h2>Getting in takes an email and an administrator's nod.</h2>
-        <p>
-            Every member confirmed their address and was let in by a person. That is what makes
-            handing a stranger your camera a reasonable thing to do.
-        </p>
-        <a href="/request-access" class="auth-btn">Request access</a>
+        <h2>{{ t('home.cta_h2') }}</h2>
+        <p>{{ t('home.cta_p2') }}</p>
+        <a href="/request-access" class="auth-btn">{{ t('auth.request_access') }}</a>
         {% endif %}
     </div>
 </section>
