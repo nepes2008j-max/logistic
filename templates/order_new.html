@@ -17,88 +17,86 @@
   commitment feels larger than it is. Naming all three and marking the
   current one makes the end visible from the first screen.
 #}
-<nav class="flowsteps" aria-label="Order progress">
+<nav class="flowsteps" aria-label="{{ t('ord.progress') }}">
     <ol>
-        <li class="flowstep is-current" aria-current="step"><span>1</span> Where to</li>
-        <li class="flowstep"><span>2</span> Pay</li>
-        <li class="flowstep"><span>3</span> Track</li>
+        <li class="flowstep is-current" aria-current="step"><span>1</span> {{ t('ord.step_where') }}</li>
+        <li class="flowstep"><span>2</span> {{ t('ord.step_pay') }}</li>
+        <li class="flowstep"><span>3</span> {{ t('ord.step_track') }}</li>
     </ol>
 </nav>
 
 <div class="auth-split auth-split--wide">
     <div class="auth-rail">
-        <span class="eyebrow">Delivery</span>
-        <h1>What it costs to move this.</h1>
+        <span class="eyebrow">{{ t('ord.delivery_eyebrow') }}</span>
+        <h1>{{ t('ord.cost_title') }}</h1>
         <p>
-            We collect from {{ item.pickup_label or item.location_label }} and carry it to the
-            address you give. The fee is a base charge plus distance, multiplied by size —
-            nothing is estimated and nothing is added later.
+            {{ t('ord.cost_intro_a') }} {{ item.pickup_label or item.location_label }} {{ t('ord.cost_intro_b') }}
         </p>
         <ul class="auth-facts">
-            <li><b>Base</b><span>{{ "%.2f"|format(base_fee) }} TMT on every delivery.</span></li>
-            <li><b>Distance</b><span>Same neighbourhood +{{ "%.2f"|format(distance_surcharge['same_neighborhood']) }} &middot; same district +{{ "%.2f"|format(distance_surcharge['same_district']) }} &middot; same velayat +{{ "%.2f"|format(distance_surcharge['same_velayat']) }} &middot; a different velayat +{{ "%.2f"|format(distance_surcharge['cross_velayat']) }}.</span></li>
-            <li><b>Size</b><span>This item is <strong>{{ item.size_class }}</strong>, so the distance total is multiplied by {{ size_multiplier[item.size_class] }}.</span></li>
-            <li><b>Fee</b><span>Global Trade takes {{ (service_fee_rate * 100)|int }}% of the goods price, and the seller is not paid until it arrives.</span></li>
+            <li><b>{{ t('ord.base') }}</b><span>{{ "%.2f"|format(base_fee) }} TMT {{ t('ord.base_d') }}</span></li>
+            <li><b>{{ t('ord.distance') }}</b><span>{{ t('ord.dist_same_nb') }} +{{ "%.2f"|format(distance_surcharge['same_neighborhood']) }} &middot; {{ t('ord.dist_same_dist') }} +{{ "%.2f"|format(distance_surcharge['same_district']) }} &middot; {{ t('ord.dist_same_vel') }} +{{ "%.2f"|format(distance_surcharge['same_velayat']) }} &middot; {{ t('ord.dist_cross') }} +{{ "%.2f"|format(distance_surcharge['cross_velayat']) }}.</span></li>
+            <li><b>{{ t('ord.size') }}</b><span>{{ t('ord.size_d_a') }} <strong>{{ t('size.' ~ item.size_class) }}</strong>, {{ t('ord.size_d_b') }} {{ size_multiplier[item.size_class] }}.</span></li>
+            <li><b>{{ t('ord.fee') }}</b><span>{{ t('ord.fee_d_a') }} {{ (service_fee_rate * 100)|int }}% {{ t('ord.fee_d_b') }}</span></li>
         </ul>
     </div>
 
 <div class="auth-container">
     <div class="auth-header">
-        <h2>Where should it go?</h2>
-        <p>{{ item.title }} &middot; {{ "%.2f"|format(item.price) }} TMT before delivery.</p>
+        <h2>{{ t('ord.where_go') }}</h2>
+        <p>{{ item.title }} &middot; {{ "%.2f"|format(item.price) }} TMT {{ t('ord.before_delivery') }}</p>
     </div>
 
     <form class="auth-form" action="{{ url_for('place_order', item_id=item.id) }}" method="POST" id="order-form">
         <div class="form-row">
             <div class="form-group">
-                <label for="order-velayat">Destination region</label>
+                <label for="order-velayat">{{ t('ord.dest_region') }}</label>
                 <select id="order-velayat" required>
-                    <option value="">Choose a region</option>
+                    <option value="">{{ t('ord.choose_region') }}</option>
                     {% for velayat in location_tree %}
                     <option value="{{ velayat.id }}">{{ velayat.name }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="form-group">
-                <label for="order-district">District</label>
+                <label for="order-district">{{ t('ord.district') }}</label>
                 <select id="order-district" required>
-                    <option value="">Choose a district</option>
+                    <option value="">{{ t('ord.choose_district') }}</option>
                 </select>
             </div>
         </div>
 
         <div class="form-group">
-            <label for="order-neighborhood">Street or neighbourhood</label>
+            <label for="order-neighborhood">{{ t('ord.street') }}</label>
             <select name="dest_neighborhood_id" id="order-neighborhood" required>
-                <option value="">Choose where it has to arrive</option>
+                <option value="">{{ t('ord.choose_arrive') }}</option>
             </select>
         </div>
 
         <div class="form-group">
-            <label for="order-address">Address</label>
+            <label for="order-address">{{ t('ord.address') }}</label>
             <input type="text" name="dest_address_line" id="order-address"
-                   placeholder="House or building, entrance, flat" required>
+                   placeholder="{{ t('ord.address_ph') }}" required>
         </div>
 
         <div class="form-row">
             <div class="form-group">
-                <label for="order-phone">Phone for the handover</label>
+                <label for="order-phone">{{ t('ord.phone_handover') }}</label>
                 <input type="tel" name="dest_contact_phone" id="order-phone"
                        placeholder="+993 6X XX XX XX" required>
             </div>
             <div class="form-group">
-                <label for="order-offer">Offer a different price (optional)</label>
+                <label for="order-offer">{{ t('ord.offer_price') }}</label>
                 <input type="number" step="0.01" min="0.01" name="proposed_price" id="order-offer"
                        value="{{ request.args.get('proposed_price', '') }}"
                        placeholder="{{ "%.2f"|format(item.price) }}">
             </div>
         </div>
 
-        <button type="submit" class="auth-btn auth-btn-accent btn-block btn-lg">Place the order</button>
+        <button type="submit" class="auth-btn auth-btn-accent btn-block btn-lg">{{ t('ord.place') }}</button>
     </form>
 
     <div class="auth-footer">
-        <a href="{{ url_for('item_detail', item_id=item.id) }}">Back to the listing</a>
+        <a href="{{ url_for('item_detail', item_id=item.id) }}">{{ t('ord.back_listing') }}</a>
     </div>
 </div>
 </div>
@@ -126,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function syncDistricts() {
         const velayat = locationTree.find((entry) => String(entry.id) === velayatSelect.value);
-        populateSelect(districtSelect, velayat ? velayat.districts : [], 'Choose a district');
+        populateSelect(districtSelect, velayat ? velayat.districts : [], {{ t('ord.choose_district')|tojson }});
         syncNeighborhoods();
     }
 
@@ -135,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const district = velayat && districtSelect.value
             ? velayat.districts.find((entry) => String(entry.id) === districtSelect.value)
             : null;
-        populateSelect(neighborhoodSelect, district ? district.neighborhoods : [], 'Choose where it has to arrive');
+        populateSelect(neighborhoodSelect, district ? district.neighborhoods : [], {{ t('ord.choose_arrive')|tojson }});
     }
 
     velayatSelect.addEventListener('change', syncDistricts);

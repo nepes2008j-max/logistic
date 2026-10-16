@@ -11,23 +11,23 @@
         <div>
             <div class="ledger-row-title">
                 <a href="{{ url_for('order_detail', order_id=order.id) }}">
-                    #{{ '%04d'|format(order.id) }} &middot; {{ order.item.title if order.item else 'Removed listing' }}
+                    #{{ '%04d'|format(order.id) }} &middot; {{ order.item.title if order.item else t('adm.removed_listing') }}
                 </a>
             </div>
             <div class="ledger-row-meta">
                 {% if side == 'buying' %}
-                from {{ order.seller.full_name or order.seller.username }}
+                {{ t('ord.from') }} {{ order.seller.full_name or order.seller.username }}
                 {% else %}
-                for {{ order.buyer.full_name or order.buyer.username }}
+                {{ t('ord.for') }} {{ order.buyer.full_name or order.buyer.username }}
                 {% endif %}
-                &middot; to {{ order.destination_label }}
+                &middot; {{ t('ord.to') }} {{ order.destination_label }}
             </div>
             <div class="ledger-row-meta">
                 <span class="status-chip {% if order.status in ('completed',) %}status-chip--closed{% elif order.status in ('placed','accepted') %}status-chip--pending{% else %}status-chip--active{% endif %}">
-                    {{ order.status }}
+                    {{ t('ostat.' ~ order.status) }}
                 </span>
                 {% if order.delivery %}
-                &middot; delivery <a href="{{ url_for('delivery_detail', delivery_id=order.delivery.id) }}">{{ order.delivery.status.replace('_', ' ') }}</a>
+                &middot; {{ t('ord.delivery_word') }} <a href="{{ url_for('delivery_detail', delivery_id=order.delivery.id) }}">{{ t('dstat.' ~ order.delivery.status) }}</a>
                 {% endif %}
             </div>
         </div>
@@ -42,12 +42,12 @@
 {% block content %}
 <div class="nav-container record-page">
     <header class="record-masthead">
-        <span class="eyebrow">Your account</span>
-        <h1>Orders</h1>
-        <p class="record-masthead-state">What you have ordered, and what people have ordered from you.</p>
+        <span class="eyebrow">{{ t('ord.your_account') }}</span>
+        <h1>{{ t('ord.title') }}</h1>
+        <p class="record-masthead-state">{{ t('ord.sub') }}</p>
     </header>
 
-    <h2>Buying</h2>
+    <h2>{{ t('ord.buying') }}</h2>
     {% if purchases %}
     <div class="ledger-rows">
         {% for order in purchases %}{{ order_row(order, 'buying') }}{% endfor %}
@@ -58,15 +58,15 @@
        new member reaches with nothing on it. #}
     <div class="state state--compact">
         <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-box-open"></use></svg></div>
-        <h3>Nothing ordered yet</h3>
-        <p>When you order something, it appears here with its delivery and the codes for the handover.</p>
+        <h3>{{ t('ord.none_bought') }}</h3>
+        <p>{{ t('ord.none_bought_p') }}</p>
         <div class="state-actions">
-            <a href="{{ url_for('index') }}" class="auth-btn auth-btn-accent">Browse listings</a>
+            <a href="{{ url_for('index') }}" class="auth-btn auth-btn-accent">{{ t('ord.browse') }}</a>
         </div>
     </div>
     {% endif %}
 
-    <h2>Selling</h2>
+    <h2>{{ t('ord.selling') }}</h2>
     {% if sales %}
     <div class="ledger-rows">
         {% for order in sales %}{{ order_row(order, 'selling') }}{% endfor %}
@@ -74,10 +74,10 @@
     {% else %}
     <div class="state state--compact">
         <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-inbox"></use></svg></div>
-        <h3>No orders yet</h3>
-        <p>Post something and it goes in front of everyone on the board. Orders land here for you to accept.</p>
+        <h3>{{ t('ord.none_sold') }}</h3>
+        <p>{{ t('ord.none_sold_p') }}</p>
         <div class="state-actions">
-            <a href="{{ url_for('upload') }}" class="auth-btn auth-btn-muted">Post an item</a>
+            <a href="{{ url_for('upload') }}" class="auth-btn auth-btn-muted">{{ t('ord.post_item') }}</a>
         </div>
     </div>
     {% endif %}

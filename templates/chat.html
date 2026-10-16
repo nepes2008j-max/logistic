@@ -13,10 +13,10 @@
     <aside class="chat-sidebar" aria-label="Conversations">
         <div class="chat-tabs" role="tablist">
             <button onclick="switchTab('chats')" id="chats-tab-btn" class="chat-tab-btn {% if initial_tab != 'requests' %}active{% endif %}" role="tab" aria-controls="chats-list" aria-selected="{{ 'false' if initial_tab == 'requests' else 'true' }}">
-                Chats
+                {{ t('ch.chats') }}
             </button>
             <button onclick="switchTab('requests')" id="requests-tab-btn" class="chat-tab-btn {% if initial_tab == 'requests' %}active{% endif %}" role="tab" aria-controls="requests-list" aria-selected="{{ 'true' if initial_tab == 'requests' else 'false' }}">
-                Requests
+                {{ t('ch.requests') }}
                 {% if pending_requests %}
                 <span class="chat-request-count">{{ pending_requests|length }}</span>
                 {% endif %}
@@ -29,13 +29,13 @@
                 {{ av.avatar(user, 'chat-avatar-lg') }}
                 <div class="chat-list-text">
                     <div class="chat-user-name">{{ user.full_name or user.username }}</div>
-                    <div class="chat-user-meta">{{ user.region or 'Global Trade member' }}</div>
+                    <div class="chat-user-meta">{{ user.region or t('ch.member') }}</div>
                 </div>
             </a>
             {% else %}
             <div class="chat-empty">
                 <svg class="ico"><use href="#i-comment-slash"></use></svg>
-                <p>No open chats. Ask a seller a question from their listing to start one.</p>
+                <p>{{ t('ch.no_chats') }}</p>
             </div>
             {% endfor %}
         </div>
@@ -48,14 +48,14 @@
                     <div class="chat-request-name">{{ req.sender.full_name or req.sender.username }}</div>
                 </div>
                 <div class="chat-request-actions">
-                    {{ act.post_button(url_for('accept_chat_request', request_id=req.id), 'Accept', 'auth-btn chat-action-btn') }}
-                    {{ act.post_button(url_for('reject_chat_request', request_id=req.id), 'Decline', 'auth-btn chat-action-btn chat-action-btn-muted') }}
+                    {{ act.post_button(url_for('accept_chat_request', request_id=req.id), t('ch.accept'), 'auth-btn chat-action-btn') }}
+                    {{ act.post_button(url_for('reject_chat_request', request_id=req.id), t('ch.decline'), 'auth-btn chat-action-btn chat-action-btn-muted') }}
                 </div>
             </div>
             {% else %}
             <div class="chat-empty">
                 <svg class="ico"><use href="#i-inbox"></use></svg>
-                <p>No one is waiting on you. New chat requests land here.</p>
+                <p>{{ t('ch.no_requests') }}</p>
             </div>
             {% endfor %}
         </div>
@@ -65,18 +65,18 @@
         {% if active_recipient %}
         <div class="chat-header">
             <div class="chat-header-user">
-                <a href="{{ url_for('chat') }}" class="chat-back" aria-label="Back to conversations"><svg class="ico"><use href="#i-arrow-left"></use></svg></a>
+                <a href="{{ url_for('chat') }}" class="chat-back" aria-label="{{ t('ch.back') }}"><svg class="ico"><use href="#i-arrow-left"></use></svg></a>
                 {{ av.avatar(active_recipient, 'chat-avatar-md') }}
                 <div>
                     <h2 class="chat-header-name">{{ active_recipient.full_name or active_recipient.username }}</h2>
-                    <span class="chat-header-status"><svg class="ico ico--fill"><use href="#i-circle"></use></svg> Approved member</span>
+                    <span class="chat-header-status"><svg class="ico ico--fill"><use href="#i-circle"></use></svg> {{ t('ch.approved_member') }}</span>
                 </div>
             </div>
             <div class="chat-header-actions">
-                <a href="{{ url_for('profile', user_id=active_recipient.id) }}" class="icon-btn" title="View profile" aria-label="View profile"><svg class="ico"><use href="#i-user"></use></svg></a>
+                <a href="{{ url_for('profile', user_id=active_recipient.id) }}" class="icon-btn" title="{{ t('ch.view_profile') }}" aria-label="{{ t('ch.view_profile') }}"><svg class="ico"><use href="#i-user"></use></svg></a>
                 <form class="inline-form" method="POST" action="{{ url_for('block_user', user_id=active_recipient.id) }}"
                       onsubmit="return confirm({{ ('Block ' ~ (active_recipient.full_name or active_recipient.username) ~ '? They will not be able to message you.')|tojson }})">
-                    <button type="submit" class="icon-btn danger" title="Block this person" aria-label="Block this person"><svg class="ico"><use href="#i-ban"></use></svg></button>
+                    <button type="submit" class="icon-btn danger" title="{{ t('ch.block') }}" aria-label="{{ t('ch.block') }}"><svg class="ico"><use href="#i-ban"></use></svg></button>
                 </form>
             </div>
         </div>
@@ -90,16 +90,16 @@
             {% else %}
             <div class="chat-empty">
                 <svg class="ico"><use href="#i-handshake"></use></svg>
-                <p>You are connected. Agree the price and where to meet, then close the deal in person.</p>
+                <p>{{ t('ch.connected') }}</p>
             </div>
             {% endfor %}
         </div>
 
         <form action="/send_message" method="POST" class="chat-input-form">
             <input type="hidden" name="recipient_id" value="{{ active_recipient.id }}">
-            <label for="chat-body" class="visually-hidden">Message</label>
-            <input type="text" name="body" id="chat-body" class="chat-input" placeholder="Write a message…" autocomplete="off" required>
-            <button type="submit" class="auth-btn chat-send-btn" aria-label="Send message">
+            <label for="chat-body" class="visually-hidden">{{ t('ch.message') }}</label>
+            <input type="text" name="body" id="chat-body" class="chat-input" placeholder="{{ t('ch.write_msg') }}" autocomplete="off" required>
+            <button type="submit" class="auth-btn chat-send-btn" aria-label="{{ t('ch.send') }}">
                 <svg class="ico"><use href="#i-paper-plane"></use></svg>
             </button>
         </form>
@@ -108,15 +108,15 @@
             <div class="chat-placeholder-icon" aria-hidden="true">
                 <svg class="ico" aria-hidden="true"><use href="#i-comments"></use></svg>
             </div>
-            <h2>Your messages</h2>
-            <p>Pick a conversation on the left. Chats only open once both people agree, so no one can message you out of the blue.</p>
+            <h2>{{ t('ch.your_messages') }}</h2>
+            <p>{{ t('ch.placeholder_p') }}</p>
             <ol class="chat-placeholder-steps">
-                <li><b>1</b><span>Ask a question from any listing</span></li>
-                <li><b>2</b><span>They accept, and the chat opens</span></li>
-                <li><b>3</b><span>Meet up and scan to close the deal</span></li>
+                <li><b>1</b><span>{{ t('ch.ps1') }}</span></li>
+                <li><b>2</b><span>{{ t('ch.ps2') }}</span></li>
+                <li><b>3</b><span>{{ t('ch.ps3') }}</span></li>
             </ol>
             {% if not active_chat_users and not pending_requests %}
-            <a href="/market" class="auth-btn" style="margin-top: var(--s6);">Find something to ask about</a>
+            <a href="/market" class="auth-btn" style="margin-top: var(--s6);">{{ t('ch.find') }}</a>
             {% endif %}
         </div>
         {% endif %}

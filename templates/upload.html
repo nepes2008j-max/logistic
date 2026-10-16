@@ -5,53 +5,53 @@
 {% block content %}
 <div class="auth-container" style="max-width: 660px;">
     <div class="auth-header">
-        <h1>Post an item</h1>
-        <p>Say what it is, where a courier can collect it, and what you want for it. Nothing can be edited after posting, so check the price.</p>
+        <h1>{{ t('up.title') }}</h1>
+        <p>{{ t('up.sub') }}</p>
     </div>
 
     <form class="auth-form" action="/upload" method="POST" enctype="multipart/form-data" id="upload-form">
         <div class="form-group">
-            <label for="item-title">What are you listing?</label>
-            <input type="text" name="title" id="item-title" placeholder="e.g. Bosch drill set, Canon EOS R5" required>
+            <label for="item-title">{{ t('up.what') }}</label>
+            <input type="text" name="title" id="item-title" placeholder="{{ t('up.what_ph') }}" required>
         </div>
 
         <div class="form-row">
             <div class="form-group">
-                <label for="item-category">Category</label>
+                <label for="item-category">{{ t('up.category') }}</label>
                 {# Same list app.py gives the marketplace filters, so a
                    category can never exist in one place and not the other. #}
                 <select name="category" id="item-category" required>
                     {% for category in categories %}
-                    <option value="{{ category.slug }}">{{ category.label }}</option>
+                    <option value="{{ category.slug }}">{{ t('cat.' ~ category.slug) }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="form-group">
-                <label for="item-size">Parcel size</label>
+                <label for="item-size">{{ t('up.parcel_size') }}</label>
                 <select name="size_class" id="item-size" required>
                     {% for value in (size_classes or ['small', 'medium', 'large']) %}
-                    <option value="{{ value }}">{{ value|capitalize }}</option>
+                    <option value="{{ value }}">{{ t('size.' ~ value) }}</option>
                     {% endfor %}
                 </select>
-                <p class="field-help">Size sets the delivery fee: medium costs 1.6&times; a small parcel, large 2.5&times;.</p>
+                <p class="field-help">{{ t('up.size_help') }}</p>
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
-                <label for="item-price">Price in TMT</label>
+                <label for="item-price">{{ t('up.price') }}</label>
                 <input type="number" name="price" id="item-price" min="0.01" step="0.01" placeholder="0" required>
-                <p class="field-help">What you want for the goods. Delivery and the 5% service fee are added on top, and the buyer pays them.</p>
+                <p class="field-help">{{ t('up.price_help') }}</p>
             </div>
             <div class="form-group">
-                <label for="item-weight">Weight in kg <span class="field-optional">optional</span></label>
+                <label for="item-weight">{{ t('up.weight') }} <span class="field-optional">{{ t('ra.optional') }}</span></label>
                 <input type="number" name="weight_kg" id="item-weight" min="0" step="0.1" placeholder="e.g. 2.5">
-                <p class="field-help">Helps the courier bring the right vehicle.</p>
+                <p class="field-help">{{ t('up.weight_help') }}</p>
             </div>
             <div class="form-group">
-                <label for="upload-velayat">Region</label>
+                <label for="upload-velayat">{{ t('up.region') }}</label>
                 <select id="upload-velayat" required>
-                    <option value="">Choose a region</option>
+                    <option value="">{{ t('up.choose_region') }}</option>
                     {% for velayat in location_tree %}
                     <option value="{{ velayat.id }}">{{ velayat.name }}</option>
                     {% endfor %}
@@ -61,55 +61,55 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label for="upload-district">District</label>
+                <label for="upload-district">{{ t('up.district') }}</label>
                 <select id="upload-district" required>
-                    <option value="">Choose a district</option>
+                    <option value="">{{ t('up.choose_district') }}</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="upload-neighborhood">Street or neighbourhood</label>
+                <label for="upload-neighborhood">{{ t('up.street') }}</label>
                 <select name="neighborhood_id" id="upload-neighborhood" required>
-                    <option value="">Choose the pickup point</option>
+                    <option value="">{{ t('up.choose_pickup') }}</option>
                 </select>
             </div>
         </div>
 
         <div class="form-group">
-            <label for="item-description">Description</label>
-            <textarea name="description" id="item-description" placeholder="Condition, what is included, anything the buyer should know before it is on its way."></textarea>
+            <label for="item-description">{{ t('up.description') }}</label>
+            <textarea name="description" id="item-description" placeholder="{{ t('up.description_ph') }}"></textarea>
         </div>
 
         <div class="form-group">
-            <span class="field-label" id="photo-label">Photo</span>
+            <span class="field-label" id="photo-label">{{ t('up.photo') }}</span>
 
             <div id="preview-container" class="image-preview-wrapper" role="group" aria-labelledby="photo-label">
                 <svg id="pfp-placeholder" class="ico" style="width: 2.4rem; height: 2.4rem; color: var(--ink-3); opacity: 0.45;" aria-hidden="true"><use href="#i-camera"></use></svg>
-                <img id="item-preview" alt="Preview of your photo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="display: none;">
-                <span class="preview-hint">One clear photo sells it</span>
+                <img id="item-preview" alt="{{ t('up.one_photo') }}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="display: none;">
+                <span class="preview-hint">{{ t('up.one_photo') }}</span>
 
                 <div id="camera-area" style="display: none; position: absolute; inset: 0; z-index: 10;">
                     <video id="video" autoplay playsinline></video>
                     <canvas id="canvas" style="display: none;"></canvas>
                     <button type="button" id="capture-btn" class="auth-btn btn-sm" style="position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);">
-                        Capture
+                        {{ t('up.capture') }}
                     </button>
                 </div>
             </div>
 
             <div id="upload-controls" class="upload-controls">
-                <button type="button" id="start-camera" class="auth-btn auth-btn-muted">Use the camera</button>
+                <button type="button" id="start-camera" class="auth-btn auth-btn-muted">{{ t('up.use_camera') }}</button>
                 <div class="file-drop">
-                    <button type="button" class="auth-btn auth-btn-muted" tabindex="-1">Choose a file</button>
+                    <button type="button" class="auth-btn auth-btn-muted" tabindex="-1">{{ t('up.choose_file') }}</button>
                     <input type="file" name="item_image" id="item_image" accept="image/*" aria-label="Choose a photo of your item">
                 </div>
             </div>
 
-            <button type="button" id="reset-photo" class="reset-photo">Use a different photo</button>
+            <button type="button" id="reset-photo" class="reset-photo">{{ t('up.diff_photo') }}</button>
 
             <input type="hidden" name="camera_image" id="camera_image">
         </div>
 
-        <button type="submit" class="auth-btn auth-btn-accent btn-block btn-lg" style="margin-top: var(--s6);">Post to the marketplace</button>
+        <button type="submit" class="auth-btn auth-btn-accent btn-block btn-lg" style="margin-top: var(--s6);">{{ t('up.post') }}</button>
     </form>
 </div>
 
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function syncDistricts() {
         const velayat = locationTree.find((entry) => String(entry.id) === velayatSelect.value);
         const districts = velayat ? velayat.districts : [];
-        populateSelect(districtSelect, districts, 'Choose a district');
+        populateSelect(districtSelect, districts, {{ t('up.choose_district')|tojson }});
         syncNeighborhoods();
     }
 
@@ -161,8 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
             : null;
         const neighborhoods = district ? district.neighborhoods : [];
         const placeholderText = velayat && velayat.name === 'Ashgabat'
-            ? 'Choose a street or avenue'
-            : 'Choose the pickup point';
+            ? {{ t('up.street')|tojson }}
+            : {{ t('up.choose_pickup')|tojson }};
         populateSelect(neighborhoodSelect, neighborhoods, placeholderText);
     }
 

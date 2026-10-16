@@ -11,88 +11,85 @@
 #}
 <div class="auth-split auth-split--wide">
     <div class="auth-rail">
-        <span class="eyebrow">Membership</span>
-        <h1>A person reads every one of these.</h1>
+        <span class="eyebrow">{{ t('ra.membership') }}</span>
+        <h1>{{ t('ra.title') }}</h1>
         <p>
-            Global Trade asks strangers to hand real property to each other, so there is
-            no open sign-up. Tell us who you are and an administrator reviews it by
-            hand. If they approve you, a one-time link lets you set a password.
+            {{ t('ra.intro') }}
         </p>
         <ol class="auth-facts">
-            <li><b>01</b><span>You send this form. We email that address to check it is really yours.</span></li>
-            <li><b>02</b><span>Confirm from your inbox, and the request reaches an administrator.</span></li>
-            <li><b>03</b><span>If they approve you, a link arrives that works once and lasts seven days.</span></li>
-            <li><b>04</b><span>You choose a password on that link, and the account exists from then on.</span></li>
+            <li><b>01</b><span>{{ t('ra.f1') }}</span></li>
+            <li><b>02</b><span>{{ t('ra.f2') }}</span></li>
+            <li><b>03</b><span>{{ t('ra.f3') }}</span></li>
+            <li><b>04</b><span>{{ t('ra.f4') }}</span></li>
         </ol>
     </div>
 
 <div class="auth-container">
     <div class="auth-header">
-        <h2>Request access</h2>
+        <h2>{{ t('ra.h2') }}</h2>
         <p>
-            Everything here is used to decide whether to let you in, and nothing on
-            this form appears on your profile.
+            {{ t('ra.sub') }}
         </p>
     </div>
 
     <form class="auth-form" action="{{ url_for('request_access') }}" method="POST" id="access-request-form">
         <div class="form-group">
-            <label for="ar-full-name">Full name</label>
-            <input type="text" name="full_name" id="ar-full-name" placeholder="Your full legal name" required>
+            <label for="ar-full-name">{{ t('ra.full_name') }}</label>
+            <input type="text" name="full_name" id="ar-full-name" placeholder="{{ t('ra.full_name_ph') }}" required>
         </div>
 
         <div class="form-row">
             <div class="form-group">
-                <label for="ar-email">Email</label>
+                <label for="ar-email">{{ t('auth.email') }}</label>
                 <input type="email" name="email" id="ar-email" placeholder="you@example.com" required>
             </div>
             <div class="form-group">
-                <label for="ar-phone">Phone</label>
+                <label for="ar-phone">{{ t('adm.f_phone') }}</label>
                 <input type="tel" name="phone" id="ar-phone" placeholder="+993 6X XX XX XX" required>
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
-                <label for="ar-velayat">Region</label>
+                <label for="ar-velayat">{{ t('market.region') }}</label>
                 <select id="ar-velayat" required>
-                    <option value="">Choose a region</option>
+                    <option value="">{{ t('ra.choose_region') }}</option>
                     {% for velayat in location_tree %}
                     <option value="{{ velayat.id }}">{{ velayat.name }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="form-group">
-                <label for="ar-district">District</label>
+                <label for="ar-district">{{ t('market.district') }}</label>
                 <select id="ar-district" required>
-                    <option value="">Choose a district</option>
+                    <option value="">{{ t('ra.choose_district') }}</option>
                 </select>
             </div>
         </div>
 
         <div class="form-row">
             <div class="form-group">
-                <label for="ar-neighborhood">Street or neighbourhood</label>
+                <label for="ar-neighborhood">{{ t('market.street') }}</label>
                 <select name="neighborhood_id" id="ar-neighborhood" required>
-                    <option value="">Choose where you are</option>
+                    <option value="">{{ t('ra.choose_where') }}</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="ar-age">Age</label>
-                <input type="number" name="age" id="ar-age" min="16" max="120" placeholder="Optional">
+                <label for="ar-age">{{ t('adm.f_age') }}</label>
+                <input type="number" name="age" id="ar-age" min="16" max="120" placeholder="{{ t('ra.optional') }}">
             </div>
         </div>
 
         <div class="form-group">
-            <label for="ar-reason">Why do you want an account?</label>
-            <textarea name="reason" id="ar-reason" placeholder="What you plan to send or receive. A sentence is enough."></textarea>
+            <label for="ar-reason">{{ t('ra.why') }}</label>
+            <textarea name="reason" id="ar-reason" placeholder="{{ t('ra.why_ph') }}"></textarea>
         </div>
 
-        <button type="submit" class="auth-btn auth-btn-accent btn-block btn-lg" style="margin-top: var(--s6);">Send my request</button>
+        <button type="submit" class="auth-btn auth-btn-accent btn-block btn-lg" style="margin-top: var(--s6);">{{ t('ra.send') }}</button>
     </form>
 
     <div class="auth-footer">
-        Already have an account? <a href="{{ url_for('login') }}">Sign in</a>
+        {{ t('ra.have_account') }} <a href="{{ url_for('login') }}">{{ t('ra.sign_in') }}</a>
     </div>
 </div>
 </div>

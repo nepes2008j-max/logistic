@@ -22,23 +22,23 @@
                 <div class="profile-meta">
                     <h1>{{ user.full_name or user.username }}</h1>
                     <p class="profile-location">
-                        {{ user.region or 'Location not set' }} — {{ user.items|length }} listing{{ '' if user.items|length == 1 else 's' }}
+                        {{ user.region or t('pr.location_unset') }} — {{ user.items|length }} {{ t('pr.listing_one') if user.items|length == 1 else t('pr.listing_many') }}
                     </p>
                     <div class="profile-badges">
                         <span class="profile-badge">
-                            <svg class="ico ico--fill"><use href="#i-star"></use></svg> {{ "%.1f"|format(user.rating) }} from {{ user.num_ratings }} rating{{ '' if user.num_ratings == 1 else 's' }}
+                            <svg class="ico ico--fill"><use href="#i-star"></use></svg> {{ "%.1f"|format(user.rating) }} {{ t('pr.from') }} {{ user.num_ratings }} {{ t('pr.rating_one') if user.num_ratings == 1 else t('pr.rating_many') }}
                         </span>
                         {% if user.kyc_status == 'verified' %}
                         <span class="profile-badge profile-badge--verified">
-                            <svg class="ico"><use href="#i-check-circle"></use></svg> Email verified
+                            <svg class="ico"><use href="#i-check-circle"></use></svg> {{ t('pr.email_verified') }}
                         </span>
                         {% elif user.kyc_status == 'rejected' %}
                         <span class="profile-badge profile-badge--pending">
-                            <svg class="ico"><use href="#i-times-circle"></use></svg> Verification rejected
+                            <svg class="ico"><use href="#i-times-circle"></use></svg> {{ t('pr.verif_rejected') }}
                         </span>
                         {% else %}
                         <span class="profile-badge profile-badge--pending">
-                            <svg class="ico"><use href="#i-hourglass-half"></use></svg> Verification in progress
+                            <svg class="ico"><use href="#i-hourglass-half"></use></svg> {{ t('pr.verif_progress') }}
                         </span>
                         {% endif %}
                     </div>
@@ -47,29 +47,29 @@
                 <div class="profile-actions">
                     {% if current_user.is_authenticated %}
                         {% if current_user.id == user.id %}
-                            <a href="{{ url_for('edit_profile') }}" class="auth-btn auth-btn-muted">Edit profile</a>
+                            <a href="{{ url_for('edit_profile') }}" class="auth-btn auth-btn-muted">{{ t('pr.edit') }}</a>
                         {% else %}
                             {% if has_blocked_user %}
-                                {{ act.post_button(url_for('unblock_user', user_id=user.id), 'Unblock', 'auth-btn auth-btn-danger') }}
+                                {{ act.post_button(url_for('unblock_user', user_id=user.id), t('pr.unblock'), 'auth-btn auth-btn-danger') }}
                             {% elif blocked_by_user %}
-                                <button class="auth-btn auth-btn-muted" disabled>You are blocked</button>
+                                <button class="auth-btn auth-btn-muted" disabled>{{ t('pr.you_blocked') }}</button>
                             {% else %}
                                 {% if chat_request %}
                                     {% if chat_request.status == 'accepted' %}
-                                        <a href="{{ url_for('chat', recipient_id=user.id) }}" class="auth-btn">Send a message</a>
+                                        <a href="{{ url_for('chat', recipient_id=user.id) }}" class="auth-btn">{{ t('pr.send_message') }}</a>
                                     {% elif chat_request.status == 'pending' %}
                                         {% if chat_request.sender_id == current_user.id %}
-                                            <button class="auth-btn auth-btn-muted" disabled>Request pending</button>
+                                            <button class="auth-btn auth-btn-muted" disabled>{{ t('pr.request_pending') }}</button>
                                         {% else %}
-                                            {{ act.post_button(url_for('accept_chat_request', request_id=chat_request.id), 'Accept request') }}
-                                            {{ act.post_button(url_for('reject_chat_request', request_id=chat_request.id), 'Decline', 'auth-btn auth-btn-muted') }}
+                                            {{ act.post_button(url_for('accept_chat_request', request_id=chat_request.id), t('pr.accept_request')) }}
+                                            {{ act.post_button(url_for('reject_chat_request', request_id=chat_request.id), t('pr.decline'), 'auth-btn auth-btn-muted') }}
                                         {% endif %}
                                     {% endif %}
                                 {% else %}
-                                    <button type="button" class="auth-btn" id="open-chat-modal">Ask to chat</button>
+                                    <button type="button" class="auth-btn" id="open-chat-modal">{{ t('pr.ask_chat') }}</button>
                                 {% endif %}
-                                {{ act.post_button(url_for('block_user', user_id=user.id), 'Block', 'auth-btn auth-btn-outline-danger',
-                                       confirm='Block ' ~ (user.full_name or user.username) ~ '? They will not be able to contact you.') }}
+                                {{ act.post_button(url_for('block_user', user_id=user.id), t('pr.block'), 'auth-btn auth-btn-outline-danger',
+                                       confirm=t('pr.block_confirm_a') ~ ' ' ~ (user.full_name or user.username) ~ t('pr.block_confirm_b')) }}
                             {% endif %}
                         {% endif %}
                     {% endif %}
@@ -77,8 +77,8 @@
             </div>
 
             <div class="profile-about">
-                <h2>About</h2>
-                <p>{{ user.bio or "This member hasn't written anything about themselves yet." }}</p>
+                <h2>{{ t('pr.about') }}</h2>
+                <p>{{ user.bio or t('pr.no_bio') }}</p>
             </div>
         </div>
     </div>
@@ -86,15 +86,15 @@
     <!-- Chat request agreement -->
     <div id="chat-modal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title">
         <div class="modal-card">
-            <h3 id="chat-modal-title">Before you start a chat</h3>
+            <h3 id="chat-modal-title">{{ t('pr.before_chat') }}</h3>
             <div class="notice" style="margin: var(--s4) 0 var(--s6);">
-                <span class="notice-mark">Fee</span>
-                <span>Global Trade charges a <strong>5% service fee on the goods price</strong>, taken when the buyer pays. Asking to chat means you accept that.</span>
+                <span class="notice-mark">{{ t('pr.fee') }}</span>
+                <span>{{ t('pr.fee_body_a') }} <strong>{{ t('pr.fee_body_b') }}</strong>, {{ t('pr.fee_body_c') }}</span>
             </div>
             <div class="form-group">
-                <label for="confirm-read-input">Type <strong>I READ</strong> to confirm</label>
+                <label for="confirm-read-input">{{ t('pr.type_a') }} <strong>I READ</strong> {{ t('pr.type_b') }}</label>
                 <input type="text" id="confirm-read-input" placeholder="I READ" autocomplete="off">
-                <p id="confirm-read-error" class="field-error" hidden>Type “I READ” exactly to continue.</p>
+                <p id="confirm-read-error" class="field-error" hidden>{{ t('pr.type_exact') }}</p>
             </div>
             {# A real form, because sending the request changes something and so
                has to be a POST. The typed confirmation is checked in submit
@@ -102,8 +102,8 @@
                as the button. #}
             <form method="POST" action="{{ url_for('send_chat_request', recipient_id=user.id) }}"
                   id="chat-request-form" style="display: flex; gap: var(--s3); margin-top: var(--s5);">
-                <button type="button" class="auth-btn auth-btn-muted" id="close-chat-modal" style="flex: 1;">Cancel</button>
-                <button type="submit" class="auth-btn" id="confirm-chat-btn" style="flex: 2;">Send the request</button>
+                <button type="button" class="auth-btn auth-btn-muted" id="close-chat-modal" style="flex: 1;">{{ t('pr.cancel') }}</button>
+                <button type="submit" class="auth-btn" id="confirm-chat-btn" style="flex: 2;">{{ t('pr.send_request') }}</button>
             </form>
         </div>
     </div>
@@ -113,8 +113,8 @@
             {% if current_user.is_authenticated and current_user.id == user.id and profile_pending_requests %}
             <div class="profile-panel">
                 <div class="profile-panel-header">
-                    <h3>People asking to chat</h3>
-                    <span>{{ profile_pending_requests|length }} waiting</span>
+                    <h3>{{ t('pr.people_asking') }}</h3>
+                    <span>{{ profile_pending_requests|length }} {{ t('pr.waiting') }}</span>
                 </div>
                 <div class="profile-request-list">
                     {% for req in profile_pending_requests %}
@@ -123,12 +123,12 @@
                             {{ av.avatar(req.sender, 'profile-request-avatar') }}
                             <div>
                                 <div class="profile-request-name">{{ req.sender.full_name or req.sender.username }}</div>
-                                <a href="{{ url_for('profile', user_id=req.sender.id) }}" class="profile-request-link">See their profile</a>
+                                <a href="{{ url_for('profile', user_id=req.sender.id) }}" class="profile-request-link">{{ t('pr.see_profile') }}</a>
                             </div>
                         </div>
                         <div class="profile-request-actions">
-                            {{ act.post_button(url_for('accept_chat_request', request_id=req.id), 'Accept') }}
-                            {{ act.post_button(url_for('reject_chat_request', request_id=req.id), 'Decline', 'auth-btn auth-btn-muted') }}
+                            {{ act.post_button(url_for('accept_chat_request', request_id=req.id), t('pr.accept')) }}
+                            {{ act.post_button(url_for('reject_chat_request', request_id=req.id), t('pr.decline'), 'auth-btn auth-btn-muted') }}
                         </div>
                     </div>
                     {% endfor %}
@@ -138,8 +138,8 @@
 
             <div class="profile-panel">
                 <div class="profile-panel-header">
-                    <h3>Listings</h3>
-                    <span>{{ user.items|length }} total</span>
+                    <h3>{{ t('pr.listings') }}</h3>
+                    <span>{{ user.items|length }} {{ t('pr.total') }}</span>
                 </div>
 
                 <div class="profile-listings-grid">
@@ -149,7 +149,7 @@
                             {% if item.image_url %}
                             <img src="{{ item.image_url }}" class="profile-item-image" alt="{{ item.title }}" loading="lazy">
                             {% else %}
-                            <div class="profile-item-image-missing">No photo</div>
+                            <div class="profile-item-image-missing">{{ t('pr.no_photo') }}</div>
                             {% endif %}
                         </div>
                         <div class="profile-item-body">
@@ -163,9 +163,9 @@
                     {% else %}
                     <p class="profile-empty">
                         {% if current_user.is_authenticated and current_user.id == user.id %}
-                            You haven't listed anything yet.
+                            {{ t('pr.you_none') }}
                         {% else %}
-                            This member has nothing listed right now.
+                            {{ t('pr.member_none') }}
                         {% endif %}
                     </p>
                     {% endfor %}
@@ -176,8 +176,8 @@
             {% set incoming = user.sales|selectattr('status', 'in', ['placed'])|list %}
             <div class="profile-panel">
                 <div class="profile-panel-header">
-                    <h3>Orders waiting on you</h3>
-                    <span>{{ incoming|length }} to answer</span>
+                    <h3>{{ t('pr.orders_waiting') }}</h3>
+                    <span>{{ incoming|length }} {{ t('pr.to_answer') }}</span>
                 </div>
                 <div class="ledger-rows">
                     {% for tx in incoming %}
@@ -186,27 +186,27 @@
                             <img src="{{ tx.item.image_url }}" class="ledger-thumb" alt="">
                             <div style="min-width:0">
                                 <div class="ledger-row-title">
-                                    <b>{{ tx.buyer.full_name or tx.buyer.username }}</b> ordered {{ tx.item.title }}
+                                    <b>{{ tx.buyer.full_name or tx.buyer.username }}</b> {{ t('pr.ordered') }} {{ tx.item.title }}
                                 </div>
                                 <div class="ledger-row-meta">
-                                    {% if tx.is_negotiated %}Offering{% else %}Paying{% endif %}
+                                    {% if tx.is_negotiated %}{{ t('pr.offering') }}{% else %}{{ t('pr.paying') }}{% endif %}
                                     <b>{{ "%.2f"|format(tx.agreed_price) }} TMT</b> ·
-                                    to {{ tx.destination_label }}
+                                    {{ t('pr.to') }} {{ tx.destination_label }}
                                 </div>
                             </div>
                         </div>
                         <div class="ledger-row-actions">
                             <form action="{{ url_for('accept_order', order_id=tx.id) }}" method="POST">
-                                <button type="submit" class="auth-btn">Accept</button>
+                                <button type="submit" class="auth-btn">{{ t('pr.accept') }}</button>
                             </form>
                             <form action="{{ url_for('reject_order', order_id=tx.id) }}" method="POST">
-                                <button type="submit" class="auth-btn auth-btn-muted">Decline</button>
+                                <button type="submit" class="auth-btn auth-btn-muted">{{ t('pr.decline') }}</button>
                             </form>
-                            <a href="{{ url_for('order_detail', order_id=tx.id) }}" class="link-action">Open</a>
+                            <a href="{{ url_for('order_detail', order_id=tx.id) }}" class="link-action">{{ t('pr.open') }}</a>
                         </div>
                     </div>
                     {% else %}
-                    <p class="profile-empty">Nobody has ordered from you yet. Orders that need your answer land here.</p>
+                    <p class="profile-empty">{{ t('pr.nobody_ordered') }}</p>
                     {% endfor %}
                 </div>
             </div>
@@ -226,7 +226,7 @@
                                 <div class="ledger-row-title">{{ tx.item.title }}</div>
                                 <div class="ledger-row-meta">
                                     <b>{{ "%.2f"|format(tx.total) }} TMT</b> all in ·
-                                    to {{ tx.destination_label }}
+                                    {{ t('pr.to') }} {{ tx.destination_label }}
                                 </div>
                             </div>
                         </div>

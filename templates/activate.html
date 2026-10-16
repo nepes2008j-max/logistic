@@ -5,46 +5,45 @@
 {% block content %}
 <div class="auth-split">
     <div class="auth-rail">
-        <span class="eyebrow">Approved</span>
-        <h1>You are in, {{ access_request.full_name.split()[0] }}.</h1>
+        <span class="eyebrow">{{ t('actv.approved') }}</span>
+        <h1>{{ t('actv.youre_in') }}, {{ access_request.full_name.split()[0] }}.</h1>
         <p>
-            An administrator reviewed your request and approved the
-            request. One password, and the account is yours.
+            {{ t('actv.intro') }}
         </p>
         <ul class="auth-facts">
-            <li><b>Once</b><span>This link works a single time and is dead the moment you use it.</span></li>
-            <li><b>Until</b><span>{{ access_request.invite_expires_at.strftime('%d %b %Y') if access_request.invite_expires_at else 'it is used' }} — after that it has to be issued again.</span></li>
-            <li><b>Verified</b><span>Your address is confirmed and an administrator approved you, so nothing is held back.</span></li>
+            <li><b>{{ t('actv.once') }}</b><span>{{ t('actv.once_d') }}</span></li>
+            <li><b>{{ t('actv.until') }}</b><span>{{ access_request.invite_expires_at.strftime('%d %b %Y') if access_request.invite_expires_at else t('actv.it_is_used') }} — {{ t('actv.until_suffix') }}</span></li>
+            <li><b>{{ t('actv.verified') }}</b><span>{{ t('actv.verified_d') }}</span></li>
         </ul>
     </div>
 
 <div class="auth-container">
     <div class="auth-header">
-        <h2>Set your password</h2>
-        <p>At least eight characters. You will use it with the email below.</p>
+        <h2>{{ t('actv.set_password') }}</h2>
+        <p>{{ t('actv.set_sub') }}</p>
     </div>
 
     <form class="auth-form" action="{{ url_for('activate', token=token) }}" method="POST">
         <div class="form-group">
-            <span class="field-label">Email</span>
+            <span class="field-label">{{ t('auth.email') }}</span>
             <input type="email" value="{{ access_request.email }}" disabled>
         </div>
 
         <div class="form-group">
-            <label for="activate-password">Choose a password</label>
-            <input type="password" name="password" id="activate-password" minlength="8" placeholder="At least 8 characters" required>
+            <label for="activate-password">{{ t('actv.choose_pw') }}</label>
+            <input type="password" name="password" id="activate-password" minlength="8" placeholder="{{ t('actv.at_least_8') }}" required>
         </div>
 
         <div class="form-group">
-            <label for="activate-confirm">Type it again</label>
+            <label for="activate-confirm">{{ t('actv.type_again') }}</label>
             <input type="password" name="confirm_password" id="activate-confirm" minlength="8" required>
         </div>
 
-        <button type="submit" class="auth-btn auth-btn-accent btn-block btn-lg">Create my account</button>
+        <button type="submit" class="auth-btn auth-btn-accent btn-block btn-lg">{{ t('actv.create') }}</button>
     </form>
 
     <div class="auth-footer">
-        Not you? <a href="{{ url_for('login') }}">Go to sign in</a>
+        {{ t('actv.not_you') }} <a href="{{ url_for('login') }}">{{ t('actv.go_signin') }}</a>
     </div>
 </div>
 </div>

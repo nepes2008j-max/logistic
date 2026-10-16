@@ -5,13 +5,13 @@
 {% block content %}
 <div class="auth-container" style="max-width: 680px;">
     <div class="auth-header">
-        <h1>Edit your profile</h1>
-        <p>This is what other members see before they agree to meet you.</p>
+        <h1>{{ t('ep.title') }}</h1>
+        <p>{{ t('ep.sub') }}</p>
     </div>
 
     <form class="auth-form" action="/edit-profile" method="POST" enctype="multipart/form-data">
         <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: var(--s7);">
-            <span class="field-label" id="pfp-label" style="margin-bottom: var(--s4);">Profile photo</span>
+            <span class="field-label" id="pfp-label" style="margin-bottom: var(--s4);">{{ t('ep.photo') }}</span>
 
             <div id="pfp-container" class="image-preview-wrapper pfp-wrapper{% if current_user.profile_pic %} active{% endif %}" role="group" aria-labelledby="pfp-label">
                 {% if current_user.profile_pic %}
@@ -25,15 +25,15 @@
                     <video id="video" autoplay playsinline></video>
                     <canvas id="canvas" style="display: none;"></canvas>
                     <button type="button" id="capture-btn" class="auth-btn btn-sm" style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); padding: 5px 14px;">
-                        Capture
+                        {{ t('ep.capture') }}
                     </button>
                 </div>
             </div>
 
             <div id="upload-controls" class="upload-controls" style="width: 100%; max-width: 380px;">
-                <button type="button" id="start-camera" class="auth-btn auth-btn-muted">Use the camera</button>
+                <button type="button" id="start-camera" class="auth-btn auth-btn-muted">{{ t('ep.use_camera') }}</button>
                 <div class="file-drop">
-                    <button type="button" class="auth-btn auth-btn-muted" tabindex="-1">Choose a file</button>
+                    <button type="button" class="auth-btn auth-btn-muted" tabindex="-1">{{ t('ep.choose_file') }}</button>
                     <input type="file" name="profile_pic" id="profile_pic_input" accept="image/*" aria-label="Choose a profile photo">
                 </div>
             </div>
@@ -42,23 +42,23 @@
 
         <div class="form-row">
             <div class="form-group">
-                <label for="edit-full-name">Full name</label>
+                <label for="edit-full-name">{{ t('ep.full_name') }}</label>
                 <input type="text" name="full_name" id="edit-full-name" value="{{ current_user.full_name or '' }}" required>
             </div>
             <div class="form-group">
-                <label for="edit-region">City you deal in</label>
+                <label for="edit-region">{{ t('ep.city') }}</label>
                 <input type="text" name="region" id="edit-region" value="{{ current_user.region or '' }}" placeholder="e.g. Ashgabat" required>
             </div>
         </div>
 
         <div class="form-group">
-            <label for="edit-bio">About you</label>
-            <textarea name="bio" id="edit-bio" placeholder="What do you lend out, and what should someone know before meeting you?" style="min-height: 130px;">{{ current_user.bio or '' }}</textarea>
+            <label for="edit-bio">{{ t('ep.about') }}</label>
+            <textarea name="bio" id="edit-bio" placeholder="{{ t('ep.about_ph') }}" style="min-height: 130px;">{{ current_user.bio or '' }}</textarea>
         </div>
 
         <div style="display: flex; gap: var(--s3); margin-top: var(--s7);">
-            <button type="submit" class="auth-btn" style="flex: 2;">Save changes</button>
-            <a href="{{ url_for('profile', user_id=current_user.id) }}" class="auth-btn auth-btn-muted" style="flex: 1;">Cancel</a>
+            <button type="submit" class="auth-btn" style="flex: 2;">{{ t('ep.save') }}</button>
+            <a href="{{ url_for('profile', user_id=current_user.id) }}" class="auth-btn auth-btn-muted" style="flex: 1;">{{ t('ep.cancel') }}</a>
         </div>
     </form>
 </div>
