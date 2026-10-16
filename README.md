@@ -73,10 +73,10 @@ lives in `DESIGN.md` and its tokens in `static/css/variables.css`.
 ## Tests
 
 ```bash
-GLOBALTRADE_DATABASE_URI=sqlite:////tmp/handshake_test.db .venv/bin/python test_logistics_flow.py
+GLOBALTRADE_DATABASE_URI=sqlite:////tmp/globaltrade_test.db .venv/bin/python test_logistics_flow.py
 ```
 
-154 checks against a throwaway copy of the database: the access flow including
+161 checks against a throwaway copy of the database: the access flow including
 replayed and expired invitations, a full order across two accounts, the
 delivery pipeline, and that the sum of every wallet plus the platform account
 does not drift by a single tenga across any of it.

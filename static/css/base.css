@@ -793,6 +793,10 @@ textarea:focus-visible,
     transition: background-color var(--d1) var(--ease), color var(--d1) var(--ease);
 }
 .dropdown-item:hover { background: var(--surface-2); color: var(--ink); }
+/* Log out is a submit button now — logging someone out changes state, so it
+   cannot be a link something else can follow. The global button reset covers
+   the rest; a button just has to be told to fill the menu the way an <a> did. */
+button.dropdown-item { width: 100%; }
 .dropdown-item b {
     color: var(--ink);
     font-weight: 700;
@@ -966,6 +970,12 @@ textarea:focus-visible,
    tension between it and the hard-edged panels around it is the point.
    Nothing lifts on a shadow: press states move, hover states change surface.
    -------------------------------------------------------------------------- */
+
+/* Wraps a single button whose route changes something, so the action is a
+   POST instead of a link. display:contents removes the form's own box, which
+   leaves the button a direct child of the flex row it was already in — without
+   it, every one of those rows would reflow around a new block element. */
+.inline-form { display: contents; }
 
 .auth-btn,
 .btn {

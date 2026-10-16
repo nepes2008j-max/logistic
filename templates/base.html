@@ -152,7 +152,9 @@
                             {% endif %}
 
                             <div class="dropdown-divider"></div>
-                            <a href="/logout" class="dropdown-item">Log out</a>
+                            <form class="inline-form" method="POST" action="{{ url_for('logout') }}">
+                                <button type="submit" class="dropdown-item">Log out</button>
+                            </form>
                         {% else %}
                             <a href="/login" class="dropdown-item">Log in</a>
                             <a href="{{ url_for('request_access') }}" class="dropdown-item">Request access</a>

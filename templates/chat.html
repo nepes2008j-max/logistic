@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "_avatar.html" as av %}
+{% import "_actions.html" as act %}
 
 {% block title %}Global Trade | Messages{% endblock %}
 {# On a phone the conversation is a fixed shell, so the document behind
@@ -47,8 +48,8 @@
                     <div class="chat-request-name">{{ req.sender.full_name or req.sender.username }}</div>
                 </div>
                 <div class="chat-request-actions">
-                    <a href="{{ url_for('accept_chat_request', request_id=req.id) }}" class="auth-btn chat-action-btn">Accept</a>
-                    <a href="{{ url_for('reject_chat_request', request_id=req.id) }}" class="auth-btn chat-action-btn chat-action-btn-muted">Decline</a>
+                    {{ act.post_button(url_for('accept_chat_request', request_id=req.id), 'Accept', 'auth-btn chat-action-btn') }}
+                    {{ act.post_button(url_for('reject_chat_request', request_id=req.id), 'Decline', 'auth-btn chat-action-btn chat-action-btn-muted') }}
                 </div>
             </div>
             {% else %}
@@ -73,7 +74,10 @@
             </div>
             <div class="chat-header-actions">
                 <a href="{{ url_for('profile', user_id=active_recipient.id) }}" class="icon-btn" title="View profile" aria-label="View profile"><svg class="ico"><use href="#i-user"></use></svg></a>
-                <a href="{{ url_for('block_user', user_id=active_recipient.id) }}" class="icon-btn danger" title="Block this person" aria-label="Block this person" onclick="return confirm('Block {{ active_recipient.full_name or active_recipient.username }}? They will not be able to message you.')"><svg class="ico"><use href="#i-ban"></use></svg></a>
+                <form class="inline-form" method="POST" action="{{ url_for('block_user', user_id=active_recipient.id) }}"
+                      onsubmit="return confirm({{ ('Block ' ~ (active_recipient.full_name or active_recipient.username) ~ '? They will not be able to message you.')|tojson }})">
+                    <button type="submit" class="icon-btn danger" title="Block this person" aria-label="Block this person"><svg class="ico"><use href="#i-ban"></use></svg></button>
+                </form>
             </div>
         </div>
 

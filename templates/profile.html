@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "_avatar.html" as av %}
+{% import "_actions.html" as act %}
 
 {% block title %}Global Trade | {{ user.full_name or user.username }}{% endblock %}
 
@@ -49,7 +50,7 @@
                             <a href="{{ url_for('edit_profile') }}" class="auth-btn auth-btn-muted">Edit profile</a>
                         {% else %}
                             {% if has_blocked_user %}
-                                <a href="{{ url_for('unblock_user', user_id=user.id) }}" class="auth-btn auth-btn-danger">Unblock</a>
+                                {{ act.post_button(url_for('unblock_user', user_id=user.id), 'Unblock', 'auth-btn auth-btn-danger') }}
                             {% elif blocked_by_user %}
                                 <button class="auth-btn auth-btn-muted" disabled>You are blocked</button>
                             {% else %}
@@ -60,14 +61,15 @@
                                         {% if chat_request.sender_id == current_user.id %}
                                             <button class="auth-btn auth-btn-muted" disabled>Request pending</button>
                                         {% else %}
-                                            <a href="{{ url_for('accept_chat_request', request_id=chat_request.id) }}" class="auth-btn">Accept request</a>
-                                            <a href="{{ url_for('reject_chat_request', request_id=chat_request.id) }}" class="auth-btn auth-btn-muted">Decline</a>
+                                            {{ act.post_button(url_for('accept_chat_request', request_id=chat_request.id), 'Accept request') }}
+                                            {{ act.post_button(url_for('reject_chat_request', request_id=chat_request.id), 'Decline', 'auth-btn auth-btn-muted') }}
                                         {% endif %}
                                     {% endif %}
                                 {% else %}
                                     <button type="button" class="auth-btn" id="open-chat-modal">Ask to chat</button>
                                 {% endif %}
-                                <a href="{{ url_for('block_user', user_id=user.id) }}" class="auth-btn auth-btn-outline-danger" onclick="return confirm('Block {{ user.full_name or user.username }}? They will not be able to contact you.')">Block</a>
+                                {{ act.post_button(url_for('block_user', user_id=user.id), 'Block', 'auth-btn auth-btn-outline-danger',
+                                       confirm='Block ' ~ (user.full_name or user.username) ~ '? They will not be able to contact you.') }}
                             {% endif %}
                         {% endif %}
                     {% endif %}
@@ -94,10 +96,15 @@
                 <input type="text" id="confirm-read-input" placeholder="I READ" autocomplete="off">
                 <p id="confirm-read-error" class="field-error" hidden>Type “I READ” exactly to continue.</p>
             </div>
-            <div style="display: flex; gap: var(--s3); margin-top: var(--s5);">
+            {# A real form, because sending the request changes something and so
+               has to be a POST. The typed confirmation is checked in submit
+               below, which also means the keyboard's Enter does the same thing
+               as the button. #}
+            <form method="POST" action="{{ url_for('send_chat_request', recipient_id=user.id) }}"
+                  id="chat-request-form" style="display: flex; gap: var(--s3); margin-top: var(--s5);">
                 <button type="button" class="auth-btn auth-btn-muted" id="close-chat-modal" style="flex: 1;">Cancel</button>
-                <button type="button" class="auth-btn" id="confirm-chat-btn" style="flex: 2;">Send the request</button>
-            </div>
+                <button type="submit" class="auth-btn" id="confirm-chat-btn" style="flex: 2;">Send the request</button>
+            </form>
         </div>
     </div>
 
@@ -120,8 +127,8 @@
                             </div>
                         </div>
                         <div class="profile-request-actions">
-                            <a href="{{ url_for('accept_chat_request', request_id=req.id) }}" class="auth-btn">Accept</a>
-                            <a href="{{ url_for('reject_chat_request', request_id=req.id) }}" class="auth-btn auth-btn-muted">Decline</a>
+                            {{ act.post_button(url_for('accept_chat_request', request_id=req.id), 'Accept') }}
+                            {{ act.post_button(url_for('reject_chat_request', request_id=req.id), 'Decline', 'auth-btn auth-btn-muted') }}
                         </div>
                     </div>
                     {% endfor %}
@@ -311,7 +318,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('chat-modal');
     const openBtn = document.getElementById('open-chat-modal');
     const closeBtn = document.getElementById('close-chat-modal');
-    const confirmBtn = document.getElementById('confirm-chat-btn');
     const input = document.getElementById('confirm-read-input');
     const error = document.getElementById('confirm-read-error');
 
@@ -332,12 +338,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
 
-    if (confirmBtn) {
-        confirmBtn.addEventListener('click', () => {
-            if (input.value.trim().toUpperCase() === 'I READ') {
-                window.location.href = "{{ url_for('send_chat_request', recipient_id=user.id) }}";
-            } else if (error) {
-                error.hidden = false;
+    const requestForm = document.getElementById('chat-request-form');
+    if (requestForm) {
+        requestForm.addEventListener('submit', (event) => {
+            if (input.value.trim().toUpperCase() !== 'I READ') {
+                event.preventDefault();
+                if (error) error.hidden = false;
                 input.focus();
             }
         });

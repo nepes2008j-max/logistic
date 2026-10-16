@@ -1,0 +1,21 @@
+{# Buttons that change something.
+
+   These used to be <a href> links to routes that accepted GET, which meant
+   anything that could make the browser follow a URL — another site's link, a
+   redirect, a link scanner, a prefetcher — could block a user or accept a chat
+   request on their behalf. They are POST now.
+
+   The session cookie is SameSite=Lax, so the browser will not attach it to a
+   cross-site POST, and that is what makes the conversion the whole fix rather
+   than half of one.
+
+   .inline-form is display:contents, so the form box vanishes and the button
+   stays a direct child of whatever row it sits in. Dropping a block-level
+   <form> into those flex rows would have reflowed every one of them. #}
+
+{% macro post_button(action, label, class='auth-btn', confirm=None) %}
+<form class="inline-form" method="POST" action="{{ action }}"
+      {%- if confirm %} onsubmit="return confirm({{ confirm|tojson }})"{% endif %}>
+    <button type="submit" class="{{ class }}">{{ label }}</button>
+</form>
+{%- endmacro %}

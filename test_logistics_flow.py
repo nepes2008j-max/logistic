@@ -107,6 +107,7 @@ def main():
         db.session.add(item)
         db.session.commit()
         admin_id, seller_id, buyer_id, courier_id = admin.id, seller.id, buyer.id, courier.id
+        outsider_id = outsider.id
         item_id, destination_id, origin_id = item.id, destination.id, origin.id
         dest_velayat = destination.district.velayat.name
         origin_velayat = origin.district.velayat.name
@@ -695,6 +696,32 @@ def main():
     with a.app_context():
         check("no order was written for the ownerless listing",
               globaltrade.Order.query.filter_by(item_id=orphan_id).count() == 0)
+
+    # -- state changes refuse GET -------------------------------------------
+    # These six routes used to answer GET, which meant anything that could make
+    # a browser follow a URL — another site's link, a redirect, a prefetcher —
+    # could block someone or accept a chat request as them. The session cookie
+    # is SameSite=Lax, so once they are POST the browser will not carry the
+    # session cross-site at all.
+    section("state changes are POST only")
+    for path in ["/send-chat-request/%d" % seller_id, "/accept-chat-request/1",
+                 "/reject-chat-request/1", "/block-user/%d" % seller_id,
+                 "/unblock-user/%d" % seller_id, "/logout"]:
+        response = buyer_client.get(path)
+        check("GET %s is refused" % path, response.status_code == 405, response.status_code)
+
+    # ...and still do the work on POST. The outsider is the target because
+    # blocking the seller would change what the pages below render.
+    buyer_client.post("/block-user/%d" % outsider_id)
+    with a.app_context():
+        check("POST /block-user blocks",
+              globaltrade.BlockedUser.query.filter_by(
+                  blocker_id=buyer_id, blocked_id=outsider_id).count() == 1)
+    buyer_client.post("/unblock-user/%d" % outsider_id)
+    with a.app_context():
+        check("POST /unblock-user unblocks",
+              globaltrade.BlockedUser.query.filter_by(
+                  blocker_id=buyer_id, blocked_id=outsider_id).count() == 0)
 
     # -- every page still renders -------------------------------------------
     section("pages render")

@@ -3155,7 +3155,7 @@ def edit_profile():
     return render_template('edit_profile.html')
 
 # Chat Logic
-@app.route('/send-chat-request/<int:recipient_id>')
+@app.route('/send-chat-request/<int:recipient_id>', methods=['POST'])
 @login_required
 def send_chat_request(recipient_id):
     User.query.get_or_404(recipient_id)
@@ -3187,7 +3187,7 @@ def send_chat_request(recipient_id):
         return redirect(url_for('chat', tab='requests'))
     return redirect(url_for('profile', user_id=recipient_id))
 
-@app.route('/accept-chat-request/<int:request_id>')
+@app.route('/accept-chat-request/<int:request_id>', methods=['POST'])
 @login_required
 def accept_chat_request(request_id):
     req = ChatRequest.query.get_or_404(request_id)
@@ -3198,7 +3198,7 @@ def accept_chat_request(request_id):
     flash('This chat request is no longer available.')
     return redirect(url_for('chat'))
 
-@app.route('/reject-chat-request/<int:request_id>')
+@app.route('/reject-chat-request/<int:request_id>', methods=['POST'])
 @login_required
 def reject_chat_request(request_id):
     req = ChatRequest.query.get_or_404(request_id)
@@ -3210,7 +3210,7 @@ def reject_chat_request(request_id):
         flash('This chat request is no longer available.')
     return redirect(url_for('chat'))
 
-@app.route('/block-user/<int:user_id>')
+@app.route('/block-user/<int:user_id>', methods=['POST'])
 @login_required
 def block_user(user_id):
     if user_id == current_user.id:
@@ -3230,7 +3230,7 @@ def block_user(user_id):
         flash('User blocked.')
     return redirect(url_for('index'))
 
-@app.route('/unblock-user/<int:user_id>')
+@app.route('/unblock-user/<int:user_id>', methods=['POST'])
 @login_required
 def unblock_user(user_id):
     BlockedUser.query.filter_by(blocker_id=current_user.id, blocked_id=user_id).delete()
@@ -3438,7 +3438,7 @@ def rate_item(item_id):
     return redirect(url_for('item_detail', item_id=item_id))
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 @login_required
 def logout():
     logout_user()
