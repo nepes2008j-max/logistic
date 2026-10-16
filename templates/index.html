@@ -111,10 +111,9 @@
     <div class="market-controls">
         {# Categories opens the drawer; the search bar sits beside it. One row,
            the two ways into the catalogue next to each other. #}
-        <label for="cat-expand" class="cat-trigger">
+        <label for="cat-expand" class="cat-trigger" aria-label="{{ t('market.categories') }}">
             <svg class="ico" aria-hidden="true"><use href="#i-th"></use></svg>
             <span class="cat-trigger-word">{{ t('market.categories') }}</span>
-            <span class="cat-trigger-total">{{ categories|length }}</span>
         </label>
         <form action="{{ url_for('search') }}" method="GET" class="market-search" role="search">
             <button type="submit" class="market-search-go" aria-label="{{ t('market.search') }}">

@@ -89,7 +89,7 @@
     min-width: 0;
     display: flex;
     align-items: center;
-    height: 48px;
+    height: 54px;
     padding-right: var(--s4);
     border: var(--bw) solid var(--rule);
     border-radius: var(--r-pill);
@@ -101,8 +101,8 @@
     flex: none;
     display: grid;
     place-items: center;
-    width: 46px;
-    height: 46px;
+    width: 52px;
+    height: 52px;
     border-radius: var(--r-pill);
     color: var(--ink-3);
     cursor: pointer;
@@ -117,7 +117,7 @@
     border: 0;
     background: transparent;
     color: var(--ink);
-    font-size: var(--t-sm);
+    font-size: var(--t-body);
 }
 .market-search input::placeholder { color: var(--ink-3); }
 .market-search input:focus-visible { outline: none; }
@@ -126,9 +126,13 @@
    control pair. It never stretches — it hugs its label. */
 .market-controls .cat-trigger {
     margin: 0;
-    height: 48px;
     flex: none;
+    width: 54px;
+    height: 54px;
+    padding: 0;
+    justify-content: center;
 }
+.market-controls .cat-trigger .ico { width: 1.35em; height: 1.35em; }
 
 /* Keyboard focus ring on the trigger. It lives inside .market-main now, not
    beside the checkbox, so the sibling selector cannot reach it — :has can. */
@@ -141,7 +145,6 @@
    small icon-and-count button at every width — the drawer it opens is labelled
    in full. */
 .cat-trigger-word { display: none; }
-.market-controls .cat-trigger { padding: 0 var(--s4); gap: var(--s2); }
 
 .cat-panel { min-width: 0; }
 
