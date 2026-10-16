@@ -75,14 +75,6 @@
        so the trigger, the panel and the backdrop can all target it with ~. #}
     <input type="checkbox" id="cat-expand" class="cat-expand">
 
-    {# Phone-only: the button that opens the drawer. Hidden on desktop, where
-       the rail is always open. #}
-    <label for="cat-expand" class="cat-trigger">
-        <svg class="ico" aria-hidden="true"><use href="#i-th"></use></svg>
-        <span>{{ t('market.categories') }}</span>
-        <span class="cat-trigger-total">{{ categories|length }}</span>
-    </label>
-
     {# Phone-only: tapping outside the open drawer closes it. #}
     <label for="cat-expand" class="cat-backdrop" aria-hidden="true"></label>
 
@@ -112,6 +104,32 @@
 
     <div class="market-main">
 
+    {# The search bar stays visible: on a phone it is the only way to search
+       (the nav hides its field there), and a marketplace that hides search
+       behind a disclosure makes people hunt for the one control they came for.
+       Location filters stay in the disclosure below; the hidden fields carry
+       the current filter so a search keeps it rather than clearing it. #}
+    <div class="market-controls">
+        {# Categories opens the drawer; the search bar sits beside it. One row,
+           the two ways into the catalogue next to each other. #}
+        <label for="cat-expand" class="cat-trigger">
+            <svg class="ico" aria-hidden="true"><use href="#i-th"></use></svg>
+            <span class="cat-trigger-word">{{ t('market.categories') }}</span>
+            <span class="cat-trigger-total">{{ categories|length }}</span>
+        </label>
+        <form action="{{ url_for('search') }}" method="GET" class="market-search" role="search">
+            <button type="submit" class="market-search-go" aria-label="{{ t('market.search') }}">
+                <svg class="ico" aria-hidden="true"><use href="#i-search"></use></svg>
+            </button>
+            <input type="search" name="q" value="{{ search_query or '' }}"
+                   placeholder="{{ t('market.search_ph') }}" aria-label="{{ t('market.search') }}"
+                   autocomplete="off">
+            {% if selected_location.velayat_id %}<input type="hidden" name="velayat_id" value="{{ selected_location.velayat_id }}">{% endif %}
+            {% if selected_location.district_id %}<input type="hidden" name="district_id" value="{{ selected_location.district_id }}">{% endif %}
+            {% if selected_location.neighborhood_id %}<input type="hidden" name="neighborhood_id" value="{{ selected_location.neighborhood_id }}">{% endif %}
+        </form>
+    </div>
+
     {#
       Filters behind a disclosure, open only when something is already
       filtered. A marketplace page exists to show goods; this one showed a
@@ -124,11 +142,11 @@
       blocked, it is keyboard- and screen-reader-native, and the browser
       already knows how to announce it.
     #}
-    <details class="filter-disclosure"{% if search_query or selected_location.velayat_id %} open{% endif %}>
+    <details class="filter-disclosure"{% if selected_location.velayat_id %} open{% endif %}>
         <summary class="filter-summary">
             <span class="filter-summary-label">
                 <svg class="ico" aria-hidden="true"><use href="#i-filter"></use></svg>
-                {{ t('market.filter') }}
+                {{ t('market.filters') }}
             </span>
             {% if search_query or selected_location.velayat_id %}
             <span class="filter-summary-state">{{ t('market.filter_on') }}</span>
@@ -136,10 +154,7 @@
         </summary>
 
     <form action="{{ url_for('search') }}" method="GET" id="location-filter-form" class="filter-bar">
-        <div class="filter-field">
-            <label for="filter-q">{{ t('market.search') }}</label>
-            <input type="text" id="filter-q" name="q" value="{{ search_query or '' }}" placeholder="Drill, camera, bike…">
-        </div>
+        {% if search_query %}<input type="hidden" name="q" value="{{ search_query }}">{% endif %}
         <div class="filter-field">
             <label for="velayat-filter">{{ t('market.region') }}</label>
             <select id="velayat-filter" name="velayat_id">

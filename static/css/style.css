@@ -75,6 +75,76 @@
     padding-bottom: 0;
 }
 
+/* The two ways into the catalogue on one row: the Categories button, then the
+   always-visible search bar beside it. Search is never hidden — on a phone this
+   is the only entry to it, since the nav drops its field at that width. */
+.market-controls {
+    display: flex;
+    align-items: stretch;
+    gap: var(--s3);
+    margin-bottom: var(--s4);
+}
+.market-search {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    height: 48px;
+    padding-right: var(--s4);
+    border: var(--bw) solid var(--rule);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    transition: border-color var(--d1) var(--ease);
+}
+.market-search:focus-within { border-color: var(--ink); }
+.market-search-go {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: var(--r-pill);
+    color: var(--ink-3);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.market-search-go:hover { color: var(--ink); }
+.market-search-go .ico { width: 1.15em; height: 1.15em; }
+.market-search input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font-size: var(--t-sm);
+}
+.market-search input::placeholder { color: var(--ink-3); }
+.market-search input:focus-visible { outline: none; }
+
+/* The Categories button matches the search bar's height so the row reads as one
+   control pair. It never stretches — it hugs its label. */
+.market-controls .cat-trigger {
+    margin: 0;
+    height: 48px;
+    flex: none;
+}
+
+/* Keyboard focus ring on the trigger. It lives inside .market-main now, not
+   beside the checkbox, so the sibling selector cannot reach it — :has can. */
+.market-layout:has(.cat-expand:focus-visible) .cat-trigger {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+}
+
+/* On a phone the row has no width to spare, and search is the control that
+   should win it. The Categories button drops its word there and stands as the
+   grid icon plus its count; the drawer it opens is labelled in full. */
+@media (max-width: 599.98px) {
+    .cat-trigger-word { display: none; }
+    .market-controls .cat-trigger { padding: 0 var(--s3); gap: var(--s2); }
+}
+
 .cat-panel { min-width: 0; }
 
 .cat-panel-head {
@@ -183,11 +253,9 @@
    first and the categories one click away, the same on a phone and a desktop. */
     .cat-trigger {
         display: inline-flex;
-        justify-self: start;
         align-items: center;
         gap: var(--s3);
         min-height: 44px;
-        margin-bottom: var(--s4);
         padding: 0 var(--s4);
         border: var(--bw) solid var(--ink);
         border-radius: var(--r-pill);
@@ -206,10 +274,6 @@
         color: var(--ink-invert);
         font-size: var(--t-xs);
         font-variant-numeric: tabular-nums;
-    }
-    .cat-expand:focus-visible ~ .cat-trigger {
-        outline: 2px solid var(--ink);
-        outline-offset: 3px;
     }
 
     /* The panel: fixed, full height, parked just off the left edge. */
