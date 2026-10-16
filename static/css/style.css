@@ -176,32 +176,11 @@
    from the accessibility tree. */
 .cat-expand { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
-/* The trigger, backdrop and close control only exist for the phone drawer. On
-   desktop the rail is always open, so they stay hidden. */
-.cat-trigger, .cat-backdrop, .cat-close { display: none; }
-
-/* -- Desktop: a column on the left, held while the board scrolls ---------- */
-@media (min-width: 900px) {
-    .market-layout {
-        grid-template-columns: 224px minmax(0, 1fr);
-        column-gap: var(--s6);
-    }
-    .cat-panel {
-        position: sticky;
-        top: calc(var(--nav-h) + var(--s5));
-        max-height: calc(100dvh - var(--nav-h) - var(--s6));
-        overflow-y: auto;
-        scrollbar-width: thin;
-    }
-    /* The filter bar's top rule would double the panel's — drop it here. */
-    .market-main .filter-bar { padding-top: 0; border-top: 0; }
-}
-
-/* -- Phone: categories as a drawer that slides in from the left -----------
-   The rail was ~330px of list above the goods on a phone. Now it is one
-   "Categories" button; tapping it slides the full list in from the left over
-   a dimmed board, which is the native pattern and puts the goods first. */
-@media (max-width: 899.98px) {
+/* -- Categories as a drawer that opens from the left, at every width -------
+   A "Categories" button sits top-left; clicking it slides the full list in
+   from the left over a dimmed board. The list used to be an always-open rail,
+   which the board did not need to carry at all times — this puts the goods
+   first and the categories one click away, the same on a phone and a desktop. */
     .cat-trigger {
         display: inline-flex;
         justify-self: start;
@@ -280,7 +259,12 @@
     }
     .cat-close:hover { background: var(--surface-2); color: var(--ink); }
     .cat-close .ico { width: 1em; height: 1em; }
-}
+
+/* On a wide screen the drawer can be a touch wider and the trigger carries a
+   little more breathing room, but the behaviour is identical. */
+    @media (min-width: 900px) {
+        .cat-panel { width: min(70vw, 360px); }
+    }
 
 /* -- Where you are in the order -------------------------------------------
    Three steps, named, with the current one filled. Drawn in the system's own
