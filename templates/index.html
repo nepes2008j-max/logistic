@@ -64,30 +64,50 @@
   Now: a ruled index on desktop, and on a phone a wrapping block that opens to
   its full height with a native checkbox and no JavaScript at all.
 #}
+{# The busiest category sets the full-width bar; every other row's bar is its
+   share of that, so the list reads as a ranking at a glance. Guard the
+   divide-by-zero on an empty board. #}
+{% set max_count = categories|map(attribute='count')|max or 1 %}
 <div class="nav-container market-layout">
+
+    {# One checkbox drives the phone drawer with no JavaScript. On desktop the
+       panel is a static rail and this does nothing. It sits before its siblings
+       so the trigger, the panel and the backdrop can all target it with ~. #}
+    <input type="checkbox" id="cat-expand" class="cat-expand">
+
+    {# Phone-only: the button that opens the drawer. Hidden on desktop, where
+       the rail is always open. #}
+    <label for="cat-expand" class="cat-trigger">
+        <svg class="ico" aria-hidden="true"><use href="#i-th"></use></svg>
+        <span>{{ t('market.categories') }}</span>
+        <span class="cat-trigger-total">{{ categories|length }}</span>
+    </label>
+
+    {# Phone-only: tapping outside the open drawer closes it. #}
+    <label for="cat-expand" class="cat-backdrop" aria-hidden="true"></label>
+
     <aside class="cat-panel" aria-labelledby="cat-panel-title">
         <div class="cat-panel-head">
             <h2 id="cat-panel-title">{{ t('market.categories') }}</h2>
             <span class="cat-panel-total">{{ categories|length }}</span>
+            {# Phone-only close control inside the drawer. #}
+            <label for="cat-expand" class="cat-close" aria-label="Close">
+                <svg class="ico" aria-hidden="true"><use href="#i-times"></use></svg>
+            </label>
         </div>
 
-        <input type="checkbox" id="cat-expand" class="cat-expand">
         <div class="cat-list">
-            <button type="button" class="category-item active" data-category="all" aria-pressed="true">
+            <button type="button" class="category-item active" data-category="all" aria-pressed="true" style="--bar: 100%">
                 <span class="category-label">{{ t('market.all_items') }}</span>
                 <span class="category-count">{{ categories|sum(attribute='count') }}</span>
             </button>
             {% for category in categories %}
-            <button type="button" class="category-item{% if not category.count %} is-empty{% endif %}" data-category="{{ category.slug }}" aria-pressed="false">
+            <button type="button" class="category-item{% if not category.count %} is-empty{% endif %}" data-category="{{ category.slug }}" aria-pressed="false" style="--bar: {{ (category.count / max_count * 100)|round(1) }}%">
                 <span class="category-label">{{ category.label }}</span>
                 <span class="category-count">{{ category.count }}</span>
             </button>
             {% endfor %}
         </div>
-        <label for="cat-expand" class="cat-more">
-            <span class="cat-more-all">{{ t('market.all_cats') }} +</span>
-            <span class="cat-more-less">{{ t('market.fewer') }} &minus;</span>
-        </label>
     </aside>
 
     <div class="market-main">

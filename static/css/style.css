@@ -1,5 +1,5 @@
 /* ==========================================================================
-   HANDSHAKE — "CIVIC LEDGER"
+   GLOBAL TRADE — "CIVIC LEDGER"
    style.css — page compositions: front page, marketplace, item record,
    forms, checkout, AI expert panel, effects.
    ========================================================================== */
@@ -106,6 +106,8 @@
 /* A row of the index, not a pill: the pill is for actions, and DESIGN.md
    spends it on the buttons. Selected is a solid ink fill, same as before. */
 .category-item {
+    position: relative;
+    isolation: isolate;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -120,19 +122,39 @@
     text-align: left;
     cursor: pointer;
     color: var(--ink-2);
-    transition: color var(--d1) var(--ease), background-color var(--d1) var(--ease);
+    transition: color var(--d1) var(--ease);
     -webkit-tap-highlight-color: transparent;
 }
-.category-item:hover { color: var(--ink); background: var(--surface); }
+
+/* The share bar. Its width is the row's count as a fraction of the busiest
+   category, passed in as --bar from the template. A surface shift rather than
+   a line or a colour, so the list gains texture without leaving the monochrome
+   system or picking up the one accent the page already spends elsewhere. */
+.category-item::before {
+    content: "";
+    position: absolute;
+    inset: 2px auto 2px 0;
+    width: var(--bar, 0%);
+    /* A tint of the ink, so it is one hue with the text and themes itself: in
+       dark mode --ink flips light and the wash comes with it. Strong enough to
+       read as a bar, light enough not to fight the label on top. */
+    background: color-mix(in srgb, var(--ink) 11%, transparent);
+    z-index: -1;
+    transition: width var(--d2) var(--ease), background-color var(--d1) var(--ease);
+}
+.category-item:hover { color: var(--ink); }
+.category-item:hover::before { background: color-mix(in srgb, var(--ink) 19%, transparent); }
+
+/* Selected is the same bar run full and filled with ink — the metaphor carries
+   both the ranking and the selection, so there is no separate active skin. */
 .category-item.active {
     color: var(--ink-invert);
-    background: var(--ink);
 }
-.category-item.active .category-count { color: var(--ink-invert); opacity: 0.7; }
+.category-item.active::before { width: 100%; background: var(--ink); }
+.category-item.active .category-count { color: var(--ink-invert); opacity: 0.75; }
 
-/* Nothing posted yet. Still listed and still clickable — it tells the truth
-   about the board rather than making the list change shape every time
-   somebody posts. */
+/* Nothing posted yet. No bar at all (its count is zero), which states the
+   emptiness on its own; the muted text just reinforces it. Still clickable. */
 .category-item.is-empty { color: var(--ink-3); }
 .category-item.is-empty .category-count { opacity: 0.55; }
 
@@ -149,44 +171,14 @@
     color: var(--ink-3);
 }
 
-/* The expander is a checkbox, so the phone list opens with no JavaScript and
-   survives a page that has not finished loading its script. */
-.cat-expand { position: absolute; opacity: 0; pointer-events: none; }
-.cat-more { display: none; }
+/* The drawer is driven by one checkbox, so it opens with no JavaScript and
+   survives a page whose script has not loaded. Visually hidden, never removed
+   from the accessibility tree. */
+.cat-expand { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
-/* -- Phone: the index is a block above the grid, capped at eight rows ------
-   Capped rather than scrolled, because a nested scroll area inside a page
-   that already scrolls is the thing that made the old strip unusable. */
-@media (max-width: 899.98px) {
-    .cat-list {
-        overflow: hidden;
-        max-height: calc(44px * 6);
-        transition: max-height var(--d2) var(--ease);
-    }
-    .cat-expand:checked ~ .cat-list { max-height: calc(44px * 30); }
-
-    .cat-more {
-        display: block;
-        min-height: 44px;
-        padding-top: var(--s3);
-        font-size: var(--t-xs);
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--ink);
-        cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
-    }
-    /* The labels are in the markup, not in content:, so they can be
-       translated — CSS content cannot reach the translation table. */
-    .cat-more .cat-more-less { display: none; }
-    .cat-expand:checked ~ .cat-more .cat-more-all { display: none; }
-    .cat-expand:checked ~ .cat-more .cat-more-less { display: inline; }
-    .cat-expand:focus-visible ~ .cat-more {
-        outline: 2px solid var(--ink);
-        outline-offset: 3px;
-    }
-}
+/* The trigger, backdrop and close control only exist for the phone drawer. On
+   desktop the rail is always open, so they stay hidden. */
+.cat-trigger, .cat-backdrop, .cat-close { display: none; }
 
 /* -- Desktop: a column on the left, held while the board scrolls ---------- */
 @media (min-width: 900px) {
@@ -203,6 +195,91 @@
     }
     /* The filter bar's top rule would double the panel's — drop it here. */
     .market-main .filter-bar { padding-top: 0; border-top: 0; }
+}
+
+/* -- Phone: categories as a drawer that slides in from the left -----------
+   The rail was ~330px of list above the goods on a phone. Now it is one
+   "Categories" button; tapping it slides the full list in from the left over
+   a dimmed board, which is the native pattern and puts the goods first. */
+@media (max-width: 899.98px) {
+    .cat-trigger {
+        display: inline-flex;
+        justify-self: start;
+        align-items: center;
+        gap: var(--s3);
+        min-height: 44px;
+        margin-bottom: var(--s4);
+        padding: 0 var(--s4);
+        border: var(--bw) solid var(--ink);
+        border-radius: var(--r-pill);
+        background: var(--surface);
+        font-size: var(--t-sm);
+        font-weight: 700;
+        color: var(--ink);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .cat-trigger .ico { width: 1em; height: 1em; }
+    .cat-trigger-total {
+        padding: 1px 8px;
+        border-radius: var(--r-pill);
+        background: var(--ink);
+        color: var(--ink-invert);
+        font-size: var(--t-xs);
+        font-variant-numeric: tabular-nums;
+    }
+    .cat-expand:focus-visible ~ .cat-trigger {
+        outline: 2px solid var(--ink);
+        outline-offset: 3px;
+    }
+
+    /* The panel: fixed, full height, parked just off the left edge. */
+    .cat-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 1300;
+        width: min(82vw, 320px);
+        padding: calc(var(--s5) + env(safe-area-inset-top)) var(--s5)
+                 calc(var(--s5) + env(safe-area-inset-bottom));
+        background: var(--paper);
+        border-right: var(--bw) solid var(--ink);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        transform: translateX(-100%);
+        transition: transform var(--d2) var(--ease);
+        will-change: transform;
+    }
+    .cat-expand:checked ~ .cat-panel { transform: translateX(0); }
+
+    /* The dimmed board behind the open drawer; tap it to close. */
+    .cat-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1250;
+        display: block;
+        background: color-mix(in srgb, var(--ink) 45%, transparent);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity var(--d2) var(--ease), visibility var(--d2) var(--ease);
+    }
+    .cat-expand:checked ~ .cat-backdrop { opacity: 1; visibility: visible; }
+
+    /* The close control, sitting opposite the heading inside the drawer. */
+    .cat-close {
+        display: inline-grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        margin: -6px -6px -6px auto;
+        border-radius: var(--r-pill);
+        color: var(--ink-2);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .cat-close:hover { background: var(--surface-2); color: var(--ink); }
+    .cat-close .ico { width: 1em; height: 1em; }
 }
 
 /* -- Where you are in the order -------------------------------------------

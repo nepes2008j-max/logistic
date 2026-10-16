@@ -282,6 +282,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (categoryEmpty) {
                 categoryEmpty.classList.toggle('hidden', visible > 0 || cards.length === 0);
             }
+
+            // Picking a category closes the phone drawer. On desktop the
+            // checkbox is inert, so this is a no-op there.
+            const drawer = document.getElementById('cat-expand');
+            if (drawer) drawer.checked = false;
         });
     });
 
