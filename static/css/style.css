@@ -137,13 +137,11 @@
     outline-offset: 3px;
 }
 
-/* On a phone the row has no width to spare, and search is the control that
-   should win it. The Categories button drops its word there and stands as the
-   grid icon plus its count; the drawer it opens is labelled in full. */
-@media (max-width: 599.98px) {
-    .cat-trigger-word { display: none; }
-    .market-controls .cat-trigger { padding: 0 var(--s3); gap: var(--s2); }
-}
+/* Search is the control that should win the row, so the Categories button is a
+   small icon-and-count button at every width — the drawer it opens is labelled
+   in full. */
+.cat-trigger-word { display: none; }
+.market-controls .cat-trigger { padding: 0 var(--s4); gap: var(--s2); }
 
 .cat-panel { min-width: 0; }
 
