@@ -42,7 +42,7 @@
 #}
 {% macro rail(rail_items, speed) -%}
 <div class="rail-frame">
-    <div class="rail" data-rail data-rail-speed="{{ speed }}" tabindex="0" role="group" aria-label="Scrollable listings — drag or use the arrow keys">
+    <div class="rail" data-rail data-rail-speed="{{ speed }}" tabindex="0" role="group" aria-label="{{ t('home.rail_aria') }}">
         <div class="rail-track" data-rail-track>
             {% for item in rail_items %}
             <div class="rail-card">{{ listing_card(item) }}</div>

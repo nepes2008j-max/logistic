@@ -8,13 +8,13 @@
     id="ai-expert-sidebar"
     class="ai-expert-sidebar"
     role="dialog"
-    aria-label="Ask about this item"
+    aria-label="{{ t('item.ask') }}"
     data-expert-query="{{ item.title }}. {{ item.description or '' }}"
 >
     <div class="ai-expert-header">
         <div class="ai-expert-header-row">
             <h3>{{ t('item.ask') }}</h3>
-            <button type="button" id="ai-expert-close" class="ai-expert-close" aria-label="Close">
+            <button type="button" id="ai-expert-close" class="ai-expert-close" aria-label="{{ t('common.close') }}">
                 <svg class="ico"><use href="#i-times"></use></svg>
             </button>
         </div>
@@ -37,7 +37,7 @@
 
 
 <div class="nav-container">
-    <nav class="item-crumbs" aria-label="Breadcrumb">
+    <nav class="item-crumbs" aria-label="{{ t('common.breadcrumb') }}">
         <a href="{{ url_for('index') }}">{{ t('nav.marketplace') }}</a>
         <span aria-hidden="true">/</span>
         <a href="{{ url_for('search', q=item.category) }}">{{ t('cat.' ~ item.category) }}</a>
@@ -212,7 +212,7 @@
                 </fieldset>
                 <div class="form-group">
                     <label for="review-content">{{ t('item.review_q') }}</label>
-                    <textarea name="content" id="review-content" placeholder="Condition, how the hand-off went, anything that surprised you." required></textarea>
+                    <textarea name="content" id="review-content" placeholder="{{ t('item.review_ph') }}" required></textarea>
                 </div>
                 <button type="submit" class="auth-btn btn-block">{{ t('item.post_review') }}</button>
             </form>
@@ -252,7 +252,7 @@
   thing fighting for the same corner and covering the reviews. One bar, the
   price you are deciding about, and the two things you can do.
 #}
-<div class="item-actionbar" aria-label="Order this listing">
+<div class="item-actionbar" aria-label="{{ t('item.order_aria') }}">
     <div class="item-actionbar-price">
         <b>{{ '{:,g}'.format(item.price or 0) }} TMT</b>
         <span>{{ t('item.plus_delivery') }}</span>

@@ -8,9 +8,9 @@
 {% block body_class %}body--chat{% endblock %}
 
 {% block content %}
-<h1 class="visually-hidden">Messages</h1>
+<h1 class="visually-hidden">{{ t('nav.messages') }}</h1>
 <div class="nav-container chat-page{% if active_recipient %} has-active{% endif %}{% if not active_chat_users and not pending_requests and not active_recipient %} is-blank{% endif %}">
-    <aside class="chat-sidebar" aria-label="Conversations">
+    <aside class="chat-sidebar" aria-label="{{ t('ch.conversations') }}">
         <div class="chat-tabs" role="tablist">
             <button onclick="switchTab('chats')" id="chats-tab-btn" class="chat-tab-btn {% if initial_tab != 'requests' %}active{% endif %}" role="tab" aria-controls="chats-list" aria-selected="{{ 'false' if initial_tab == 'requests' else 'true' }}">
                 {{ t('ch.chats') }}
@@ -61,7 +61,7 @@
         </div>
     </aside>
 
-    <section class="chat-window" aria-label="Conversation">
+    <section class="chat-window" aria-label="{{ t('ch.conversation') }}">
         {% if active_recipient %}
         <div class="chat-header">
             <div class="chat-header-user">

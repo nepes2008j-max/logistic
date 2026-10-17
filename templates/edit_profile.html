@@ -15,10 +15,10 @@
 
             <div id="pfp-container" class="image-preview-wrapper pfp-wrapper{% if current_user.profile_pic %} active{% endif %}" role="group" aria-labelledby="pfp-label">
                 {% if current_user.profile_pic %}
-                    <img id="pfp-preview" src="{{ current_user.profile_pic }}" alt="Your current profile photo">
+                    <img id="pfp-preview" src="{{ current_user.profile_pic }}" alt="{{ t('ep.alt_current') }}">
                 {% else %}
                     <svg id="pfp-placeholder" class="ico" style="width: 3rem; height: 3rem; color: var(--ink-3); opacity: 0.45;" aria-hidden="true"><use href="#i-user"></use></svg>
-                    <img id="pfp-preview" alt="Preview of your new photo" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="display: none;">
+                    <img id="pfp-preview" alt="{{ t('ep.alt_preview') }}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="display: none;">
                 {% endif %}
 
                 <div id="camera-area" style="display: none; position: absolute; inset: 0; z-index: 10;">
@@ -34,7 +34,7 @@
                 <button type="button" id="start-camera" class="auth-btn auth-btn-muted">{{ t('ep.use_camera') }}</button>
                 <div class="file-drop">
                     <button type="button" class="auth-btn auth-btn-muted" tabindex="-1">{{ t('ep.choose_file') }}</button>
-                    <input type="file" name="profile_pic" id="profile_pic_input" accept="image/*" aria-label="Choose a profile photo">
+                    <input type="file" name="profile_pic" id="profile_pic_input" accept="image/*" aria-label="{{ t('ep.choose_photo') }}">
                 </div>
             </div>
             <input type="hidden" name="camera_image" id="camera_image">
@@ -47,7 +47,7 @@
             </div>
             <div class="form-group">
                 <label for="edit-region">{{ t('ep.city') }}</label>
-                <input type="text" name="region" id="edit-region" value="{{ current_user.region or '' }}" placeholder="e.g. Ashgabat" required>
+                <input type="text" name="region" id="edit-region" value="{{ current_user.region or '' }}" placeholder="{{ t('ep.region_ph') }}" required>
             </div>
         </div>
 

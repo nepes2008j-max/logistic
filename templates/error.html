@@ -11,9 +11,9 @@
     </header>
 
     <div class="error-actions">
-        <a href="{{ url_for('dashboard') }}" class="auth-btn">Back to the marketplace</a>
+        <a href="{{ url_for('dashboard') }}" class="auth-btn">{{ t('err.back_market') }}</a>
         {% if show_orders %}
-        <a href="{{ url_for('orders') }}" class="auth-btn auth-btn-muted">Your orders</a>
+        <a href="{{ url_for('orders') }}" class="auth-btn auth-btn-muted">{{ t('err.your_orders') }}</a>
         {% endif %}
     </div>
 </div>

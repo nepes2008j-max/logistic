@@ -54,12 +54,12 @@
     </div>
     {% endif %}
 
-    <a href="#main-content" class="skip-link">Skip to content</a>
+    <a href="#main-content" class="skip-link">{{ t('nav.skip') }}</a>
 
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <a href="/" aria-label="Global Trade home">
+                <a href="/" aria-label="{{ t('nav.home_aria') }}">
                     <span class="logo-mark" aria-hidden="true">
                         <svg viewBox="0 0 28 20" fill="none" stroke="currentColor" stroke-width="2.1">
                             <circle cx="10" cy="10" r="6.6"></circle>
@@ -72,15 +72,15 @@
 
             <div class="search-bar-container">
                 <form action="/search" method="GET" class="search-bar" role="search">
-                    <label for="nav-search" class="visually-hidden">Search listings</label>
-                    <input type="text" id="nav-search" name="q" class="search-input-minimal" placeholder="Search listings, tools, cameras, cars…" value="{{ request.args.get('q', '') }}">
-                    <button type="submit" class="search-icon-btn" aria-label="Search"><svg class="ico"><use href="#i-search"></use></svg></button>
+                    <label for="nav-search" class="visually-hidden">{{ t('nav.search_label') }}</label>
+                    <input type="text" id="nav-search" name="q" class="search-input-minimal" placeholder="{{ t('nav.search') }}" value="{{ request.args.get('q', '') }}">
+                    <button type="submit" class="search-icon-btn" aria-label="{{ t('common.search') }}"><svg class="ico"><use href="#i-search"></use></svg></button>
                 </form>
             </div>
 
             <div class="nav-actions">
                 <a href="/market" class="post-link" data-nav="market"{% if request.path in ['/market', '/search'] %} aria-current="page"{% endif %}>{{ t('nav.marketplace') }}</a>
-                <a href="{% if pending_chat_request_count %}{{ url_for('chat', tab='requests') }}{% else %}/chat{% endif %}" class="icon-btn nav-chat-link" title="Messages" aria-label="Messages{% if pending_chat_request_count %} — {{ pending_chat_request_count }} pending request{{ 's' if pending_chat_request_count > 1 else '' }}{% endif %}">
+                <a href="{% if pending_chat_request_count %}{{ url_for('chat', tab='requests') }}{% else %}/chat{% endif %}" class="icon-btn nav-chat-link" title="{{ t('nav.messages') }}" aria-label="{{ t('nav.messages') }}{% if pending_chat_request_count %} — {{ pending_chat_request_count }} {{ t('nav.pending_req') }}{% endif %}">
                     <svg class="ico"><use href="#i-comments"></use></svg>
                     {% if pending_chat_request_count %}
                     <span class="nav-request-badge">{{ pending_chat_request_count }}</span>
@@ -102,9 +102,9 @@
                        {% if code == current_lang %}aria-current="true"{% endif %}>{{ code|upper }}</a>
                     {% endfor %}
                 </div>
-                <button id="theme-toggle" class="icon-btn" aria-label="Switch between light and dark theme" title="{{ t('nav.theme') }}"><svg class="ico"><use href="#i-moon"></use></svg></button>
+                <button id="theme-toggle" class="icon-btn" aria-label="{{ t('nav.theme_aria') }}" title="{{ t('nav.theme') }}"><svg class="ico"><use href="#i-moon"></use></svg></button>
                 <div class="user-menu">
-                    <button class="user-menu-btn" aria-label="Account menu" aria-haspopup="true" aria-expanded="false">
+                    <button class="user-menu-btn" aria-label="{{ t('nav.account_menu') }}" aria-haspopup="true" aria-expanded="false">
                         <svg class="ico"><use href="#i-bars"></use></svg>
                         {% if current_user.is_authenticated and current_user.profile_pic %}
                             <img src="{{ current_user.profile_pic }}" class="user-pic-small" alt="" width="24" height="24">
@@ -128,10 +128,10 @@
 
                         {% if current_user.is_authenticated %}
                             <a href="{{ url_for('profile', user_id=current_user.id) }}" class="dropdown-item"><b>{{ current_user.full_name or current_user.username }}</b></a>
-                            <a href="{{ url_for('profile', user_id=current_user.id) }}" class="dropdown-item">My listings</a>
-                            <a href="{{ url_for('orders') }}" class="dropdown-item">Orders and deliveries</a>
-                            <a href="{% if pending_chat_request_count %}{{ url_for('chat', tab='requests') }}{% else %}{{ url_for('chat') }}{% endif %}" class="dropdown-item">Messages{% if pending_chat_request_count %} ({{ pending_chat_request_count }}){% endif %}</a>
-                            <a href="{{ url_for('edit_profile') }}" class="dropdown-item">Edit profile</a>
+                            <a href="{{ url_for('profile', user_id=current_user.id) }}" class="dropdown-item">{{ t('nav.my_listings') }}</a>
+                            <a href="{{ url_for('orders') }}" class="dropdown-item">{{ t('nav.orders_deliveries') }}</a>
+                            <a href="{% if pending_chat_request_count %}{{ url_for('chat', tab='requests') }}{% else %}{{ url_for('chat') }}{% endif %}" class="dropdown-item">{{ t('nav.messages') }}{% if pending_chat_request_count %} ({{ pending_chat_request_count }}){% endif %}</a>
+                            <a href="{{ url_for('edit_profile') }}" class="dropdown-item">{{ t('nav.edit_profile') }}</a>
 
                             {#
                               The two consoles. They only exist for the people who
@@ -142,22 +142,22 @@
                             <div class="dropdown-divider"></div>
                             {% endif %}
                             {% if current_user.is_courier %}
-                            <a href="{{ url_for('courier_console') }}" class="dropdown-item">Courier console</a>
+                            <a href="{{ url_for('courier_console') }}" class="dropdown-item">{{ t('nav.courier_console') }}</a>
                             {% endif %}
                             {% if current_user.is_admin %}
                             <a href="{{ url_for('admin_dashboard') }}" class="dropdown-item dropdown-item--count">
-                                <span>Administration</span>
+                                <span>{{ t('adm.administration') }}</span>
                                 {% if pending_access_request_count %}<span class="dropdown-count">{{ pending_access_request_count }}</span>{% endif %}
                             </a>
                             {% endif %}
 
                             <div class="dropdown-divider"></div>
                             <form class="inline-form" method="POST" action="{{ url_for('logout') }}">
-                                <button type="submit" class="dropdown-item">Log out</button>
+                                <button type="submit" class="dropdown-item">{{ t('auth.logout') }}</button>
                             </form>
                         {% else %}
-                            <a href="/login" class="dropdown-item">Log in</a>
-                            <a href="{{ url_for('request_access') }}" class="dropdown-item">Request access</a>
+                            <a href="/login" class="dropdown-item">{{ t('auth.login') }}</a>
+                            <a href="{{ url_for('request_access') }}" class="dropdown-item">{{ t('auth.request_access') }}</a>
                         {% endif %}
                     </div>
                 </div>
@@ -170,7 +170,7 @@
         <div class="flash-messages" role="status" aria-live="polite">
           {% for message in messages %}
             <div class="flash">
-              <span class="flash-mark">Note</span>
+              <span class="flash-mark">{{ t('common.note') }}</span>
               <span>{{ message }}</span>
             </div>
           {% endfor %}
@@ -205,7 +205,7 @@
       middle; Messages carries the same pending-request count the masthead
       shows.
     #}
-    <nav class="tabbar" aria-label="Primary">
+    <nav class="tabbar" aria-label="{{ t('nav.primary') }}">
         <div class="tabbar-inner">
             <a href="{{ url_for('dashboard') }}" class="tab"
                {% if request.path == '/' %}aria-current="page"{% endif %}>

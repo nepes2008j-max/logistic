@@ -375,7 +375,6 @@ TRANSLATIONS = {
     "adm.send_this_a": {"en": 'Send this to', "ru": 'Отправьте это на', "tk": 'Muny iberiň:'},
     "adm.send_this_b": {"en": 'It works once, and expires on', "ru": 'Работает один раз и истекает', "tk": 'Bir gezek işleýär, möhleti geçýär:'},
     "adm.let_in_a": {"en": 'Let', "ru": 'Впустить', "tk": 'Içeri goýber:'},
-    "adm.let_in_b": {"en": 'in', "ru": '', "tk": ''},
     "adm.note_optional": {"en": 'Note, optional', "ru": 'Заметка, необязательно', "tk": 'Bellik, hökman däl'},
     "adm.approve": {"en": 'Approve', "ru": 'Одобрить', "tk": 'Tassykla'},
     "adm.turn_down": {"en": 'Turn this request down', "ru": 'Отклонить этот запрос', "tk": 'Bu haýyşy ret et'},
@@ -718,6 +717,80 @@ TRANSLATIONS = {
     "ch.ps3": {"en": 'Meet up and scan to close the deal', "ru": 'Встретьтесь и завершите сделку', "tk": 'Duşuşyň we ylalaşygy jemläň'},
     "ch.find": {"en": 'Find something to ask about', "ru": 'Найти, о чём спросить', "tk": 'Sorar ýaly zat tap'},
     "ch.back": {"en": 'Back to conversations', "ru": 'Назад к чатам', "tk": 'Söhbetlere dolan'},
+    "ch.conversations": {"en": 'Conversations', "ru": 'Разговоры', "tk": 'Söhbetler'},
+    "ch.conversation": {"en": 'Conversation', "ru": 'Разговор', "tk": 'Söhbet'},
+
+    # ---------------------------------------- nav / chrome (second pass) --
+    "nav.skip":            {"en": 'Skip to content', "ru": "Перейти к содержимому", "tk": "Mazmuna geç"},
+    "nav.home_aria":       {"en": 'Global Trade home', "ru": "Global Trade — главная", "tk": "Global Trade — baş sahypa"},
+    "nav.search_label":    {"en": 'Search listings', "ru": "Поиск объявлений", "tk": "Bildirişleri gözle"},
+    "nav.theme_aria":      {"en": 'Switch between light and dark theme', "ru": "Переключить светлую и тёмную тему", "tk": "Açyk we garaňky reňki çalyş"},
+    "nav.account_menu":    {"en": 'Account menu', "ru": "Меню аккаунта", "tk": "Hasap menýusy"},
+    "nav.my_listings":     {"en": 'My listings', "ru": "Мои объявления", "tk": "Meniň bildirişlerim"},
+    "nav.orders_deliveries": {"en": 'Orders and deliveries', "ru": "Заказы и доставки", "tk": "Sargytlar we eltip bermeler"},
+    "nav.edit_profile":    {"en": 'Edit profile', "ru": "Редактировать профиль", "tk": "Profili düzet"},
+    "nav.courier_console": {"en": 'Courier console', "ru": "Консоль курьера", "tk": "Kurýer konsoly"},
+    "nav.pending_req":     {"en": 'pending', "ru": "в ожидании", "tk": "garaşýar"},
+    "nav.primary":         {"en": 'Primary', "ru": "Основное", "tk": "Esasy"},
+    "common.note":         {"en": 'Note', "ru": "Заметка", "tk": "Bellik"},
+    "common.search":       {"en": 'Search', "ru": "Поиск", "tk": "Gözle"},
+    "common.close":        {"en": 'Close', "ru": "Закрыть", "tk": "Ýap"},
+    "common.breadcrumb":   {"en": 'Breadcrumb', "ru": "Навигация", "tk": "Nawigasiýa"},
+
+    # ----------------------------------------------- admin (second pass) --
+    "adm.listings_sub":    {"en": 'All listings, newest first', "ru": "Все объявления, новые сверху", "tk": "Ähli bildirişler, täzeleri ýokarda"},
+    "adm.orders_sub":      {"en": 'All orders, newest first', "ru": "Все заказы, новые сверху", "tk": "Ähli sargytlar, täzeleri ýokarda"},
+    "adm.role_for":        {"en": 'Role for', "ru": "Роль для", "tk": "Rol:"},
+
+    # ------------------------------------------------ home rail (aria) --
+    "home.rail_aria":      {"en": 'Scrollable listings — drag or use the arrow keys', "ru": "Прокручиваемые объявления — тяните или используйте стрелки", "tk": "Aýlanýan bildirişler — süýräň ýa-da ok düwmelerini ulanyň"},
+
+    # ------------------------------------------- edit profile (second) --
+    "ep.alt_current":      {"en": 'Your current profile photo', "ru": "Ваше текущее фото профиля", "tk": "Häzirki profil suratyňyz"},
+    "ep.alt_preview":      {"en": 'Preview of your new photo', "ru": "Предпросмотр нового фото", "tk": "Täze suradyň deslapky görnüşi"},
+    "ep.choose_photo":     {"en": 'Choose a profile photo', "ru": "Выберите фото профиля", "tk": "Profil suratyny saýlaň"},
+    "ep.region_ph":        {"en": 'e.g. Ashgabat', "ru": "напр. Ашхабад", "tk": "mysal: Aşgabat"},
+
+    # ------------------------------------------------------------ error --
+    "err.back_market":     {"en": 'Back to the marketplace', "ru": "Назад на площадку", "tk": "Bazara dolan"},
+    "err.your_orders":     {"en": 'Your orders', "ru": "Ваши заказы", "tk": "Siziň sargytlaryňyz"},
+
+    # ------------------------------------------- market / index page --
+    "idx.ask_search":      {"en": 'Ask about this search', "ru": "Спросить об этом поиске", "tk": "Bu gözleg barada sora"},
+    "idx.ai_prompt":       {"en": 'What should I check?', "ru": "Что мне проверить?", "tk": "Nämä seretmeli?"},
+    "idx.ai_setup":        {"en": 'Setup help', "ru": "Помощь с настройкой", "tk": "Gurnama kömegi"},
+    "idx.ai_ph":           {"en": 'Ask about setup, inspection, or usage', "ru": "Спросите о настройке, проверке или использовании", "tk": "Gurnama, barlag ýa-da ulanyş barada soraň"},
+    "idx.listings":        {"en": 'Listings', "ru": "Объявления", "tk": "Bildirişler"},
+    "idx.none_filters":    {"en": 'Nothing matches these filters yet', "ru": "Пока ничего не подходит под эти фильтры", "tk": "Bu süzgüçlere heniz hiç zat gabat gelmeýär"},
+    "idx.none_search_a":   {"en": 'No listing mentions', "ru": "Ни в одном объявлении нет", "tk": "Hiç bir bildirişde ýok:"},
+    "idx.none_search_b":   {"en": 'in the area you picked. Try a broader region, or drop the search words and browse a category.', "ru": "в выбранной вами области. Попробуйте более широкий регион или уберите слова поиска и просмотрите категорию.", "tk": "siz saýlan sebitiňizde. Has giň welaýaty synanyşyň ýa-da gözleg sözlerini aýryp, kategoriýa serediň."},
+    "idx.none_area":       {"en": 'No one has posted in this area yet. Widen the region, or be the first to list something here.', "ru": "В этой области пока никто ничего не разместил. Расширьте регион или разместите первым.", "tk": "Bu sebitde heniz hiç kim zat goýmandyr. Welaýaty giňeldiň ýa-da ilkinji bolup goýuň."},
+    "idx.clear_filters":   {"en": 'Clear filters', "ru": "Сбросить фильтры", "tk": "Süzgüçleri arassala"},
+    "idx.none_category":   {"en": 'Nothing in this category right now', "ru": "В этой категории сейчас ничего нет", "tk": "Bu kategoriýada häzir hiç zat ýok"},
+    "idx.none_category_d": {"en": 'Pick another category, or search the whole marketplace.', "ru": "Выберите другую категорию или ищите по всей площадке.", "tk": "Başga kategoriýa saýlaň ýa-da bütin bazary gözläň."},
+
+    # --------------------------------------------- item detail (second) --
+    "item.review_ph":      {"en": 'Condition, how the hand-off went, anything that surprised you.', "ru": "Состояние, как прошла передача, что вас удивило.", "tk": "Ýagdaýy, gowşuryş nähili geçdi, sizi geň galdyran zatlar."},
+    "item.order_aria":     {"en": 'Order this listing', "ru": "Заказать это объявление", "tk": "Bu bildirişi sargyt et"},
+
+    # ------------------------------------------------ profile (second) --
+    "pr.orders_placed":    {"en": 'Orders you have placed', "ru": "Ваши заказы", "tk": "Siziň eden sargytlaryňyz"},
+    "pr.open_count":       {"en": 'open', "ru": "открыто", "tk": "açyk"},
+    "pr.all_in":           {"en": 'all in', "ru": "всё включено", "tk": "jemi"},
+    "pr.waiting_seller":   {"en": 'Waiting on the seller', "ru": "Ожидает продавца", "tk": "Satyja garaşylýar"},
+    "pr.open_order":       {"en": 'Open the order', "ru": "Открыть заказ", "tk": "Sargydy aç"},
+    "pr.accepted":         {"en": 'Accepted', "ru": "Принято", "tk": "Kabul edildi"},
+    "pr.pay_send":         {"en": 'Pay and send it', "ru": "Оплатить и отправить", "tk": "Tölä we iber"},
+    "pr.none_ordered":     {"en": "You haven't ordered anything yet.", "ru": "Вы пока ничего не заказывали.", "tk": "Siz heniz hiç zat sargyt etmediňiz."},
+    "pr.your_deliveries":  {"en": 'Your deliveries', "ru": "Ваши доставки", "tk": "Siziň eltip bermeleriňiz"},
+    "pr.on_record":        {"en": 'on record', "ru": "в истории", "tk": "ýazgyda"},
+    "pr.track":            {"en": 'Track it', "ru": "Отследить", "tk": "Yzyna düş"},
+    "pr.none_deliveries":  {"en": 'Nothing on its way. Anything you order will show up here with where it has got to.', "ru": "Ничего в пути. Всё, что вы закажете, появится здесь вместе с тем, где оно сейчас.", "tk": "Ýolda hiç zat ýok. Sargyt eden zatlaryňyz nirededigi bilen şu ýerde görner."},
+    "pr.what_people_say":  {"en": 'What people say', "ru": "Что говорят люди", "tk": "Adamlar näme diýýär"},
+    "pr.no_feedback":      {"en": 'No feedback yet. Reviews appear after a completed deal.', "ru": "Пока нет отзывов. Отзывы появляются после завершённой сделки.", "tk": "Heniz syn ýok. Synlar tamamlanan ylalaşykdan soň peýda bolýar."},
+
+    # ------------------------------------------------- upload (second) --
+    "up.choose_photo":     {"en": 'Choose a photo of your item', "ru": "Выберите фото вашего товара", "tk": "Harydyňyzyň suratyny saýlaň"},
 }
 
 

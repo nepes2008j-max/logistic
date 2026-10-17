@@ -214,8 +214,8 @@
             {% set outgoing = user.purchases|selectattr('status', 'in', ['placed', 'accepted'])|list %}
             <div class="profile-panel">
                 <div class="profile-panel-header">
-                    <h3>Orders you have placed</h3>
-                    <span>{{ outgoing|length }} open</span>
+                    <h3>{{ t('pr.orders_placed') }}</h3>
+                    <span>{{ outgoing|length }} {{ t('pr.open_count') }}</span>
                 </div>
                 <div class="ledger-rows">
                     {% for tx in outgoing %}
@@ -225,23 +225,23 @@
                             <div style="min-width:0">
                                 <div class="ledger-row-title">{{ tx.item.title }}</div>
                                 <div class="ledger-row-meta">
-                                    <b>{{ "%.2f"|format(tx.total) }} TMT</b> all in ·
+                                    <b>{{ "%.2f"|format(tx.total) }} TMT</b> {{ t('pr.all_in') }} ·
                                     {{ t('pr.to') }} {{ tx.destination_label }}
                                 </div>
                             </div>
                         </div>
                         <div class="ledger-row-side">
                             {% if tx.status == 'placed' %}
-                            <span class="status-chip status-chip--pending">Waiting on the seller</span>
-                            <div><a href="{{ url_for('order_detail', order_id=tx.id) }}" class="link-action">Open the order</a></div>
+                            <span class="status-chip status-chip--pending">{{ t('pr.waiting_seller') }}</span>
+                            <div><a href="{{ url_for('order_detail', order_id=tx.id) }}" class="link-action">{{ t('pr.open_order') }}</a></div>
                             {% else %}
-                            <span class="status-chip status-chip--active">Accepted</span>
-                            <div><a href="{{ url_for('pay_order', order_id=tx.id) }}" class="link-action">Pay and send it</a></div>
+                            <span class="status-chip status-chip--active">{{ t('pr.accepted') }}</span>
+                            <div><a href="{{ url_for('pay_order', order_id=tx.id) }}" class="link-action">{{ t('pr.pay_send') }}</a></div>
                             {% endif %}
                         </div>
                     </div>
                     {% else %}
-                    <p class="profile-empty">You haven't ordered anything yet.</p>
+                    <p class="profile-empty">{{ t('pr.none_ordered') }}</p>
                     {% endfor %}
                 </div>
             </div>
@@ -249,8 +249,8 @@
             {% set orders = user.purchases|selectattr('status', 'in', ['paid', 'completed', 'cancelled'])|list %}
             <div class="profile-panel">
                 <div class="profile-panel-header">
-                    <h3>Your deliveries</h3>
-                    <span>{{ orders|length }} on record</span>
+                    <h3>{{ t('pr.your_deliveries') }}</h3>
+                    <span>{{ orders|length }} {{ t('pr.on_record') }}</span>
                 </div>
                 <div class="ledger-rows">
                     {% for tx in orders %}
@@ -262,7 +262,7 @@
                                 <div class="ledger-row-meta">
                                     {% if tx.delivery %}
                                     <span class="status-chip {{ 'status-chip--active' if tx.delivery.is_open else 'status-chip--closed' }}">{{ tx.delivery.status|replace('_', ' ')|capitalize }}</span>
-                                    — <a href="{{ url_for('delivery_detail', delivery_id=tx.delivery.id) }}" class="link-action">Track it</a>
+                                    — <a href="{{ url_for('delivery_detail', delivery_id=tx.delivery.id) }}" class="link-action">{{ t('pr.track') }}</a>
                                     {% else %}
                                     <span class="status-chip status-chip--closed">{{ tx.status|capitalize }}</span>
                                     {% endif %}
@@ -275,7 +275,7 @@
                         </div>
                     </div>
                     {% else %}
-                    <p class="profile-empty">Nothing on its way. Anything you order will show up here with where it has got to.</p>
+                    <p class="profile-empty">{{ t('pr.none_deliveries') }}</p>
                     {% endfor %}
                 </div>
             </div>
@@ -284,7 +284,7 @@
 
         <div>
             <div class="profile-panel">
-                <h3 class="profile-reviews-title">What people say</h3>
+                <h3 class="profile-reviews-title">{{ t('pr.what_people_say') }}</h3>
                 <div class="profile-reviews-list">
                     {% for review in reviews %}
                     <div class="profile-review-item">
@@ -297,7 +297,7 @@
                         <p class="profile-review-content">“{{ review.content }}”</p>
                     </div>
                     {% else %}
-                    <p class="profile-empty">No feedback yet. Reviews appear after a completed deal.</p>
+                    <p class="profile-empty">{{ t('pr.no_feedback') }}</p>
                     {% endfor %}
                 </div>
             </div>

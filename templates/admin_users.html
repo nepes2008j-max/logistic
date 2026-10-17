@@ -34,13 +34,13 @@
                 <td data-col="Wallet" class="num">{{ "%.2f"|format(person.wallet_balance or 0) }} TMT</td>
                 <td data-col="Role">
                     <form action="{{ url_for('admin_set_role', user_id=person.id) }}" method="POST" class="cell-form">
-                        <label class="visually-hidden" for="role-{{ person.id }}">Role for {{ person.email }}</label>
+                        <label class="visually-hidden" for="role-{{ person.id }}">{{ t('adm.role_for') }} {{ person.email }}</label>
                         <select name="role" id="role-{{ person.id }}">
                             <option value="member" {% if person.role == 'member' %}selected{% endif %}>{{ t('adm.role_member') }}</option>
                             <option value="courier" {% if person.role == 'courier' %}selected{% endif %}>{{ t('adm.role_courier') }}</option>
                             <option value="admin" {% if person.role == 'admin' %}selected{% endif %}>{{ t('adm.role_admin') }}</option>
                         </select>
-                        <button type="submit" class="auth-btn auth-btn-muted">Save</button>
+                        <button type="submit" class="auth-btn auth-btn-muted">{{ t('common.save') }}</button>
                     </form>
                 </td>
             </tr>

@@ -7,33 +7,33 @@
     id="ai-expert-sidebar"
     class="ai-expert-sidebar"
     role="dialog"
-    aria-label="Ask about this search"
+    aria-label="{{ t('idx.ask_search') }}"
     {% if expert_query %}data-expert-query="{{ expert_query }}"{% endif %}
 >
     <div class="ai-expert-header">
         <div class="ai-expert-header-row">
-            <h3>Ask about this search</h3>
-            <button type="button" id="ai-expert-close" class="ai-expert-close" aria-label="Close">
+            <h3>{{ t('idx.ask_search') }}</h3>
+            <button type="button" id="ai-expert-close" class="ai-expert-close" aria-label="{{ t('common.close') }}">
                 <svg class="ico"><use href="#i-times"></use></svg>
             </button>
         </div>
-        <span class="ai-expert-eyebrow">Live</span>
+        <span class="ai-expert-eyebrow">{{ t('item.ai_live') }}</span>
     </div>
-    <div class="ai-expert-status">Nothing runs until you ask.</div>
+    <div class="ai-expert-status">{{ t('item.ai_idle') }}</div>
     <div class="ai-expert-actions">
-        <button type="button" class="ai-quick-action" data-expert-question="Teach me what to check for in these results.">What should I check?</button>
-        <button type="button" class="ai-quick-action" data-expert-question="How should I set up or inspect an item like this?">Setup help</button>
+        <button type="button" class="ai-quick-action" data-expert-question="Teach me what to check for in these results.">{{ t('idx.ai_prompt') }}</button>
+        <button type="button" class="ai-quick-action" data-expert-question="How should I set up or inspect an item like this?">{{ t('idx.ai_setup') }}</button>
     </div>
     <div class="ai-chat-thread" id="ai-chat-thread"></div>
     <form id="ai-expert-form" class="ai-expert-form">
-        <label for="ai-expert-input" class="visually-hidden">Your question</label>
-        <input id="ai-expert-input" type="text" placeholder="Ask about setup, inspection, or usage" {% if not expert_query %}disabled{% endif %}>
-        <button type="submit" class="auth-btn" {% if not expert_query %}disabled{% endif %}>Ask</button>
+        <label for="ai-expert-input" class="visually-hidden">{{ t('item.ai_yourq') }}</label>
+        <input id="ai-expert-input" type="text" placeholder="{{ t('idx.ai_ph') }}" {% if not expert_query %}disabled{% endif %}>
+        <button type="submit" class="auth-btn" {% if not expert_query %}disabled{% endif %}>{{ t('item.ask_btn') }}</button>
     </form>
 </div>
 
 {% if expert_query %}
-<button type="button" id="ai-expert-launcher" class="ai-expert-launcher">Ask about this search</button>
+<button type="button" id="ai-expert-launcher" class="ai-expert-launcher">{{ t('idx.ask_search') }}</button>
 {% endif %}
 
 
@@ -82,7 +82,7 @@
         {# No heading: the button that opened this already names it, so the
            drawer just carries the list and a close control. #}
         <div class="cat-panel-head">
-            <label for="cat-expand" class="cat-close" aria-label="Close">
+            <label for="cat-expand" class="cat-close" aria-label="{{ t('common.close') }}">
                 <svg class="ico" aria-hidden="true"><use href="#i-times"></use></svg>
             </label>
         </div>
@@ -129,7 +129,7 @@
     </div>
 
 
-    <h2 class="visually-hidden">Listings</h2>
+    <h2 class="visually-hidden">{{ t('idx.listings') }}</h2>
     <div class="product-grid">
     {% for item in items %}
     <a href="{{ url_for('item_detail', item_id=item.id) }}" class="hs-card" data-category="{{ item.category }}">
@@ -163,17 +163,17 @@
     <div class="grid-state">
         <div class="state">
             <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-box-open"></use></svg></div>
-            <h3>Nothing matches these filters yet</h3>
+            <h3>{{ t('idx.none_filters') }}</h3>
             <p>
                 {% if search_query %}
-                    No listing mentions “{{ search_query }}” in the area you picked. Try a broader region, or drop the search words and browse a category.
+                    {{ t('idx.none_search_a') }} “{{ search_query }}” {{ t('idx.none_search_b') }}
                 {% else %}
-                    No one has posted in this area yet. Widen the region, or be the first to list something here.
+                    {{ t('idx.none_area') }}
                 {% endif %}
             </p>
             <div class="state-actions">
-                <a href="{{ url_for('index') }}" class="auth-btn auth-btn-muted">Clear filters</a>
-                <a href="/upload" class="auth-btn">Post an item</a>
+                <a href="{{ url_for('index') }}" class="auth-btn auth-btn-muted">{{ t('idx.clear_filters') }}</a>
+                <a href="/upload" class="auth-btn">{{ t('nav.post') }}</a>
             </div>
         </div>
     </div>
@@ -181,8 +181,8 @@
     <div class="grid-state hidden" id="category-empty">
         <div class="state state--compact">
             <div class="state-mark" aria-hidden="true"><svg class="ico" aria-hidden="true"><use href="#i-filter"></use></svg></div>
-            <h3>Nothing in this category right now</h3>
-            <p>Pick another category, or search the whole marketplace.</p>
+            <h3>{{ t('idx.none_category') }}</h3>
+            <p>{{ t('idx.none_category_d') }}</p>
         </div>
     </div>
     </div>
