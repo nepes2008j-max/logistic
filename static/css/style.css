@@ -858,11 +858,10 @@
     gap: clamp(8px, 1.4vw, 16px);
 }
 
-/* A real airliner rather than a drawn dart: public-domain NIH BioArt, one
-   path, inlined so `currentColor` picks up the theme's ink in both themes.
-   Square viewBox, so the box is sized on height and the silhouette sits in
-   the middle of it. */
-.flight-plane {
+/* A delivery box truck, one inline path, so `currentColor` picks up the
+   theme's ink in both themes. Square viewBox, so the box is sized on height
+   and the silhouette sits in the middle of it. */
+.flight-truck {
     width: clamp(86px, 15vw, 200px);
     height: auto;
     color: var(--ink);

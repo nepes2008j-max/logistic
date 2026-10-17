@@ -172,6 +172,35 @@ TRANSLATIONS = {
     "auth.request_access": {"en": 'Request access', "ru": "Запросить доступ", "tk": "Rugsat sora"},
     "auth.no_account":     {"en": 'No account?', "ru": "Нет аккаунта?", "tk": "Hasabyňyz ýokmy?"},
 
+    # ------------------------------------------------------------ login --
+    "login.lede":          {"en": 'Your wallet, your orders and your open chats are where you left them.',
+                            "ru": "Ваш кошелёк, заказы и открытые чаты там, где вы их оставили.",
+                            "tk": "Gapjygyňyz, sargytlaryňyz we açyk söhbetleriňiz galdyran ýeriňizde."},
+    "login.fact1":         {"en": 'Every member confirmed their email and was approved by a person, not a script.',
+                            "ru": "Каждый участник подтвердил почту и был одобрен человеком, а не скриптом.",
+                            "tk": "Her agza e-poçtasyny tassyklady we skript däl, adam tarapyndan tassyklandy."},
+    "login.fact2":         {"en": 'Your money stays with Global Trade until a courier records the handover.',
+                            "ru": "Ваши деньги остаются у Global Trade, пока курьер не зафиксирует передачу.",
+                            "tk": "Pullaryňyz kurýer geçirişi bellige alýança Global Trade-de galýar."},
+    "login.fact3":         {"en": 'Nobody can message you until you accept their request.',
+                            "ru": "Никто не сможет написать вам, пока вы не примете его запрос.",
+                            "tk": "Siz haýyşyny kabul edýänçäňiz, hiç kim size ýazyp bilmez."},
+    "login.use_email":     {"en": 'Use the email you registered with.',
+                            "ru": "Используйте почту, с которой вы регистрировались.",
+                            "tk": "Hasaba alnan e-poçtaňyzy ulanyň."},
+    "login.pw_ph":         {"en": 'Your password', "ru": "Ваш пароль", "tk": "Parolyňyz"},
+    "login.remember":      {"en": 'Keep me logged in', "ru": "Оставаться в системе", "tk": "Meni ulgamda sakla"},
+    "login.no_account_q":  {"en": 'No account yet?', "ru": "Ещё нет аккаунта?", "tk": "Heniz hasabyňyz ýokmy?"},
+    "login.by_hand":       {"en": 'an administrator reviews every one by hand.',
+                            "ru": "администратор рассматривает каждую заявку вручную.",
+                            "tk": "administrator her haýyşy el bilen gözden geçirýär."},
+
+    # ----------------------------------------------------------- footer --
+    "nav.footer":          {"en": 'Footer', "ru": "Подвал", "tk": "Aşaky bölüm"},
+    "footer.note":         {"en": 'Every member confirmed their email and was approved by a person. Global Trade holds the price of the goods until a courier records the handover, and the handover is closed with a code read out at the door.',
+                            "ru": "Каждый участник подтвердил свою почту и был одобрен человеком. Global Trade удерживает стоимость товара, пока курьер не зафиксирует передачу, а передача закрывается кодом, который называют у двери.",
+                            "tk": "Her agza e-poçtasyny tassyklady we adam tarapyndan tassyklandy. Global Trade kurýer geçirişi bellige alýança harydyň bahasyny saklaýar, geçiriş bolsa gapyda aýdylýan kod bilen ýapylýar."},
+
     # ------------------------------------------------------------ common --
     "common.cancel":       {"en": 'Cancel', "ru": "Отмена", "tk": "Ýatyr"},
     "common.save":         {"en": 'Save', "ru": "Сохранить", "tk": "Ýatda sakla"},

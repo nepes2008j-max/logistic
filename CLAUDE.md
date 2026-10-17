@@ -96,14 +96,16 @@ jets and private travel. **Take its visual system, never its subject matter.**
 Global Trade moves ordinary goods for ordinary people, by road, across
 Turkmenistan.
 
-The home hero does carry an aircraft: a small airliner silhouette that crosses
-the top of the page and leaves, trailing the wordmark. It is public-domain NIH
-BioArt inlined as one vector path — see `static/img/CREDITS.txt` — and it is a
-figure for distance covered, not a description of the fleet. An earlier version
-used a photograph of a real Dassault Falcon 7X whose licence could not be
-confirmed and whose livery belonged to a real company; that was withdrawn and
-must not come back. If you replace the aircraft, replace it with something
-whose licence you can state.
+The home hero carries a delivery truck: a small box-truck silhouette that
+crosses the top of the page and leaves, trailing the wordmark. It is an
+original vector path drawn for this project (public domain / CC0) — see
+`static/img/CREDITS.txt` — and it is a figure for distance covered by road,
+which is what the product does. Earlier versions carried an aircraft (first a
+photograph of a real Dassault Falcon 7X whose licence could not be confirmed,
+then a public-domain airliner silhouette); both were withdrawn because an
+aircraft misrepresents a road-logistics product. Do not bring the aircraft
+back. If you replace the truck, replace it with something whose licence you can
+state.
 
 Mobile is a first-class target, not a fallback. At phone width the app presents
 as a native-feeling application with a bottom tab bar, safe-area insets

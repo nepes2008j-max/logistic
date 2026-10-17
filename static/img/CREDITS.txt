@@ -1,21 +1,23 @@
-Hero aircraft — inlined in templates/dashboard.html (.flight-plane)
+Hero truck — inlined in templates/dashboard.html (.flight-truck)
 
-Source: "Air Travel" (NIH BioArt 783 - 793068)
-  https://commons.wikimedia.org/wiki/File:Air_Travel_(NIH_BioArt_783_-_793068).svg
-  National Institutes of Health BioArt Source, via Wikimedia Commons.
-  Licence: PUBLIC DOMAIN. No attribution is legally required; the provenance
-  is recorded here so the next person does not have to re-derive it.
+An original delivery box-truck silhouette drawn for this project as one SVG
+path. It is not derived from any third-party asset.
+  Licence: PUBLIC DOMAIN / CC0. No attribution is required.
 
 A single vector path, inlined into the template rather than linked, so it
 inherits the theme's ink through `currentColor` in both light and dark and
-costs no extra request. The silhouette is unmodified.
+costs no extra request.
 
-Why this and not the previous asset: the hero used to carry a photograph of a
-Dassault Falcon 7X (registration VP-CSW) whose licence this file could not
-confirm, and which claimed a class of service Global Trade does not run. It was
-withdrawn. The files aircraft-1000.* and aircraft-1800.* are what is left of
-it — they are referenced by nothing and excluded from the repository.
+Why a truck: Global Trade is a logistics marketplace for ordinary goods, and
+the goods move by road. The silhouette is a figure for distance covered, not a
+description of any fleet.
 
-Global Trade is a logistics marketplace for ordinary goods. The aircraft is a
-figure for distance covered, not a description of the fleet; the goods move
-by road.
+History, for the next person:
+  * The hero once carried a photograph of a Dassault Falcon 7X (registration
+    VP-CSW) whose licence this file could not confirm, and which claimed a
+    class of service Global Trade does not run. It was withdrawn. The files
+    aircraft-1000.* and aircraft-1800.* are what is left of it — referenced by
+    nothing and excluded from the repository.
+  * It was then replaced by a public-domain airliner silhouette (NIH BioArt
+    783-793068, via Wikimedia Commons). That too was withdrawn: an aircraft
+    misrepresents a product that delivers by road. The truck replaced it.

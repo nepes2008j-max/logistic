@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "static/css/style.css"
+        ],
+        "createdAt": "2026-10-17T05:31:30.535Z",
+        "reason": "category ranking bar: width encodes the ranking data itself and transitions only on discrete .active click, not a looping animation; transform:scaleX would require reworking --bar from a percentage across the template"
+      }
+    ]
+  }
+}
