@@ -794,6 +794,12 @@ TRANSLATIONS = {
 
     # ----------------------------------------------- flash messages --
     "fl.img_too_large": {"en": "The uploaded image is too large. Please use a smaller or compressed image.", "ru": "Загруженное изображение слишком большое. Используйте меньшее или сжатое изображение.", "tk": "Ýüklenen surat gaty uly. Kiçiräk ýa-da gysylan surat ulanyň."},
+    "fl.exc_not_image": {"en": "That file is not a JPEG, PNG, GIF or WebP image.", "ru": "Этот файл не является изображением JPEG, PNG, GIF или WebP.", "tk": "Bu faýl JPEG, PNG, GIF ýa-da WebP suraty däl."},
+    "fl.exc_too_large": {"en": "That image is larger than 8 MB.", "ru": "Это изображение больше 8 МБ.", "tk": "Bu surat 8 MB-dan uly."},
+    "fl.exc_missing_data": {"en": "Missing image data", "ru": "Отсутствуют данные изображения", "tk": "Surat maglumaty ýok"},
+    "fl.exc_invalid_data": {"en": "Invalid image data", "ru": "Недействительные данные изображения", "tk": "Nädogry surat maglumaty"},
+    "fl.exc_capture_unusable": {"en": "That capture is not a usable image", "ru": "Этот снимок не является пригодным изображением", "tk": "Bu düşürilen surat ýararly däl"},
+    "fl.exc_capture_too_large": {"en": "That capture is too large", "ru": "Этот снимок слишком большой", "tk": "Bu düşürilen surat gaty uly"},
     "fl.admins_only": {"en": "That area is for administrators.", "ru": "Этот раздел только для администраторов.", "tk": "Bu bölüm diňe administratorlar üçin."},
     "fl.couriers_only": {"en": "That area is for couriers.", "ru": "Этот раздел только для курьеров.", "tk": "Bu bölüm diňe kurýerler üçin."},
     "fl.bad_login": {"en": "Invalid email or password", "ru": "Неверная почта или пароль", "tk": "Nädogry e-poçta ýa-da parol"},
