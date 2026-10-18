@@ -1905,7 +1905,7 @@ def login():
         if user and check_password_hash(user.password_hash, password):
             if current_user.is_authenticated:
                 logout_user()
-            login_user(user)
+            login_user(user, remember=bool(request.form.get('remember')))
             return redirect(url_for('index'))
         flash('Invalid email or password')
     elif current_user.is_authenticated:
