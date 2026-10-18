@@ -11,6 +11,15 @@
         ],
         "createdAt": "2026-10-17T05:31:30.535Z",
         "reason": "category ranking bar: width encodes the ranking data itself and transitions only on discrete .active click, not a looping animation; transform:scaleX would require reworking --bar from a percentage across the template"
+      },
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "static/css/base.css"
+        ],
+        "createdAt": "2026-10-18T12:51:49.083Z",
+        "reason": "false positive: the only match is .tab .ico transition of stroke-width (an SVG paint attribute on a 23px icon), not a box-model width/height/padding/margin; no reflow, fires only on discrete tab selection"
       }
     ]
   }
