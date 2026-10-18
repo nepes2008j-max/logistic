@@ -846,10 +846,10 @@
 .flight-craft {
     position: absolute;
     /* Parks with its nose short of the destination ring rather than on top
-       of it — the plane arrives at the marker, it does not eat it. */
+       of it — the truck arrives at the marker, it does not eat it. */
     right: 22px;
     top: 50%;
-    animation: flight-cross 13s linear infinite;
+    animation: flight-cross 8s linear infinite;
 }
 
 .flight-lift {
@@ -887,15 +887,16 @@
    behind, which is the point — the goods moved, the record of it remains.
 
    It repeats. A single pass lasting two seconds was missable — arrive a
-   moment late, or glance away, and the hero simply had no aircraft in it and
-   no way to find out that it ever did. The crossing occupies the first four
-   seconds of the cycle and the remaining nine are empty sky, so the page is
-   quiet most of the time and still shows you what it does if you wait. */
+   moment late, or glance away, and the hero simply had no truck in it and no
+   way to find out that it ever did. The crossing now takes a little over four
+   seconds of an eight-second cycle, so there is a short quiet beat between
+   passes rather than a long empty stretch, and the goods go by often enough
+   to read. */
 @keyframes flight-cross {
     0%   { transform: translate(-105vw, -50%); opacity: 0; }
-    2%   { opacity: 1; }
-    26%  { transform: translate(0, -50%); opacity: 1; }
-    33%  { transform: translate(70vw, -50%); opacity: 0; }
+    3%   { opacity: 1; }
+    45%  { transform: translate(0, -50%); opacity: 1; }
+    55%  { transform: translate(70vw, -50%); opacity: 0; }
     100% { transform: translate(70vw, -50%); opacity: 0; }
 }
 
