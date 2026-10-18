@@ -369,64 +369,43 @@ VERIFY_TTL_DAYS = 3
 def send_verification_email(access_request):
     """Prove the applicant owns the address before an admin spends time on it."""
     link = url_for('verify_email', token=access_request.verify_token, _external=True)
+    lang = current_language()
     return mailer.send(
         access_request.email,
-        "Confirm your email for Global Trade",
-        "Hello %s,\n\n"
-        "Someone asked for access to Global Trade using this email address. If it\n"
-        "was you, confirm it here:\n\n"
-        "    %s\n\n"
-        "The link is good for %d days. Confirming does not create an account —\n"
-        "an administrator still reviews every request, and you will hear from\n"
-        "us either way.\n\n"
-        "If this was not you, ignore this message. Nothing happens without the\n"
-        "link above.\n\n"
-        "— Global Trade\n" % (access_request.full_name, link, VERIFY_TTL_DAYS),
+        translate('email.verify_subject', lang),
+        translate('email.verify_body', lang) % (access_request.full_name, link, VERIFY_TTL_DAYS),
     )
 
 
 def send_invite_email(access_request):
     """The approval itself. This link is the only way to become an account."""
     link = url_for('activate', token=access_request.invite_token, _external=True)
+    lang = current_language()
     return mailer.send(
         access_request.email,
-        "You have been approved for Global Trade",
-        "Hello %s,\n\n"
-        "Your request has been approved. Set a password and your account is\n"
-        "live:\n\n"
-        "    %s\n\n"
-        "The link works once and expires in %d days. Do not forward it — anyone\n"
-        "holding it can claim the account.\n\n"
-        "— Global Trade\n" % (access_request.full_name, link, INVITE_TTL_DAYS),
+        translate('email.invite_subject', lang),
+        translate('email.invite_body', lang) % (access_request.full_name, link, INVITE_TTL_DAYS),
     )
 
 
 def send_rejection_email(access_request):
+    lang = current_language()
     note = (access_request.review_note or "").strip()
-    reason = ("\n\nThe reviewer noted: %s" % note) if note else ""
+    reason = (translate('email.reject_note', lang) % note) if note else ""
     return mailer.send(
         access_request.email,
-        "About your Global Trade request",
-        "Hello %s,\n\n"
-        "Your request for access was not approved.%s\n\n"
-        "You are welcome to apply again.\n\n"
-        "— Global Trade\n" % (access_request.full_name, reason),
+        translate('email.reject_subject', lang),
+        translate('email.reject_body', lang) % (access_request.full_name, reason),
     )
 
 
 def send_password_reset_email(user):
     link = url_for('reset_password', token=user.reset_token, _external=True)
+    lang = current_language()
     return mailer.send(
         user.email,
-        "Reset your Global Trade password",
-        "Hello %s,\n\n"
-        "Someone asked to reset the password on this account. If it was you,\n"
-        "choose a new one here:\n\n"
-        "    %s\n\n"
-        "The link works once and expires in %d hours. If it was not you, ignore\n"
-        "this message — your current password still works and nothing has\n"
-        "changed.\n\n"
-        "— Global Trade\n" % (user.full_name or user.username, link, RESET_TTL_HOURS),
+        translate('email.reset_subject', lang),
+        translate('email.reset_body', lang) % (user.full_name or user.username, link, RESET_TTL_HOURS),
     )
 
 
