@@ -1881,12 +1881,15 @@ def expert_api():
     if not item_query:
         return jsonify({'error': 'item_query is required'}), 400
 
-    future = expert_executor.submit(live_engine.generate_live_expert_result, item_query, user_request)
+    # Resolve the language here, in the request thread: the engine runs in a
+    # worker thread where the request context is not available.
+    lang = current_language()
+    future = expert_executor.submit(live_engine.generate_live_expert_result, item_query, user_request, lang)
     try:
         result = future.result(timeout=30)
     except FuturesTimeoutError:
         future.cancel()
-        fallback = live_engine.generate_live_expert_result(item_query, user_request)
+        fallback = live_engine.generate_live_expert_result(item_query, user_request, lang)
         response = jsonify(fallback['payload'])
         response.headers['X-Expert-Source'] = fallback.get('source', 'fallback')
         response.headers['X-Live-Provider-Available'] = 'true' if fallback.get('live_provider_available') else 'false'

@@ -4,6 +4,12 @@ import re
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 
 import requests
+
+from translations import translate
+
+# The model and the offline fallback both answer in the viewer's language.
+_LANG_NAME = {"en": "English", "ru": "Russian", "tk": "Turkmen (Latin script)"}
+
 try:
     from dotenv import load_dotenv
 except ImportError:
@@ -44,20 +50,20 @@ class HandshakeLiveEngine:
             ("huggingface_inference", self._call_huggingface),
         ]
 
-    def generate_live_expert_result(self, item_query, user_request=None):
+    def generate_live_expert_result(self, item_query, user_request=None, language="en"):
         clean_query = self._clean_subject(item_query)
         live_provider_available = self.has_live_provider_credentials()
         for _provider_name, provider in self.providers:
-            payload = self._run_provider_with_timeout(provider, clean_query, user_request)
+            payload = self._run_provider_with_timeout(provider, clean_query, user_request, language)
             if payload:
                 payload["live_provider_available"] = live_provider_available
                 return payload
-        result = self._build_local_fallback(clean_query, user_request)
+        result = self._build_local_fallback(clean_query, user_request, language)
         result["live_provider_available"] = live_provider_available
         return result
 
-    def generate_live_expert_data(self, item_query, user_request=None):
-        result = self.generate_live_expert_result(item_query, user_request)
+    def generate_live_expert_data(self, item_query, user_request=None, language="en"):
+        result = self.generate_live_expert_result(item_query, user_request, language)
         return result["payload"]
 
     def has_live_provider_credentials(self):
@@ -71,9 +77,9 @@ class HandshakeLiveEngine:
             self._get_api_key("HUGGINGFACE_API_KEY", "HF_TOKEN", "HUGGINGFACEHUB_API_TOKEN"),
         ])
 
-    def _run_provider_with_timeout(self, provider, item_query, user_request):
+    def _run_provider_with_timeout(self, provider, item_query, user_request, language="en"):
         with ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(provider, item_query, user_request)
+            future = executor.submit(provider, item_query, user_request, language)
             try:
                 return future.result(timeout=self.provider_timeout)
             except FuturesTimeoutError:
@@ -89,9 +95,15 @@ class HandshakeLiveEngine:
                 subject = subject[: -len(noise)].strip(" .,-")
         return subject or "this item"
 
-    def _prompt(self, item_query, user_request=None):
+    def _prompt(self, item_query, user_request=None, language="en"):
         request_text = (user_request or "").strip()
         request_line = f"User request: {user_request}. " if user_request else ""
+        # The JSON keys stay English; the human-readable VALUES are written in
+        # the viewer's language.
+        lang_line = (
+            f"Write every string value in {_LANG_NAME.get(language, 'English')}, "
+            "but keep the JSON keys in English. "
+        ) if language != "en" else ""
         if request_text.lower() in {"hi", "hello", "hey", "yo"}:
             return (
                 "You are Global Trade AI, the assistant inside a logistics service that moves goods "
@@ -99,6 +111,7 @@ class HandshakeLiveEngine:
                 "teaching_guide, mentor_tip, visual_effect, brand_color. "
                 "For greetings, teaching_guide should be 3 short friendly chat lines that greet the user and ask what they are sending, ordering or checking over. "
                 "mentor_tip should be one short friendly sentence. "
+                f"{lang_line}"
                 f"Item query: {item_query}"
             )
         return (
@@ -111,6 +124,7 @@ class HandshakeLiveEngine:
             "Make the answer specific to the exact item, not generic. "
             "teaching_guide must be an array of exactly 3 short strings. "
             "mentor_tip must be one sentence. "
+            f"{lang_line}"
             f"{request_line}Item query: {item_query}"
         )
 
@@ -173,7 +187,7 @@ class HandshakeLiveEngine:
                 return value
         return None
 
-    def _call_gemini(self, item_query, user_request=None):
+    def _call_gemini(self, item_query, user_request=None, language="en"):
         api_key = self._get_api_key("GEMINI_API_KEY", "GOOGLE_API_KEY")
         if not api_key:
             return None
@@ -186,7 +200,7 @@ class HandshakeLiveEngine:
                     {
                         "parts": [
                             {
-                                "text": self._prompt(item_query, user_request)
+                                "text": self._prompt(item_query, user_request, language)
                             }
                         ]
                     }
@@ -212,7 +226,7 @@ class HandshakeLiveEngine:
             return {"payload": payload, "source": "gemini"}
         return None
 
-    def _call_groq(self, item_query, user_request=None):
+    def _call_groq(self, item_query, user_request=None, language="en"):
         api_key = self._get_api_key("GROQ_API_KEY")
         if not api_key:
             return None
@@ -226,7 +240,7 @@ class HandshakeLiveEngine:
                 "max_tokens": 240,
                 "messages": [
                     {"role": "system", "content": "Return strict JSON only. Make it item-specific."},
-                    {"role": "user", "content": self._prompt(item_query, user_request)},
+                    {"role": "user", "content": self._prompt(item_query, user_request, language)},
                 ],
             },
             timeout=self.http_timeout,
@@ -238,7 +252,7 @@ class HandshakeLiveEngine:
             return {"payload": payload, "source": "groq"}
         return None
 
-    def _call_mistral(self, item_query, user_request=None):
+    def _call_mistral(self, item_query, user_request=None, language="en"):
         api_key = self._get_api_key("MISTRAL_API_KEY")
         if not api_key:
             return None
@@ -252,7 +266,7 @@ class HandshakeLiveEngine:
                 "max_tokens": 240,
                 "messages": [
                     {"role": "system", "content": "Return strict JSON only. Make it item-specific."},
-                    {"role": "user", "content": self._prompt(item_query, user_request)},
+                    {"role": "user", "content": self._prompt(item_query, user_request, language)},
                 ],
             },
             timeout=self.http_timeout,
@@ -264,7 +278,7 @@ class HandshakeLiveEngine:
             return {"payload": payload, "source": "mistral"}
         return None
 
-    def _call_together(self, item_query, user_request=None):
+    def _call_together(self, item_query, user_request=None, language="en"):
         api_key = self._get_api_key("TOGETHER_API_KEY")
         if not api_key:
             return None
@@ -278,7 +292,7 @@ class HandshakeLiveEngine:
                 "max_tokens": 240,
                 "messages": [
                     {"role": "system", "content": "Return strict JSON only. Make it item-specific."},
-                    {"role": "user", "content": self._prompt(item_query, user_request)},
+                    {"role": "user", "content": self._prompt(item_query, user_request, language)},
                 ],
             },
             timeout=self.http_timeout,
@@ -290,7 +304,7 @@ class HandshakeLiveEngine:
             return {"payload": payload, "source": "together"}
         return None
 
-    def _call_openrouter(self, item_query, user_request=None):
+    def _call_openrouter(self, item_query, user_request=None, language="en"):
         api_key = self._get_api_key("OPENROUTER_API_KEY")
         if not api_key:
             return None
@@ -308,7 +322,7 @@ class HandshakeLiveEngine:
                 "max_tokens": 240,
                 "messages": [
                     {"role": "system", "content": "Return strict JSON only. Make it item-specific."},
-                    {"role": "user", "content": self._prompt(item_query, user_request)},
+                    {"role": "user", "content": self._prompt(item_query, user_request, language)},
                 ],
             },
             timeout=self.http_timeout,
@@ -320,7 +334,7 @@ class HandshakeLiveEngine:
             return {"payload": payload, "source": "openrouter"}
         return None
 
-    def _call_openai(self, item_query, user_request=None):
+    def _call_openai(self, item_query, user_request=None, language="en"):
         api_key = self._get_api_key("OPENAI_API_KEY")
         if not api_key:
             return None
@@ -334,7 +348,7 @@ class HandshakeLiveEngine:
                 "max_tokens": 240,
                 "messages": [
                     {"role": "system", "content": "Return strict JSON only. Make it item-specific."},
-                    {"role": "user", "content": self._prompt(item_query, user_request)},
+                    {"role": "user", "content": self._prompt(item_query, user_request, language)},
                 ],
             },
             timeout=self.http_timeout,
@@ -346,7 +360,7 @@ class HandshakeLiveEngine:
             return {"payload": payload, "source": "openai"}
         return None
 
-    def _call_huggingface(self, item_query, user_request=None):
+    def _call_huggingface(self, item_query, user_request=None, language="en"):
         api_key = self._get_api_key("HUGGINGFACE_API_KEY", "HF_TOKEN", "HUGGINGFACEHUB_API_TOKEN")
         if not api_key:
             return None
@@ -360,7 +374,7 @@ class HandshakeLiveEngine:
                 "max_tokens": 240,
                 "messages": [
                     {"role": "system", "content": "Return strict JSON only. Make it item-specific."},
-                    {"role": "user", "content": self._prompt(item_query, user_request)},
+                    {"role": "user", "content": self._prompt(item_query, user_request, language)},
                 ],
             },
             timeout=self.http_timeout,
@@ -510,25 +524,36 @@ class HandshakeLiveEngine:
             f"Step 3: Run one realistic test so the item proves itself before you trust it in front of the next user.",
         ], f"Pro tip: the quickest way to judge {subject} is a short real-use test, because hidden faults rarely show up during a static inspection."
 
-    def _build_local_fallback(self, item_query, user_request=None):
+    def _build_local_fallback(self, item_query, user_request=None, language="en"):
         subject = self._clean_subject(item_query)
         request = (user_request or "").strip().lower()
         if request in {"hi", "hello", "hey", "yo"}:
             return {
                 "payload": {
                     "teaching_guide": [
-                        "Hi, I can help you learn an item or walk through setup.",
-                        "Tell me what item you have or what part is confusing.",
-                        "If you want, ask me for setup steps, safety checks, or beginner tips.",
+                        translate("ai.greet1", language),
+                        translate("ai.greet2", language),
+                        translate("ai.greet3", language),
                     ],
-                    "mentor_tip": "The clearer your item name and problem, the better the answer will be.",
+                    "mentor_tip": translate("ai.greet_tip", language),
                     "visual_effect": "cyber_grid",
                     "brand_color": "#14b8a6",
                 },
                 "source": "fallback",
             }
-        family = self._infer_item_family(subject)
-        steps, mentor_tip = self._family_guidance(family, subject, user_request)
+        if language == "en":
+            # English keeps the detailed, per-item-family guidance.
+            family = self._infer_item_family(subject)
+            steps, mentor_tip = self._family_guidance(family, subject, user_request)
+        else:
+            # Other languages get the generic guidance, fully localised, rather
+            # than detailed advice that would leak English into the panel.
+            steps = [
+                translate("ai.generic_s1", language) % subject,
+                translate("ai.generic_s2", language) % subject,
+                translate("ai.generic_s3", language),
+            ]
+            mentor_tip = translate("ai.generic_tip", language) % subject
         visual_effect, brand_color = self._effect_and_color(subject)
         return {
             "payload": {
