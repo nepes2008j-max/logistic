@@ -192,7 +192,7 @@ LISTINGS = [
     # ---- Furniture -------------------------------------------------------
     ("Oak Dining Table, 6 Seats", "furniture", "large", 280, 40.0, "dining,table,wooden",
      "Solid oak, one owner. Two small dents on the underside, none on top."),
-    ("Office Chair, Ergonomic", "furniture", "large", 90, 16.0, "office,desk,chair",
+    ("Office Chair, Ergonomic", "furniture", "large", 90, 16.0, "office,interior,desk",
      "Adjustable lumbar and armrests. Gas lift replaced this year."),
     ("Bookshelf, 5 Shelves", "furniture", "large", 70, 25.0, "bookshelf",
      "Flat-packs down for the courier. All fixings in a bag taped inside."),
@@ -248,9 +248,9 @@ LISTINGS = [
     # ---- Sport and outdoors ----------------------------------------------
     ("Camping Tent, 4 Person", "sports", "medium", 85, 7.0, "camping,tent",
      "Two bedrooms and a porch. Pitched three times, all pegs present."),
-    ("Weight Set, 60kg", "sports", "large", 130, 60.0, "dumbbell,barbell",
+    ("Weight Set, 60kg", "sports", "large", 130, 60.0, "dumbbell,gym,floor",
      "Barbell, two dumbbells and plates. Courier will want help with this."),
-    ("Fishing Rod and Reel", "sports", "medium", 55, 1.5, "fishing,reel,tackle",
+    ("Fishing Rod and Reel", "sports", "medium", 55, 1.5, "fishing,tackle,gear",
      "Carbon, 3.6m, with a spare spool and a seat box."),
 
     # ---- Instruments -----------------------------------------------------
