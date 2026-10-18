@@ -145,9 +145,9 @@ LISTINGS = [
     # ---- Books -----------------------------------------------------------
     ("IELTS Preparation Set", "books", "medium", 40, 5.0, "textbook,study",
      "Cambridge 15 to 18 with the answer keys. Clean, no writing in them."),
-    ("Turkmen Poetry Collection", "books", "small", 85, 1.2, "poetry,book",
+    ("Turkmen Poetry Collection", "books", "small", 85, 1.2, "open,book,literature",
      "Magtymguly and later poets, hardback. Good condition, no marks."),
-    ("Medical Anatomy Atlas", "books", "medium", 25, 3.0, "anatomy,book",
+    ("Medical Anatomy Atlas", "books", "medium", 25, 3.0, "human,anatomy,model",
      "Netter, sixth edition. Heavy, so the delivery costs a little more."),
     ("Programming Bookshelf", "books", "large", 60, 14.0, "programming,books",
      "Nine books on Python, Go and system design. Sold as one box."),
@@ -168,7 +168,7 @@ LISTINGS = [
     # ---- Phones ----------------------------------------------------------
     ("iPhone 13, 128GB", "phones", "small", 190, 0.25, "iphone",
      "Battery health 89%. Unlocked, original box, one small mark on the frame."),
-    ("Samsung Galaxy A54", "phones", "small", 95, 0.3, "samsung,galaxy,phone",
+    ("Samsung Galaxy A54", "phones", "small", 95, 0.3, "android,smartphone,mobile",
      "Dual SIM, works on every network here. Case and glass already fitted."),
     ("Xiaomi Redmi Note 12", "phones", "small", 60, 0.3, "xiaomi,smartphone",
      "Bought as a spare and barely used. Charger in the box."),
