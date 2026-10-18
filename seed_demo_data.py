@@ -56,7 +56,7 @@ CATEGORY_FALLBACK = {
     "clothing": "folded clothing",
     "shoes": "leather shoes",
     "kids": "children toys",
-    "sports": "sports equipment",
+    "sports": "dumbbell gym",
     "music": "musical instrument",
     "garden": "garden plants",
     "pets": "pet supplies",
@@ -137,9 +137,9 @@ LISTINGS = [
      "Carbon fork, recently serviced. Helmet and a pump come with it."),
     ("DSLR Starter Kit", "hobbies", "small", 95, 2.2, "dslr,camera",
      "Body, 18-55mm and 50mm lens, bag and two cards. Good for learning."),
-    ("Drone with 4K Camera", "hobbies", "medium", 160, 2.0, "drone",
+    ("Drone with 4K Camera", "hobbies", "medium", 160, 2.0, "quadcopter,aerial",
      "Three batteries, controller and a case. Everything in the box, nothing missing."),
-    ("Football Kit, Full Team", "hobbies", "large", 120, 16.0, "football,kit",
+    ("Football Kit, Full Team", "hobbies", "large", 120, 16.0, "football,soccer,ball",
      "Fourteen shirts, bibs, cones and two match balls. Washed and folded."),
 
     # ---- Books -----------------------------------------------------------
@@ -157,13 +157,13 @@ LISTINGS = [
     # ---- Houses ----------------------------------------------------------
     ("One-Room Flat Contents", "houses", "large", 190, None, "apartment,interior",
      "The whole contents of a one-room flat: bed, table, two chairs and a small fridge."),
-    ("Workbench and Tool Chests", "houses", "large", 80, None, "garage",
+    ("Workbench and Tool Chests", "houses", "large", 80, None, "workbench,workshop",
      "A full workbench with a vice, a shelf unit and two tool chests. Two people to lift."),
-    ("Eighty Chairs and Ten Tables", "houses", "large", 900, None, "event,hall",
+    ("Eighty Chairs and Ten Tables", "houses", "large", 900, None, "stacking,chairs",
      "Eighty stacking chairs and ten folding tables. Sold together, needs a van."),
-    ("Garden Set and Tandyr", "houses", "large", 450, None, "country,house",
+    ("Garden Set and Tandyr", "houses", "large", 450, None, "garden,furniture,patio",
      "Garden furniture set and a cast-iron tandyr. Heavy, collection from Gokdepe."),
-    ("Studio Backdrops and Lights", "houses", "large", 60, None, "photo,studio",
+    ("Studio Backdrops and Lights", "houses", "large", 60, None, "softbox,studio,light",
      "Two paper backdrops, a stand and three studio lights. Long, awkward to carry."),
     # ---- Phones ----------------------------------------------------------
     ("iPhone 13, 128GB", "phones", "small", 190, 0.25, "iphone",
@@ -182,17 +182,17 @@ LISTINGS = [
      "Brown switches, Turkmen and Russian legends, detachable cable."),
 
     # ---- Appliances ------------------------------------------------------
-    ("Bosch Washing Machine", "appliances", "large", 320, 68.0, "washing,machine",
+    ("Bosch Washing Machine", "appliances", "large", 320, 68.0, "washing,machine,laundry",
      "7kg, 1200rpm. Working perfectly, moving house and it will not fit."),
-    ("Chest Freezer, 200L", "appliances", "large", 240, 45.0, "chest,freezer",
+    ("Chest Freezer, 200L", "appliances", "large", 240, 45.0, "freezer,appliance,white",
      "Kept in a garage, defrosted and cleaned. Two baskets inside."),
-    ("Air Fryer, 5.5L", "appliances", "medium", 55, 5.0, "air,fryer",
+    ("Air Fryer, 5.5L", "appliances", "medium", 55, 5.0, "air,fryer,kitchen",
      "Used a handful of times. Basket is dishwasher safe."),
 
     # ---- Furniture -------------------------------------------------------
     ("Oak Dining Table, 6 Seats", "furniture", "large", 280, 40.0, "dining,table,wooden",
      "Solid oak, one owner. Two small dents on the underside, none on top."),
-    ("Office Chair, Ergonomic", "furniture", "large", 90, 16.0, "office,chair",
+    ("Office Chair, Ergonomic", "furniture", "large", 90, 16.0, "office,desk,chair",
      "Adjustable lumbar and armrests. Gas lift replaced this year."),
     ("Bookshelf, 5 Shelves", "furniture", "large", 70, 25.0, "bookshelf",
      "Flat-packs down for the courier. All fixings in a bag taped inside."),
@@ -248,9 +248,9 @@ LISTINGS = [
     # ---- Sport and outdoors ----------------------------------------------
     ("Camping Tent, 4 Person", "sports", "medium", 85, 7.0, "camping,tent",
      "Two bedrooms and a porch. Pitched three times, all pegs present."),
-    ("Weight Set, 60kg", "sports", "large", 130, 60.0, "weight,plates,barbell",
+    ("Weight Set, 60kg", "sports", "large", 130, 60.0, "dumbbell,barbell",
      "Barbell, two dumbbells and plates. Courier will want help with this."),
-    ("Fishing Rod and Reel", "sports", "medium", 55, 1.5, "fishing,rod",
+    ("Fishing Rod and Reel", "sports", "medium", 55, 1.5, "fishing,reel,tackle",
      "Carbon, 3.6m, with a spare spool and a seat box."),
 
     # ---- Instruments -----------------------------------------------------
@@ -330,11 +330,17 @@ def _curl(url, dest=None, timeout=70):
     return subprocess.run(cmd, capture_output=True).stdout
 
 
-def commons_search(term, limit=6, width=1200):
+# Commons is full of storefronts, logos, maps and signage that match a plain
+# subject word ("sports equipment" returns a shop front). Excluding them at the
+# query cuts the most common wrong-photo failures.
+SEARCH_EXCLUDE = "-store -storefront -shop -logo -sign -signage -map -poster -diagram"
+
+
+def commons_search(term, limit=8, width=1200):
     """Ask Commons for photographs of a subject, widest first."""
     query = urllib.parse.urlencode({
         "action": "query", "generator": "search",
-        "gsrsearch": f"filetype:bitmap {term}",
+        "gsrsearch": f"filetype:bitmap {term} {SEARCH_EXCLUDE}",
         "gsrnamespace": "6", "gsrlimit": str(limit),
         "prop": "imageinfo", "iiprop": "url|size",
         "iiurlwidth": str(width), "format": "json",
@@ -425,9 +431,60 @@ def repair_remote_images(verbose=True):
     return fixed
 
 
+def refresh_photos(title_filters, verbose=True):
+    """Re-fetch photographs for already-seeded listings using current keywords.
+
+    Targeted replacement: pass one or more title substrings and only matching
+    listings are refreshed. A new photo is fetched into a temp file and only
+    swapped in if it succeeds, so a listing never loses its existing photo to a
+    search that comes back empty. Idempotent and safe to run repeatedly — handy
+    because Commons rate-limits a burst, so a second pass picks up the misses.
+    """
+    rows = []
+    for row in LISTINGS:
+        title = row[0]
+        if title_filters and not any(f.lower() in title.lower() for f in title_filters):
+            continue
+        item = Item.query.filter_by(title=title).first()
+        if item:
+            rows.append((row, item))
+
+    if not rows:
+        print("no seeded listings matched; nothing to refresh")
+        return 0
+
+    def work(pair):
+        row, item = pair
+        title, category, keyword = row[0], row[1], row[5]
+        filename = f"{IMAGE_PREFIX}{slugify(title)}.jpg"
+        dest = os.path.join(IMAGE_DIR, filename)
+        tmp = dest + ".new"
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        ok = fetch_photo(keyword, category, tmp)
+        if ok:
+            os.replace(tmp, dest)
+        elif os.path.exists(tmp):
+            os.remove(tmp)
+        return item, filename, ok
+
+    refreshed = 0
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        for item, filename, ok in pool.map(work, rows):
+            item.image_url = f"{WEB_PREFIX}{filename}"
+            if ok:
+                refreshed += 1
+            if verbose:
+                print(f"  {'ok  ' if ok else 'kept'}  {item.title}", flush=True)
+    db.session.commit()
+    print(f"refreshed {refreshed} of {len(rows)} listings (kept the old photo on a miss)")
+    return refreshed
+
+
 def main():
     reset = "--reset" in sys.argv
     repair_only = "--repair" in sys.argv
+    refresh = "--refresh" in sys.argv
 
     with app.app_context():
         os.makedirs(IMAGE_DIR, exist_ok=True)
@@ -442,6 +499,13 @@ def main():
 
         if repair_only:
             repair_remote_images()
+            return
+
+        if refresh:
+            # Any args after --refresh are title substrings to target; none
+            # means refresh every seeded listing.
+            filters = [a for a in sys.argv[1:] if not a.startswith("--")]
+            refresh_photos(filters)
             return
 
         sellers = User.query.filter(User.email.like("%@globaltrade.com")).order_by(User.id).all()
