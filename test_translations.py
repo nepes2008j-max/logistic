@@ -66,8 +66,36 @@ def has_letters(s, n=3):
     return len(re.findall(r"[A-Za-z]", s)) >= n
 
 
+def check_flash_coverage():
+    """Fail if a flash() in app.py flashes a plain English string that has no
+    translation. flash('x') and flash(a if c else b) are translated at render
+    time by looking the English up in the fl.* catalogue, so every such literal
+    must be present there. flash(ft(...)) (a key) and flash(str(exc)) are
+    exempt — the former is already a key, the latter is handled separately."""
+    import ast
+    fl_english = {e["en"] for k, e in TRANSLATIONS.items() if k.startswith("fl.")}
+    src = open("app.py", encoding="utf-8").read()
+    tree = ast.parse(src)
+
+    def literals(node):
+        """The English string literals a flash() argument can flash directly."""
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return [node.value]
+        if isinstance(node, ast.IfExp):  # flash('a' if c else 'b')
+            return literals(node.body) + literals(node.orelse)
+        return []  # ft(...) call, BinOp %-format, str(exc) — not a plain literal
+
+    for node in ast.walk(tree):
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                and node.func.id == "flash" and node.args):
+            for text in literals(node.args[0]):
+                check("app.py:%d flash translated" % node.lineno,
+                      text in fl_english, text[:60])
+
+
 def main():
     langs = list(LANGUAGES.keys()) if isinstance(LANGUAGES, dict) else list(LANGUAGES)
+    check_flash_coverage()
 
     # 1. Every key defines every language, non-empty.
     for key, entry in TRANSLATIONS.items():
