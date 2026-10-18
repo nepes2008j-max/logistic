@@ -1,4 +1,18 @@
 # Hyer Aviation — Style Reference
+
+> **⚠ Read this first — Global Trade uses the *system*, not the subject.**
+> This file was extracted from an aviation brand and still talks about jets,
+> charter travel and a warm **clay** accent (`#bc7155`). Global Trade kept the
+> **visual system** — architectural display type at extreme scale, pill-shaped
+> actions, hard-edged panels, no drop shadows, elevation by surface shift — but
+> **none of the subject matter or the palette.** The shipped palette is a
+> **bright blue accent `#0B63FF` on deep ink `#082C5E` over white**, plus a
+> green status colour; the authoritative tokens live in
+> `static/css/variables.css`, and `[data-theme="dark"]` there defines the dark
+> theme. Wherever this document says *clay*, *#bc7155*, *jet* or *aviation*,
+> substitute the blue system in `variables.css`. The product itself (a
+> road-logistics marketplace for ordinary goods) is described in `CLAUDE.md`.
+
 > Cockpit twilight over parchment. A pale dawn-sky meets a slab-serif logo the size of a fuselage, with one warm clay accent breaking the monochrome restraint.
 
 **Theme:** mixed

@@ -1566,6 +1566,13 @@
     color: var(--ink-invert);
     border-radius: var(--r-md);
 }
+/* In dark mode --ink is near-white, so the navy price block flipped to a
+   bright white card. Keep it a dark, elevated panel instead, and re-point
+   --ink-invert inside it so the figure and the fine print stay light. */
+[data-theme="dark"] .price-block {
+    background: var(--surface-3);
+    --ink-invert: var(--ink);
+}
 .price-block .price-figure {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;

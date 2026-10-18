@@ -46,6 +46,10 @@
     {% include "_icons.html" %}
 
     {% if request.path == "/" %}
+    {# Without JS the splash is never cleared, so it would cover the homepage
+       forever. The hero is visible on its own, so with no JS we just hide the
+       overlay. #}
+    <noscript><style>#splash-screen { display: none !important; }</style></noscript>
     <div id="splash-screen">
         <div class="hands-wrapper">
             <svg class="ico hand-icon" aria-hidden="true"><use href="#i-handshake"></use></svg>

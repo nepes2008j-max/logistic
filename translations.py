@@ -103,9 +103,9 @@ TRANSLATIONS = {
                             "ru": "Разместите — и заказать сможет любой в стране. Курьер заберёт у двери, а ваш номер никто не узнает без вашего согласия.",
                             "tk": "Goýuň — ýurduň islendik ýerinden sargyt edip bilerler. Kurýer gapyňyzdan alýar, belgiňizi bolsa siz aýtmasaňyz hiç kim bilmeýär."},
     "home.cta_h2":         {"en": "Getting in takes an email and an administrator's nod.", "ru": "Чтобы войти, нужны адрес почты и одобрение администратора.", "tk": "Girmek üçin e-poçta we administratoryň ygtyýary gerek."},
-    "home.cta_p2":         {"en": 'Every member confirmed their address and was let in by a person. That is what makes handing a stranger your camera a reasonable thing to do.',
-                            "ru": "Каждый участник подтвердил адрес, и его впустил человек. Именно поэтому доверить незнакомцу свою камеру — разумно.",
-                            "tk": "Her agza salgysyny tassyklady we ony adam içeri goýberdi. Ine şonuň üçin kesekä kameraňy ynanmak makul bolýar."},
+    "home.cta_p2":         {"en": 'Every member confirmed their address and was let in by a person. That is what makes it safe to send real goods to someone you have never met.',
+                            "ru": "Каждый участник подтвердил адрес, и его впустил человек. Именно поэтому можно спокойно отправить настоящий товар тому, кого вы никогда не видели.",
+                            "tk": "Her agza salgysyny tassyklady we ony adam içeri goýberdi. Hut şonuň üçin hiç görmedik adamyňyza hakyky haryt ibermek howpsuz."},
 
     # ------------------------------------------------------- marketplace --
     "market.title":        {"en": 'Everything on offer near you', "ru": "Всё, что предлагают рядом",
@@ -139,6 +139,11 @@ TRANSLATIONS = {
                             "tk": "Sargyt edip, eltip bermegi haýyş et"},
     "item.login_to_order": {"en": 'Log in to order', "ru": "Войдите, чтобы заказать", "tk": "Sargyt üçin giriň"},
     "item.your_listing":   {"en": 'Your listing', "ru": "Ваше объявление", "tk": "Siziň bildirişiňiz"},
+    "item.withdraw":       {"en": 'Take it off the board', "ru": "Снять с витрины", "tk": "Tagtadan aýyr"},
+    "item.relist":         {"en": 'Put it back on the board', "ru": "Вернуть на витрину", "tk": "Tagta gaýtar"},
+    "item.withdraw_confirm": {"en": 'Take this listing off the board? You can put it back later.',
+                            "ru": "Снять это объявление с витрины? Позже можно вернуть.",
+                            "tk": "Bu bildirişi tagtadan aýyrmaly? Soňra gaýtaryp bolýar."},
     "item.plus_delivery":  {"en": '+ delivery', "ru": "+ доставка", "tk": "+ eltip bermek"},
     "item.ask":            {"en": 'Ask about this item', "ru": "Спросить об этом товаре", "tk": "Bu haryt barada sora"},
     "item.about":          {"en": 'About this item', "ru": "Об этом товаре", "tk": "Bu haryt barada"},
@@ -754,6 +759,15 @@ TRANSLATIONS = {
     # ------------------------------------------------------------ error --
     "err.back_market":     {"en": 'Back to the marketplace', "ru": "Назад на площадку", "tk": "Bazara dolan"},
     "err.your_orders":     {"en": 'Your orders', "ru": "Ваши заказы", "tk": "Siziň sargytlaryňyz"},
+    "err.e404_h":          {"en": 'Nothing here', "ru": "Здесь ничего нет", "tk": "Bu ýerde hiç zat ýok"},
+    "err.e404_p":          {"en": 'That page does not exist, or it belongs to an order you are not part of.',
+                            "ru": "Такой страницы нет, либо она относится к заказу, в котором вы не участвуете.",
+                            "tk": "Beýle sahypa ýok ýa-da ol siz gatnaşmaýan sargyda degişli."},
+    "err.e403_h":          {"en": 'Not your door', "ru": "Не ваша дверь", "tk": "Siziň gapyňyz däl"},
+    "err.e403_p":          {"en": 'You are signed in, but this is not yours to open.',
+                            "ru": "Вы вошли в систему, но это не вам открывать.",
+                            "tk": "Siz ulgama girdiňiz, ýöne muny açmak siziňki däl."},
+    "home.fact_city":      {"en": 'Ashgabat', "ru": "Ашхабад", "tk": "Aşgabat"},
 
     # ------------------------------------------- market / index page --
     "idx.ask_search":      {"en": 'Ask about this search', "ru": "Спросить об этом поиске", "tk": "Bu gözleg barada sora"},

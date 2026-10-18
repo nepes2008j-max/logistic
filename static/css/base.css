@@ -608,6 +608,15 @@ textarea:focus-visible,
 /* -- Search ------------------------------------------------------------- */
 .search-bar-container { min-width: 0; }
 
+/* Between phone and desktop the three-column masthead has no room for the
+   search field without its submit button colliding with the action links
+   (measured overlap across the 821–1080px band — iPad landscape, small
+   laptops, any narrowed window). Drop the field out of the masthead here;
+   it still lives, full width, on the market page. */
+@media (min-width: 821px) and (max-width: 1080px) {
+    .search-bar-container { display: none; }
+}
+
 .search-bar {
     display: flex;
     align-items: center;

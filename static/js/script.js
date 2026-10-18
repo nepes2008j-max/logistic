@@ -204,13 +204,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const splash = document.getElementById('splash-screen');
     const revealPage = () => document.documentElement.classList.add('splash-done');
     if (splash) {
-        setTimeout(() => {
-            splash.classList.add('fade-out');
+        // Show it once per browsing session — on later returns to the home
+        // page, clear it immediately rather than holding the screen again.
+        let seen = false;
+        try { seen = sessionStorage.getItem('gt_splash_seen') === '1'; } catch (e) {}
+        if (seen) {
+            splash.style.display = 'none';
             revealPage();
+        } else {
+            try { sessionStorage.setItem('gt_splash_seen', '1'); } catch (e) {}
             setTimeout(() => {
-                splash.style.display = 'none';
-            }, 800);
-        }, 1200);
+                splash.classList.add('fade-out');
+                revealPage();
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                }, 800);
+            }, 1200);
+        }
     } else {
         revealPage();
     }

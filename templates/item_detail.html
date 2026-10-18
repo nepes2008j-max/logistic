@@ -73,7 +73,7 @@
 
             <div class="price-block">
                 <div>
-                    <div class="price-figure">{{ "%.2f"|format(item.price) }} TMT</div>
+                    <div class="price-figure">{{ '{:,g}'.format(item.price or 0) }} TMT</div>
                     <div class="price-unit">{{ t('item.before_fee') }}</div>
                 </div>
                 <div class="price-side">
@@ -172,6 +172,18 @@
                     {% else %}{{ t('item.currently') }} <b>{{ t('status.' ~ item.status) }}</b>.{% endif %}
                 </span>
             </div>
+            {# The owner can take a listing down and put it back — price and the
+               rest stay fixed, so only visibility changes. A reserved/sold item
+               is in a live order and has no control here. #}
+            {% if item.status == 'listed' %}
+            <div class="deal-actions">
+                {{ act.post_button(url_for('withdraw_listing', item_id=item.id), t('item.withdraw'), 'auth-btn auth-btn-muted', t('item.withdraw_confirm')) }}
+            </div>
+            {% elif item.status == 'withdrawn' %}
+            <div class="deal-actions">
+                {{ act.post_button(url_for('relist_listing', item_id=item.id), t('item.relist'), 'auth-btn auth-btn-accent') }}
+            </div>
+            {% endif %}
             {% elif not current_user.is_authenticated %}
             <div class="notice">
                 <span class="notice-mark">{{ t('item.signin_mark') }}</span>

@@ -1267,23 +1267,24 @@ def handle_not_found(_error):
     # A raw Werkzeug page reads as a broken site. Hand it the designed shell
     # instead. Reached by bad URLs and by abort(404) on resources the viewer
     # is not party to, so the copy stays neutral about which it was.
+    lang = current_language()
     return render_template(
         'error.html',
         code='404',
-        heading='Nothing here',
-        message='That page does not exist, or it belongs to an order you are '
-                'not part of.',
+        heading=translate('err.e404_h', lang),
+        message=translate('err.e404_p', lang),
         show_orders=current_user.is_authenticated,
     ), 404
 
 
 @app.errorhandler(403)
 def handle_forbidden(_error):
+    lang = current_language()
     return render_template(
         'error.html',
         code='403',
-        heading='Not your door',
-        message='You are signed in, but this is not yours to open.',
+        heading=translate('err.e403_h', lang),
+        message=translate('err.e403_p', lang),
         show_orders=current_user.is_authenticated,
     ), 403
 
@@ -2901,6 +2902,39 @@ def admin_restore_listing(item_id):
     db.session.commit()
     flash(ft('fl.listing_on', item.title))
     return redirect(url_for('admin_listings', status='withdrawn'))
+
+
+@app.route('/item/<int:item_id>/withdraw', methods=['POST'])
+@login_required
+def withdraw_listing(item_id):
+    """Let a seller take their own listing off the board. Price and the other
+    fields stay immutable by design; this only changes visibility."""
+    item = Item.query.get_or_404(item_id)
+    if item.user_id != current_user.id:
+        abort(403)
+    # A reserved or sold item is attached to a running order; pulling it would
+    # strand the buyer's delivery.
+    if item.status in ('reserved', 'sold'):
+        flash('That listing is part of a live order. Settle the order first.')
+    elif item.status != 'withdrawn':
+        item.status = 'withdrawn'
+        db.session.commit()
+        flash(ft('fl.listing_off', item.title))
+    return redirect(url_for('item_detail', item_id=item.id))
+
+
+@app.route('/item/<int:item_id>/relist', methods=['POST'])
+@login_required
+def relist_listing(item_id):
+    """Put a withdrawn listing back on the board. Owner only."""
+    item = Item.query.get_or_404(item_id)
+    if item.user_id != current_user.id:
+        abort(403)
+    if item.status == 'withdrawn':
+        item.status = 'listed'
+        db.session.commit()
+        flash(ft('fl.listing_on', item.title))
+    return redirect(url_for('item_detail', item_id=item.id))
 
 
 @app.route('/admin/orders')
