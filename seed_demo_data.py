@@ -145,7 +145,7 @@ LISTINGS = [
     # ---- Books -----------------------------------------------------------
     ("IELTS Preparation Set", "books", "medium", 40, 5.0, "textbook,study",
      "Cambridge 15 to 18 with the answer keys. Clean, no writing in them."),
-    ("Turkmen Poetry Collection", "books", "small", 85, 1.2, "open,book,literature",
+    ("Turkmen Poetry Collection", "books", "small", 85, 1.2, "antique,books,stack",
      "Magtymguly and later poets, hardback. Good condition, no marks."),
     ("Medical Anatomy Atlas", "books", "medium", 25, 3.0, "human,anatomy,model",
      "Netter, sixth edition. Heavy, so the delivery costs a little more."),
