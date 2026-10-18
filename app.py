@@ -80,7 +80,7 @@ app.config['UPLOAD_FOLDER_PROFILES'] = 'static/uploads/profiles'
 app.config['MAX_CONTENT_LENGTH'] = 24 * 1024 * 1024
 
 from mailer import Mailer, looks_like_address
-from translations import LANGUAGES, DEFAULT_LANGUAGE, translate
+from translations import LANGUAGES, DEFAULT_LANGUAGE, translate, TRANSLATIONS
 
 # Real mail. Unconfigured it writes .eml files into instance/outbox instead of
 # sending, so every flow below can be walked without an SMTP account.
@@ -1652,6 +1652,32 @@ def current_language():
     return request.accept_languages.best_match(list(LANGUAGES)) or DEFAULT_LANGUAGE
 
 
+# Flash messages are raised in English from the view functions below. Rather
+# than route every flash() through a key, the English text is translated back at
+# render time: this map turns a flashed English string into its fl.* key, and
+# base.html calls tflash() on each message. Messages that carry a runtime value
+# (an amount, a name, a status) cannot be matched this way, so those few flash
+# through ft() instead, which translates the format string before filling it.
+_FLASH_EN_TO_KEY = {
+    entry["en"]: key
+    for key, entry in TRANSLATIONS.items()
+    if key.startswith("fl.") and "%" not in entry["en"]
+}
+
+
+def tflash(message):
+    """Translate a flashed English message to the request's language, if known."""
+    key = _FLASH_EN_TO_KEY.get(message)
+    return translate(key, current_language()) if key else message
+
+
+def ft(key, *args):
+    """A flash message that carries runtime values: translate the format string
+    for the current language, then fill in the values."""
+    text = translate(key, current_language())
+    return text % args if args else text
+
+
 @app.route('/language/<code>')
 def set_language(code):
     """Switch language and return to where the person was.
@@ -1685,6 +1711,7 @@ def inject_language():
     language = current_language()
     return {
         't': lambda key: translate(key, language),
+        'tflash': tflash,
         'current_lang': language,
         'languages': LANGUAGES,
     }
@@ -2526,7 +2553,7 @@ def pay_order(order_id):
         flash('That payment could not be completed. Nothing has been charged.')
         return redirect(url_for('order_detail', order_id=order.id))
 
-    flash('Paid. Global Trade is holding %.2f TMT for the seller until the goods arrive.' % goods)
+    flash(ft('fl.paid_holding', goods))
     return redirect(url_for('order_detail', order_id=order.id))
 
 
@@ -2635,7 +2662,7 @@ def advance_delivery(delivery_id):
         flash('That is not a step a courier can take here.')
         return redirect(url_for('delivery_detail', delivery_id=delivery.id))
     if target not in DELIVERY_FLOW.get(delivery.status, ()):
-        flash('A delivery cannot go from %s to %s.' % (delivery.status, target))
+        flash(ft('fl.deliv_no_transition', delivery.status, target))
         return redirect(url_for('delivery_detail', delivery_id=delivery.id))
 
     moved = db.session.execute(
@@ -2650,7 +2677,7 @@ def advance_delivery(delivery_id):
 
     record_delivery_event(delivery, target, (request.form.get('note') or '').strip() or None, current_user)
     db.session.commit()
-    flash('Delivery is now %s.' % target.replace('_', ' '))
+    flash(ft('fl.deliv_now', target.replace('_', ' ')))
     return redirect(url_for('delivery_detail', delivery_id=delivery.id))
 
 
@@ -2728,7 +2755,7 @@ def fail_delivery(delivery_id):
     if not courier_owns(delivery, current_user):
         abort(404)
     if 'failed' not in DELIVERY_FLOW.get(delivery.status, ()):
-        flash('A delivery cannot fail from %s.' % delivery.status)
+        flash(ft('fl.deliv_no_fail', delivery.status))
         return redirect(url_for('delivery_detail', delivery_id=delivery.id))
 
     moved = db.session.execute(
@@ -2757,7 +2784,7 @@ def return_delivery(delivery_id):
     if not courier_owns(delivery, current_user):
         abort(404)
     if 'returned' not in DELIVERY_FLOW.get(delivery.status, ()):
-        flash('A delivery cannot be returned from %s.' % delivery.status)
+        flash(ft('fl.deliv_no_return', delivery.status))
         return redirect(url_for('delivery_detail', delivery_id=delivery.id))
 
     order = delivery.order
@@ -2877,7 +2904,7 @@ def admin_withdraw_listing(item_id):
         return redirect(url_for('admin_listings', status=request.form.get('back') or 'listed'))
     item.status = 'withdrawn'
     db.session.commit()
-    flash('"%s" has been taken off the board.' % item.title)
+    flash(ft('fl.listing_off', item.title))
     return redirect(url_for('admin_listings', status=request.form.get('back') or 'listed'))
 
 
@@ -2890,7 +2917,7 @@ def admin_restore_listing(item_id):
         return redirect(url_for('admin_listings', status='withdrawn'))
     item.status = 'listed'
     db.session.commit()
-    flash('"%s" is back on the board.' % item.title)
+    flash(ft('fl.listing_on', item.title))
     return redirect(url_for('admin_listings', status='withdrawn'))
 
 
@@ -2962,15 +2989,13 @@ def approve_access_request(request_id):
     # deliver it themselves. It is emailed to the applicant now.
     delivered = send_invite_email(access_request)
     if delivered and mailer.configured:
-        flash('Approved. The invitation has been emailed to %s.' % access_request.email)
+        flash(ft('fl.approved_emailed', access_request.email))
     elif delivered:
-        flash('Approved. No SMTP is configured, so the invitation was written to '
-              'instance/outbox instead of sent. Link: %s'
-              % url_for('activate', token=access_request.invite_token, _external=True))
+        flash(ft('fl.approved_outbox',
+                 url_for('activate', token=access_request.invite_token, _external=True)))
     else:
-        flash('Approved, but %s is not a valid address, so nothing could be sent. '
-              'Link: %s' % (access_request.email,
-                            url_for('activate', token=access_request.invite_token, _external=True)))
+        flash(ft('fl.approved_bad_addr', access_request.email,
+                 url_for('activate', token=access_request.invite_token, _external=True)))
     return redirect(url_for('admin_access_requests'))
 
 
@@ -2992,7 +3017,7 @@ def reject_access_request(request_id):
     db.session.commit()
     # Silence is the worst outcome for someone waiting on a decision.
     send_rejection_email(access_request)
-    flash('Request rejected, and %s has been told.' % access_request.email)
+    flash(ft('fl.request_rejected', access_request.email))
     return redirect(url_for('admin_access_requests'))
 
 
@@ -3019,7 +3044,7 @@ def admin_set_role(user_id):
         return redirect(url_for('admin_users'))
     person.role = role
     db.session.commit()
-    flash('%s is now a %s.' % (person.full_name or person.email, role))
+    flash(ft('fl.now_role', person.full_name or person.email, role))
     return redirect(url_for('admin_users'))
 
 
@@ -3064,7 +3089,7 @@ def admin_assign_courier(delivery_id):
         'Assigned to %s.' % (courier.full_name or courier.email), current_user
     )
     db.session.commit()
-    flash('Assigned to %s.' % (courier.full_name or courier.email))
+    flash(ft('fl.assigned_to', courier.full_name or courier.email))
     return redirect(url_for('admin_deliveries'))
 
 

@@ -171,7 +171,7 @@
           {% for message in messages %}
             <div class="flash">
               <span class="flash-mark">{{ t('common.note') }}</span>
-              <span>{{ message }}</span>
+              <span>{{ tflash(message) }}</span>
             </div>
           {% endfor %}
         </div>
