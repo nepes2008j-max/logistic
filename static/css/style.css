@@ -4,9 +4,9 @@
    forms, checkout, AI expert panel, effects.
    ========================================================================== */
 
-@import url("./base.css");
-@import url("./chat.css");
-@import url("./profile.css");
+/* base.css, chat.css and profile.css are loaded as separate <link>s in
+   base.html (in order) so they can be cache-busted per deploy; they used to be
+   chained @imports here, which also blocked rendering. */
 
 /* ==========================================================================
    A. THE LEDGER BAR — the recurring metadata strip that heads a screen

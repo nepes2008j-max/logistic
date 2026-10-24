@@ -32,8 +32,11 @@
     {# variables.css first: it declares the raw palette and the type scale that
        base.css builds the semantic tokens from. It went years unloaded — the
        docs named it as the source of truth while nothing ever fetched it. #}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/variables.css') }}?v={{ asset_version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}?v={{ asset_version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}?v={{ asset_version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}?v={{ asset_version }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v={{ asset_version }}">
     <link rel="icon" type="image/png" href="/static/favicon_c.png">
     {#
       The QR library used to be loaded here on every page in the application.
@@ -267,14 +270,14 @@
         </div>
     </nav>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}?v={{ asset_version }}"></script>
 
     {# Motion layer: self-hosted GSAP + Lenis, then the init that wires them.
        Progressive enhancement — see static/js/motion.js. #}
-    <script src="{{ url_for('static', filename='js/vendor/gsap.min.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/vendor/ScrollTrigger.min.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/vendor/lenis.min.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/motion.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/aurora.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/vendor/gsap.min.js') }}?v={{ asset_version }}" defer></script>
+    <script src="{{ url_for('static', filename='js/vendor/ScrollTrigger.min.js') }}?v={{ asset_version }}" defer></script>
+    <script src="{{ url_for('static', filename='js/vendor/lenis.min.js') }}?v={{ asset_version }}" defer></script>
+    <script src="{{ url_for('static', filename='js/motion.js') }}?v={{ asset_version }}" defer></script>
+    <script src="{{ url_for('static', filename='js/aurora.js') }}?v={{ asset_version }}" defer></script>
 </body>
 </html>

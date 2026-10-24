@@ -1685,6 +1685,13 @@ def set_language(code):
     return response
 
 
+# A cache-busting token for static assets. PythonAnywhere serves /static with
+# no Cache-Control, so browsers hold old CSS/JS; appending ?v=ASSET_VERSION to
+# every asset URL makes each deploy fetch fresh. It is the process start time,
+# so touching the WSGI file on deploy (which reloads the app) bumps it.
+ASSET_VERSION = str(int(datetime.now().timestamp()))
+
+
 @app.context_processor
 def inject_language():
     """`t('some.key')` in any template, plus what is needed to draw a switcher."""
@@ -1694,6 +1701,7 @@ def inject_language():
         'tflash': tflash,
         'current_lang': language,
         'languages': LANGUAGES,
+        'asset_version': ASSET_VERSION,
     }
 
 
