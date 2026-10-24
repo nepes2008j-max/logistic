@@ -1530,24 +1530,19 @@ input[type="radio"]:checked::before { transform: scale(1); }
     gap: var(--s5);
     grid-auto-rows: min-content;
     align-content: center;
-    /* A dark stage so the aurora behind the wordmark actually glows. The whole
-       splash fades on open, taking the aurora with it. */
-    background: radial-gradient(circle at 50% 42%, #0a1f3f 0%, #050f24 72%);
+    /* Light, in the site's own colours — white falling to the palest blue. */
+    background: radial-gradient(circle at 50% 40%, #ffffff 0%, #e8f0fb 78%);
     transition: opacity 0.75s var(--ease), visibility 0.75s;
 }
 
-/* Aurora layer, behind the splash content. */
-#splash-screen .aurora-mount {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-}
-#splash-screen .aurora-canvas { display: block; width: 100%; height: 100%; }
-#splash-screen .hands-wrapper,
-#splash-screen .splash-text { position: relative; z-index: 1; }
-@media (prefers-reduced-motion: reduce) {
-    #splash-screen .aurora-mount { display: none; }
+/* The intro lockup: the seal appears centred, then slides left and parks
+   beside the wordmark (see seal-arrive). */
+.splash-lockup {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 2.6vw, 30px);
+    position: relative;
+    z-index: 1;
 }
 
 #splash-screen::before {
@@ -1570,10 +1565,16 @@ input[type="radio"]:checked::before { transform: scale(1); }
     height: 108px;
     display: grid;
     place-items: center;
-    border: var(--bw2) solid var(--accent);
+    border: var(--bw2) solid #0b63ff;
     border-radius: 50%;
-    color: var(--accent-text);
-    animation: seal-press 1.5s var(--ease-out) both;
+    color: #0b63ff;
+    /* Appears centred, holds a beat, then slides left into the wordmark lockup. */
+    animation: seal-arrive 1.25s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+@keyframes seal-arrive {
+    0%   { opacity: 0; transform: translateX(172px) scale(1.7); }
+    45%  { opacity: 1; transform: translateX(172px) scale(1); }
+    100% { opacity: 1; transform: translateX(0) scale(1); }
 }
 .hands-wrapper::after {
     content: "";
@@ -1597,27 +1598,28 @@ input[type="radio"]:checked::before { transform: scale(1); }
     font-weight: 600;
     font-size: clamp(2rem, 8vw, 3.2rem);
     letter-spacing: -0.04em;
-    /* Splash is a dark stage now, so the wordmark is light regardless of theme. */
-    color: #eef4ff;
-    animation: splash-word 1.1s 0.35s var(--ease-out) both;
+    margin: 0;
+    /* Site colours on the light splash: deep ink, with the brand blue on "Trade". */
+    color: #082c5e;
+    animation: splash-word 0.8s 0.8s var(--ease-out) both;
 }
-.splash-text span { color: #5aa0ff; }
+.splash-text span { color: #0b63ff; }
 
 .splash-text::after {
     content: "Verified members. Deals closed in person.";
     position: absolute;
-    left: 50%;
-    top: calc(100% + 14px);
-    transform: translateX(-50%);
+    left: 0;
+    top: calc(100% + 12px);
+    transform: none;
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     font-size: var(--t-micro);
     font-weight: 500;
     letter-spacing: 0.005em;
     text-transform: none;
-    color: #93a2bb;
+    color: #54657f;
     white-space: nowrap;
-    animation: splash-word 1.1s 0.72s var(--ease-out) both;
+    animation: splash-word 1.1s 1.1s var(--ease-out) both;
 }
 
 @keyframes seal-press {
