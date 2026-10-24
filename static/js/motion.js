@@ -59,21 +59,22 @@
         // motion blur and a fast slide, then counts up from 0 to its value.
         // The real number is already in the markup, so reduced motion / no-JS
         // leaves it correct.
+        // These are hero numbers, so they count up on load (after the splash
+        // clears) rather than on scroll — they must never sit stranded at 0.
         window.gsap.utils.toArray('.stat-num[data-count]').forEach(function (el) {
             var target = parseInt(el.getAttribute('data-count'), 10) || 0;
             var proxy = { v: 0 };
+            var START = 1.3; // after the ~1.2s splash
             el.textContent = '0';
-            var trigger = { trigger: el, start: 'top 92%', once: true };
             window.gsap.fromTo(el,
                 { '--sblur': '12px', x: -34, skewX: 14, opacity: 0 },
-                { '--sblur': '0px', x: 0, skewX: 0, opacity: 1, duration: 0.7, ease: 'power3.out', scrollTrigger: trigger });
+                { '--sblur': '0px', x: 0, skewX: 0, opacity: 1, duration: 0.7, ease: 'power3.out', delay: START });
             window.gsap.to(proxy, {
                 v: target,
                 duration: 1.2,
+                delay: START,
                 ease: 'power1.out',
-                scrollTrigger: trigger,
                 onUpdate: function () {
-                    // Russian/Turkmen thin-space grouping; plain for small numbers.
                     el.textContent = Math.round(proxy.v).toLocaleString('ru-RU');
                 },
                 onComplete: function () { el.textContent = target.toLocaleString('ru-RU'); }
