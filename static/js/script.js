@@ -219,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     splash.style.display = 'none';
                 }, 800);
-            }, 1200);
+            }, 2200);   // hold a touch longer so the aurora intro is seen
         }
     } else {
         revealPage();

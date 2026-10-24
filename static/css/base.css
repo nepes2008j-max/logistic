@@ -1530,8 +1530,24 @@ input[type="radio"]:checked::before { transform: scale(1); }
     gap: var(--s5);
     grid-auto-rows: min-content;
     align-content: center;
-    background: var(--paper);
+    /* A dark stage so the aurora behind the wordmark actually glows. The whole
+       splash fades on open, taking the aurora with it. */
+    background: radial-gradient(circle at 50% 42%, #0a1f3f 0%, #050f24 72%);
     transition: opacity 0.75s var(--ease), visibility 0.75s;
+}
+
+/* Aurora layer, behind the splash content. */
+#splash-screen .aurora-mount {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+#splash-screen .aurora-canvas { display: block; width: 100%; height: 100%; }
+#splash-screen .hands-wrapper,
+#splash-screen .splash-text { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) {
+    #splash-screen .aurora-mount { display: none; }
 }
 
 #splash-screen::before {
@@ -1581,10 +1597,11 @@ input[type="radio"]:checked::before { transform: scale(1); }
     font-weight: 600;
     font-size: clamp(2rem, 8vw, 3.2rem);
     letter-spacing: -0.04em;
-    color: var(--ink);
+    /* Splash is a dark stage now, so the wordmark is light regardless of theme. */
+    color: #eef4ff;
     animation: splash-word 1.1s 0.35s var(--ease-out) both;
 }
-.splash-text span { color: var(--accent-text); }
+.splash-text span { color: #5aa0ff; }
 
 .splash-text::after {
     content: "Verified members. Deals closed in person.";
@@ -1598,7 +1615,7 @@ input[type="radio"]:checked::before { transform: scale(1); }
     font-weight: 500;
     letter-spacing: 0.005em;
     text-transform: none;
-    color: var(--ink-3);
+    color: #93a2bb;
     white-space: nowrap;
     animation: splash-word 1.1s 0.72s var(--ease-out) both;
 }

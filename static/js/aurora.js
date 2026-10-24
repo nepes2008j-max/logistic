@@ -18,8 +18,8 @@
     var COLOR_STOPS = ['#0B63FF', '#38E1C6', '#5AA0FF'];
     var AMPLITUDE = 1.2, BLEND = 0.5, HEIGHT = 0.5, SCALE = 1.0,
         GLOW = 0.7, BRIGHTNESS = 1.15, LAYERS = 3, SPEED = 1.0, OPACITY = 0.95;
-    var INTRO_SECONDS = 2.0;
-    var LIFE_MS = 7000;   // total time on screen; the CSS fade matches this
+    var INTRO_SECONDS = 1.4;
+    var LIFE_MS = 3400;   // the splash fades around here; then free the GL context
 
     var MAX_STOPS = 5;
     // Shaders are kept as verbatim template literals (not string concatenation)
@@ -287,9 +287,8 @@ void main() {
         gl.uniform3f(u.uPointer, 0, 0.5, 0);
         gl.uniform1f(u.uReveal, 1 - Math.pow(1 - reveal, 3));
         gl.uniform1f(u.uOpacity, OPACITY);
-        // A dark page (dark theme) wants the additive path; a light page wants
-        // the premultiplied light path so the curtains read over white.
-        gl.uniform1f(u.uLightMode, document.documentElement.getAttribute('data-theme') === 'dark' ? 0 : 1);
+        // The splash is a dark stage, so always use the additive glow path.
+        gl.uniform1f(u.uLightMode, 0);
         gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
     function frame(now) {

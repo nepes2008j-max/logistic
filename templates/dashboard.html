@@ -60,10 +60,6 @@
   and the marketplace surfacing directly below.
 #}
 <header class="hero">
-    {# Aurora intro: a WebGL curtain in the site's blues that rises over the
-       sky gradient as the page opens, then fades and removes itself. Filled and
-       driven by static/js/aurora.js; absent under reduced motion / no WebGL. #}
-    <div class="aurora-mount" aria-hidden="true"></div>
     <div class="nav-container hero-inner">
         {#
           The opening run. A delivery truck crosses the band once, drawing the
@@ -129,7 +125,7 @@
 
         <div class="hero-facts">
             <span class="hero-fact"><b class="stat-num" data-count="{{ items|length }}">{{ items|length }}</b> {{ t('home.fact_listings') }}</span>
-            <span class="hero-fact"><b class="stat-num" data-count="{{ delivered_count }}">{{ delivered_count }}</b> {{ t('home.fact_delivered') }}</span>
+            {% if delivered_count %}<span class="hero-fact"><b class="stat-num" data-count="{{ delivered_count }}">{{ delivered_count }}</b> {{ t('home.fact_delivered') }}</span>{% endif %}
             <span class="hero-fact"><b>{{ t('home.fact_city') }}</b> {{ t('home.fact_region') }}</span>
             <span class="hero-fact"><b>{{ t('home.fact_paid_b') }}</b> {{ t('home.fact_paid') }}</span>
         </div>

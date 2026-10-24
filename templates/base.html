@@ -51,6 +51,9 @@
        overlay. #}
     <noscript><style>#splash-screen { display: none !important; }</style></noscript>
     <div id="splash-screen">
+        {# Aurora glows on the dark splash behind the wordmark, then the whole
+           splash fades on open. Filled by static/js/aurora.js. #}
+        <div class="aurora-mount" aria-hidden="true"></div>
         <div class="hands-wrapper">
             <svg class="ico hand-icon" aria-hidden="true"><use href="#i-handshake"></use></svg>
         </div>

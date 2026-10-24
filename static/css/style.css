@@ -793,27 +793,6 @@
     gap: clamp(20px, 3vw, 32px);
 }
 
-/* Aurora intro layer — over the sky gradient (z 1), under the hero content
-   (z 2), clipped by the hero's overflow:hidden. It fades in as the page opens,
-   holds, then fades out; aurora.js removes the element once it has. */
-.aurora-mount {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    opacity: 0;
-    animation: aurora-intro 7s ease-in-out forwards;
-}
-.aurora-canvas { display: block; width: 100%; height: 100%; }
-@keyframes aurora-intro {
-    0%   { opacity: 0; }
-    22%  { opacity: 1; }
-    64%  { opacity: 1; }
-    100% { opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-    .aurora-mount { display: none; }
-}
 
 /* -- The opening flight --------------------------------------------------
    A paper plane crosses the band once on load, drawing the route hairline
