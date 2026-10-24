@@ -265,5 +265,12 @@
     </nav>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    {# Motion layer: self-hosted GSAP + Lenis, then the init that wires them.
+       Progressive enhancement — see static/js/motion.js. #}
+    <script src="{{ url_for('static', filename='js/vendor/gsap.min.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/vendor/ScrollTrigger.min.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/vendor/lenis.min.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/motion.js') }}" defer></script>
 </body>
 </html>
