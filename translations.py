@@ -768,6 +768,7 @@ TRANSLATIONS = {
                             "ru": "Вы вошли в систему, но это не вам открывать.",
                             "tk": "Siz ulgama girdiňiz, ýöne muny açmak siziňki däl."},
     "home.fact_city":      {"en": 'Ashgabat', "ru": "Ашхабад", "tk": "Aşgabat"},
+    "home.fact_delivered": {"en": 'delivered to the door', "ru": "доставлено до двери", "tk": "gapa gowşuryldy"},
 
     # ------------------------------------------- market / index page --
     "idx.ask_search":      {"en": 'Ask about this search', "ru": "Спросить об этом поиске", "tk": "Bu gözleg barada sora"},

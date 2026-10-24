@@ -54,6 +54,31 @@
                 scrollTrigger: { trigger: el, start: 'top 85%', once: true }
             });
         });
+
+        // "Speeding" stat numbers: each .stat-num[data-count] rushes in with a
+        // motion blur and a fast slide, then counts up from 0 to its value.
+        // The real number is already in the markup, so reduced motion / no-JS
+        // leaves it correct.
+        window.gsap.utils.toArray('.stat-num[data-count]').forEach(function (el) {
+            var target = parseInt(el.getAttribute('data-count'), 10) || 0;
+            var proxy = { v: 0 };
+            el.textContent = '0';
+            var trigger = { trigger: el, start: 'top 92%', once: true };
+            window.gsap.fromTo(el,
+                { '--sblur': '12px', x: -34, skewX: 14, opacity: 0 },
+                { '--sblur': '0px', x: 0, skewX: 0, opacity: 1, duration: 0.7, ease: 'power3.out', scrollTrigger: trigger });
+            window.gsap.to(proxy, {
+                v: target,
+                duration: 1.2,
+                ease: 'power1.out',
+                scrollTrigger: trigger,
+                onUpdate: function () {
+                    // Russian/Turkmen thin-space grouping; plain for small numbers.
+                    el.textContent = Math.round(proxy.v).toLocaleString('ru-RU');
+                },
+                onComplete: function () { el.textContent = target.toLocaleString('ru-RU'); }
+            });
+        });
     } else if (lenis) {
         // Smooth scroll without GSAP: Lenis needs its own animation loop.
         (function raf(time) { lenis.raf(time); requestAnimationFrame(raf); })();

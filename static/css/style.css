@@ -1178,6 +1178,14 @@
     color: var(--ink);
     font-variant-numeric: tabular-nums;
 }
+/* A count-up number that "speeds" in (motion blur + a fast slide, driven by
+   motion.js). inline-block so it can be transformed; the blur is a variable so
+   GSAP can tween it. Without JS the real number is already in the markup. */
+.stat-num {
+    display: inline-block;
+    filter: blur(var(--sblur, 0px));
+    will-change: transform, filter;
+}
 
 /* Phone: one column. The wordmark leads, the statement and the actions land
    within thumb reach, and the hand-off line stacks into three ruled rows

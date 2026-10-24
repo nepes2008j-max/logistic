@@ -1804,7 +1804,8 @@ with app.app_context():
 @app.route('/')
 def dashboard():
     all_items = Item.query.filter(Item.status != 'withdrawn').order_by(Item.id.desc()).all()
-    return render_template('dashboard.html', items=all_items)
+    delivered_count = Delivery.query.filter_by(status='delivered').count()
+    return render_template('dashboard.html', items=all_items, delivered_count=delivered_count)
 
 
 def render_marketplace():
