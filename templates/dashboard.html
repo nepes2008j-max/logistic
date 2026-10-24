@@ -16,9 +16,9 @@
           is calculated from — or the listing's state when it is not orderable.
         #}
         {% if item.status != 'listed' %}
-        <span class="badge badge--state">{{ item.status|capitalize }}</span>
+        <span class="badge badge--state">{{ t('status.' ~ item.status) }}</span>
         {% else %}
-        <span class="badge">{{ item.size_class|capitalize }}</span>
+        <span class="badge">{{ t('size.' ~ item.size_class) }}</span>
         {% endif %}
         {% if item.image_url %}<img src="{{ item.image_url }}" alt="{{ item.title }}" loading="lazy" decoding="async">{% endif %}
     </div>
